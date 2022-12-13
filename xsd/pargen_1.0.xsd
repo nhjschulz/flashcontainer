@@ -61,6 +61,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     <xs:complexType name="block">
         <xs:sequence>
+            <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
             <xs:element name="header" type="pargen:header"></xs:element>
             <xs:element name="data" type="pargen:data"></xs:element>
         </xs:sequence>
@@ -68,6 +69,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <xs:attribute name="name" type="pargen:identifier" use="required" />
         <xs:attribute name="endianness" type="pargen:endianness" use="optional" default="LE" />
         <xs:attribute name="align" type="pargen:align" use="optional" default="1" />
+        <xs:attribute name="fill" type="pargen:uint8" use="optional" default="0x00" />
 
     </xs:complexType>
 
@@ -108,6 +110,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
+
+    <xs:simpleType name="uint8">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,2}|0|[1-2][0-9]{0,2}" />
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:simpleType name="uint16">
         <xs:restriction base="xs:string">
