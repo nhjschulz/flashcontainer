@@ -1,0 +1,7 @@
+lxml
+json5
+intelhex
+tox
+black
+isort
+-e .
