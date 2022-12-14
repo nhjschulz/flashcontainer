@@ -5,7 +5,7 @@ can bestored in flash memory and maintained independent from the application.
 
 ## Concept and Planned Features
 
-![Concept](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/nhjschulz/parameter-container-tooling/Development/overview.plantuml)
+![Concept](./Concept.png)
 
 
 * Read input from a schema validated XML file
