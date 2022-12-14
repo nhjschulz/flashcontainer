@@ -1,7 +1,8 @@
-# ParGen - A tool for generating flashable parameter Container
+# ParGen - A tool for Flashable Parameter Container Creation
 
-ParGen is a embedded developmen tool for generation of parameters values that
-can bestored in flash memory and maintained independent from the application.
+ParGen is an embedded development tool for generation of parameters values that
+can be stored in flash memory and maintained independent from the application.
+It allows to alter/update parameter values without recompilations.
 
 ## Concept and Planned Features
 
@@ -9,14 +10,14 @@ can bestored in flash memory and maintained independent from the application.
 
 
 * Read input from a schema validated XML file
-* Generate C-Source stubs for embedding into the application source core
+* Generate C-Source stubs for embedding into the application source amd testing environments
 * Generate Intel Hex files for flashing with a programmer
 * Generate GNU linker include file for mapping the parameter to absolute addresses
-* Generate A2L fragements of accessing the parameters from AUTOSAR test environments
+* Generate A2L fragments for accessing the parameters from AUTOSAR test environments
 
 ## Installing Python Dependencies
 
-A example ships in the 'example' folder. To run it make sure to have
+An example configuration is in the 'example' folder. To run it make sure to have
 all dependencies from requirements.txt installed. Run the following inside the
 checked out sandbox folder:
 
@@ -45,15 +46,14 @@ the following output:
     Generating GNU Linker script example.ld
     Done.
 
-The tools parses the example.xml parameter definition and converts it into
-
+The tools parses the example.xml parameter definition file and converts it into
 * Intel hex files for flashing
-* C/H for accessing the parameter in applications (H-File) and unittests (C-File)
+* C/H files for accessing the parameter in applications (H-File) and unittests (C-File)
 * GNU Linker script for generating parameter symbols at the flash adresses
 
 # Issues, Ideas And Bugs
 
-If you have further ideas or you found some bugs, great! Create a [issue](https://github.com/issues) or if you are able and willing to fix it by yourself, clone the repository and create a pull request.
+If you have further ideas or you found some bugs, great! Create an [issue](https://github.com/issues) or if you are able and willing to fix it by yourself, clone the repository and create a pull request.
 
 ## License
 
@@ -62,4 +62,4 @@ Consider also the different licenses of used third party libraries too!
 
 ## Contribution
 
-We welcome contribution, but unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, shall be licensed as above, without anyadditional terms or conditions.
+We welcome contribution, but unless you explicitly state otherwise: Any contribution intentionally submitted for inclusion in the work by you, shall be licensed as above, without anyadditional terms or conditions.
