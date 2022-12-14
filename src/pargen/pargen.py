@@ -34,14 +34,19 @@ from  xmlparser import XmlParser
 import datamodel as DM
 import hexwriter
 import cfilewriter
+import gnuldwriter
+
+import datetime
 import argparse
 import logging
 import copy
+import uuid
+import sys
 
-def main() -> int:
+def pargen() -> int:
     """ Parameter generator tool entry point"""
 
-    logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(encoding='utf-8', level=logging.WARN)
 
     about = 'A tool for generating flashable parameter container.'
     name = "pargen"
@@ -50,6 +55,7 @@ def main() -> int:
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     parser.add_argument('--ihex', nargs=1,help="Generate intelhex file with given name.")
     parser.add_argument('--csrc', nargs=1,help="Generate c/c++ header and source file using given basename.")
+    parser.add_argument('--gld', nargs=1,help="Generate GNU linker include file for parameter symbol generation.")
     parser.add_argument('file',   nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
@@ -60,34 +66,56 @@ def main() -> int:
 
     model = XmlParser.from_file(args.file[0])
 
-
+    # writer context options
     param = {
         "PNAME"   : name,
         "VERSION" : __version__,
-        "INPUT"   : args.file[0]
+        "INPUT"   : args.file[0],
+        "GUID"    : uuid.uuid4(),
+        "CMDLINE" : ' '.join(sys.argv[0:]),
+        "DATETIME": datetime.datetime.now()
         }
 
     if (args.ihex is not None):
         try:
             my_params = copy.deepcopy(param)
             my_params.update({"FN" : args.ihex[0]})
-            logging.info(f"Generating intelhex file {args.ihex[0]}")
+            print(f"Generating intelhex file {args.ihex[0]}")
             writer = hexwriter.HexWriter(model, my_params)
             writer.run()
         except Exception as exc:
             logging.exception(exc)
+            raise
 
     if (args.csrc is not None):
         try:
             my_params = copy.deepcopy(param)
             my_params.update({"FN" : args.csrc[0]})
-            logging.info(f"Generating Cfiles {args.csrc[0]}.[ch]")
+            print(f"Generating C-files {args.csrc[0]}.[ch]")
             writer = cfilewriter.CFileWriter(model, my_params)
             writer.run()
         except Exception as exc:
             logging.exception(exc)
+            raise
+
+    if (args.gld is not None):
+        try:
+            my_params = copy.deepcopy(param)
+            my_params.update({"FN" : args.gld[0]})
+            print(f"Generating GNU Linker script {args.gld[0]}")
+            writer = gnuldwriter.GnuLdWriter(model, my_params)
+            writer.run()
+        except Exception as exc:
+            logging.exception(exc)
+            raise
 
     return 0
 
 if __name__ == "__main__":
-    main()
+    try:
+        pargen()
+        print("Done.")
+        sys.exit(0)
+    except Exception as exc:
+        print("Failed.")
+        sys.exit(1)

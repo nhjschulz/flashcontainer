@@ -4,6 +4,7 @@
         "./src",
         "./src/pargen",
         "./src/pargen",
+        "./src/pargen",
         "./src/pargen"
     ],
     "terminal.integrated.env.osx": {

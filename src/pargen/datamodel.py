@@ -101,7 +101,7 @@ class Block:
 
     def update_crc32(self) -> int:
         """Add IEEE802.3 CRC32 at the end of the block as a parameter"""
-        
+
         blk_bytes = bytearray()
         blk_bytes.extend(self.get_header_bytes())
 
@@ -113,7 +113,7 @@ class Block:
         data = struct.pack(fmt, crc32)
         crc_param = Parameter(
             self.addr + self.header.length - 4,
-            "pargenCrc32", ParamType.uint32, data)
+            "crc32", ParamType.uint32, data)
         self.add_parameter(crc_param)
 
     def __str__(self):
@@ -153,7 +153,7 @@ class Parameter:
         self.comment = comment
 
     def __str__(self):
-        return f"Param({self.name} @ {hex(self.offset)} = {self.value.hex()} len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */)"
+        return f"{self.name} @ {hex(self.offset)} = {self.value.hex()} len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */"
 
 class Container:
     """Data container for a parameter block container"""
@@ -167,7 +167,7 @@ class Container:
         self.blocks.append(block)
 
     def __str__(self):
-        return f"Container({self.name} @ {hex(self.addr)})"
+        return f"{self.name} @ {hex(self.addr)}"
 
 class Model:
     """Top level model data container"""
@@ -193,28 +193,43 @@ class Walker:
     real processing.
     """
 
-    def __init__(self, model : Model, options : Dict[str, str]) :
+    def __init__(self, model : Model, options : Dict[str, any]) :
         self.options = options
         self.model = model
 
+        # current walking context
+        self.ctx_container = None
+        self.ctx_block = None
+        self.ctx_parameter = None
+
     def pre_run(self):
         """Run actions before the model walk"""
+
         pass
 
     def post_run(self):
         """Run actions after the model walk"""
+
         pass
 
     def begin_container(self, container : Container) -> None:
+        """Run actions when entering container """
+
         pass
 
     def end_container(self, container : Container) -> None:
+        """Run actions when leaving container """
+
         pass
 
     def begin_block(self, block : Block) -> None:
+        """Run actions when entering block """
+
         pass
 
     def end_block(self, block : Block) -> None:
+        """Run actions when leaving block """
+
         pass
 
     def begin_parameter(self, param : Parameter) -> None:
@@ -235,15 +250,19 @@ class Walker:
         self.pre_run()
 
         for container in self.model.container:
+            self.ctx_container = container
             logging.debug(f"begin_container({container})")
             self.begin_container(container)
 
             for block in container.blocks:
+                self.ctx_block = block
                 logging.debug(f"begin_block({block})")
 
                 self.begin_block(block)
 
                 for parameter in block.parameter:
+                    self.ctx_parameter = parameter
+
                     if ParamType.GAPFILL == parameter.type:
                         logging.debug(f"begin_gap({parameter})")
                         self.begin_gap(parameter)
@@ -255,15 +274,17 @@ class Walker:
                         self.begin_parameter(parameter)
                         self.end_parameter(parameter)
                         logging.debug(f"end_parameter({parameter})")
-
+                        self.ctx_parameter = None
 
                 self.end_block(block)
+                self.ctx_block = None
                 logging.debug(f"end_block({block})")
 
 
             self.end_container(container)
-            logging.debug(f"end_container({container})")
+            self.ctx_container = None
 
+        logging.debug(f"end_container({container})")
         self.post_run()
 
 
