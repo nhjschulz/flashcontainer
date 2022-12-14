@@ -286,6 +286,3 @@ class Walker:
 
         logging.debug(f"end_container({container})")
         self.post_run()
-
-
-

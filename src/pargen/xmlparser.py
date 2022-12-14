@@ -31,11 +31,9 @@
 
 import lxml.etree as ET
 import datamodel as DM
+from byteconv import ByteConvert
 
-import sys
 import logging
-import json5
-import struct
 import pathlib
 import os
 
@@ -121,34 +119,6 @@ class XmlParser:
         return 0x00 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
-    def _convert_valstr_to_bytes(ptype : DM.ParamType,  endianess : DM.Endianness, value_str : str ) -> bytearray:
-        """Convert from json string into raw bytes """
-
-        result = bytearray()
-        from_json = json5.loads(value_str)
-        variant = type(from_json)
-        fmt = "<" if endianess == DM.Endianness.LE else ">"
-        fmt += STRUCT_FMTS[ptype]
-
-        if (variant == list):  # == array
-            for i in range(0,len(from_json)):
-                result.extend(struct.pack(fmt, from_json[i]))
-
-        elif (variant in [int, float]):
-            result.extend(bytearray(struct.pack(fmt, from_json)))
-
-        elif (variant == str):
-            enc_utf8 = 'utf-8'
-            utf8_bytes = bytes(from_json, enc_utf8)
-            result.extend(struct.pack(f"<{len(utf8_bytes)}s", utf8_bytes))
-            result.extend(b'\x00')
-
-        else:
-            raise Exception(f"unsupported json value type {variant}")
-
-        return result
-
-    @staticmethod
     def _build_parameters(block : DM.Block, element) -> None:
         data_element = element.find(f"{NS}data")
         running_addr = block.addr + 16 # 16 = sizeof header
@@ -169,7 +139,7 @@ class XmlParser:
             name = parameter_element.get("name")
             ptype = DM.ParamType[parameter_element.get("type")]
             value_element = parameter_element.find(f"{NS}value")
-            bytes = XmlParser._convert_valstr_to_bytes(ptype, block.endianess, value_element.text)
+            bytes = ByteConvert.json_to_bytes(ptype, block.endianess, value_element.text)
             parameter = DM.Parameter(offset, name, ptype, bytes)
 
             comment = parameter_element.find(f"{NS}comment")
