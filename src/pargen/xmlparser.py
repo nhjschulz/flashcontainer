@@ -36,8 +36,10 @@ import sys
 import logging
 import json5
 import struct
+import pathlib
+import os
 
-schema_file = "C:/sb/privat/parameter-container-tooling/xsd/pargen_1.0.xsd"
+schema_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "pargen_1.0.xsd")
 NS = '{http://www.schulznorbert.de/1.0/pargen}'
 
 # little endian struct formatter to bytes
@@ -178,7 +180,7 @@ class XmlParser:
             logging.info(f"    Adding {parameter}")
             running_addr = offset + len(bytes)
 
-        end_addr = block.addr + block.header.length
+        end_addr = block.addr + (block.header.length-4) # 4 byte crc at end
         if (end_addr > running_addr):  # we need to insert a gap at the end
                 gap = DM.Parameter.as_gap(running_addr, end_addr-running_addr, block.fill)
                 logging.info(f"    Gap {gap}")
@@ -249,6 +251,7 @@ class XmlParser:
 
             XmlParser._build_parameters(block, element)
 
+            block.update_crc32()
             container.add_block(block)
 
             running_addr += length

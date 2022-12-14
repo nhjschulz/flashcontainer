@@ -3,14 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.schulznorbert.de/1.0/pargen ../xsd/pargen_1.0.xsd" >
 
-    <pd:container name="CodeFlash" at="0x80300000">
+    <pd:container name="CodeFlash" at="0x80000000">
         <pd:blocks>
             <pd:block offset="0x00000000" name="paraBlkQm" endianness="LE" fill="0x55">
                 <pd:comment>This block is used for non-safety related parameters only.</pd:comment>
                 <pd:header id="0xFFFF" major="1" minor="0" version="0" length="0x100"></pd:header>
                 <pd:data>
                     <pd:param offset="0x10" name="tag" type="uint16">
-                        <pd:comment>Des isch wia ma arrays zehmabaua koa, also hald so wia boaim Dschaison!</pd:comment>
+                        <pd:comment>Integer array example</pd:comment>
                         <pd:value>[1,2,3,4,5,6,7,8]</pd:value>
                     </pd:param>
                 </pd:data>

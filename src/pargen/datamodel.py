@@ -31,6 +31,7 @@
 from enum import Enum
 import struct
 import logging
+import crc
 
 class Version:
     """Version number data type"""
@@ -39,6 +40,7 @@ class Version:
         self.major = major
         self.minor = minor
         self.version = version
+
 
     def __print__(self):
         return f"{self.major}.{self.minor}.{self.version}"
@@ -59,6 +61,8 @@ class Endianness(Enum):
 
 class Block:
     """Block data container """
+
+    _crc_calc = crc.Calculator(crc.Crc32.CRC32) # IEEE 802.3 crc32
 
     def __init__(self, addr : int, name : str,  endianess : Endianness, fill : int):
         self.addr = addr
@@ -95,12 +99,25 @@ class Block:
             0x00000000,
             self.header.length)
 
+    def update_crc32(self) -> int:
+        """Add IEEE802.3 CRC32 at the end of the block as a parameter"""
+        
+        blk_bytes = bytearray()
+        blk_bytes.extend(self.get_header_bytes())
+
+        for param in self.parameter:
+            blk_bytes.extend(param.value)
+
+        crc32 = Block._crc_calc.checksum(blk_bytes)
+        fmt = "<I" if self.endianess == Endianness.LE else ">I"
+        data = struct.pack(fmt, crc32)
+        crc_param = Parameter(
+            self.addr + self.header.length - 4,
+            "pargenCrc32", ParamType.uint32, data)
+        self.add_parameter(crc_param)
+
     def __str__(self):
         return f"Block({self.name} @ {hex(self.addr)})"
-
-class Value:
-    def __init__(self, bytes):
-        self.data = bytes
 
 class ParamType(Enum):
     uint32 = 1
@@ -150,7 +167,7 @@ class Container:
         self.blocks.append(block)
 
     def __str__(self):
-        return f"Container({self.name} @ {self.addr})"
+        return f"Container({self.name} @ {hex(self.addr)})"
 
 class Model:
     """Top level model data container"""
@@ -227,8 +244,6 @@ class Walker:
                 self.begin_block(block)
 
                 for parameter in block.parameter:
-                    logging.debug(f"begin_parameter({parameter})")
-
                     if ParamType.GAPFILL == parameter.type:
                         logging.debug(f"begin_gap({parameter})")
                         self.begin_gap(parameter)
@@ -243,7 +258,7 @@ class Walker:
 
 
                 self.end_block(block)
-                logging.debug(f"begin_block({block})")
+                logging.debug(f"end_block({block})")
 
 
             self.end_container(container)

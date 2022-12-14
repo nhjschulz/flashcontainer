@@ -2,6 +2,7 @@ import pytest
 import xmlparser as XP
 import datamodel as DM
 
+import crc
 
 def test_parameter_as_gap():
 
@@ -21,3 +22,8 @@ def test_header_bytes():
 
     block.endianess = DM.Endianness.BE
     assert block.get_header_bytes() == b'\xaf\xfe\x12\x34\xab\xcd\x56\x78\x00\x00\x00\x00\xaa\xbb\xcc\xdd'
+
+def test_crc32():
+        input = "123456789"
+        crc = DM.Block._crc_calc.checksum(input.encode('utf-8'))
+        assert crc == 0xcbf43926
