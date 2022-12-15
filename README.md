@@ -25,13 +25,50 @@ checked out sandbox folder:
 
     python3 -m venv .venv
     python3 -m pip install -r requirements.txt
-    source .env/bin/activate
+    source .venv/bin/activate
 
 ### Windows
 
     python -m venv .venv
     python -m pip install -r requirements.txt
     .venv\Scripts\activate.bat (or Activate.ps1 for powershell)
+
+## Build a Installation Package
+
+An installable wheel file can be created using the build package and the following commands:
+    
+    python3 -m pip install --upgrade build
+    python3 -m build
+
+The wheel file will be generated in the dist folder:
+
+    ls dist
+    flashcontainer-0.0.1-py3-none-any.whl   flashcontainer-0.0.1.tar.gz
+
+## Create a Development Editable Install
+
+An editable install is needed for running the unittests and development of the package itself.
+It installs the package in the local virtual environment, but uses the python files form the
+src folder.
+
+    python3 -m pip install -e .
+
+The parameter generator tool can then by called on cmdline using 
+
+    $ pargen -h
+    usage: pargen [-h] [--version] [--ihex IHEX] [--csrc CSRC] [--gld GLD] file
+
+    A tool for generating flashable parameter container.
+
+    positional arguments:
+        file         XML parameter definition file
+
+    options:
+        -h, --help   show this help message and exit
+        --version    show program's version number and exit
+        --ihex IHEX  Generate intelhex file with given name.
+        --csrc CSRC  Generate c/c++ header and source file using given basename.
+         --gld GLD    Generate GNU linker include file for parameter symbol generation.    
 
 ## Running the Example
 
