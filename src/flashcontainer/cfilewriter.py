@@ -30,8 +30,9 @@
 
 from typing import Dict
 
-import datamodel as DM
-from byteconv import ByteConvert
+import flashcontainer.datamodel as DM
+from flashcontainer.byteconv import ByteConvert
+
 
 class CFileWriter(DM.Walker):
 

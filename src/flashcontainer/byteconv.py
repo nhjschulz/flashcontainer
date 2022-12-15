@@ -29,7 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import datamodel as DM
+import flashcontainer.datamodel as DM
 
 import json5
 import struct

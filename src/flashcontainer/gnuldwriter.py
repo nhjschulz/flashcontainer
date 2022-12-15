@@ -30,7 +30,8 @@
 
 from typing import Dict
 
-import datamodel as DM
+import flashcontainer.datamodel as DM
+
 
 class GnuLdWriter(DM.Walker):
 

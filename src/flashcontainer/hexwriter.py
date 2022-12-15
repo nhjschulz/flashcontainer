@@ -31,7 +31,7 @@
 from intelhex import IntelHex
 from typing import Dict
 
-import datamodel as DM
+import flashcontainer.datamodel as DM
 
 class HexWriter(DM.Walker):
 

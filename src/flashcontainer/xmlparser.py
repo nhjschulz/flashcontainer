@@ -30,8 +30,8 @@
 #
 
 import lxml.etree as ET
-import datamodel as DM
-from byteconv import ByteConvert
+import flashcontainer.datamodel as DM
+from flashcontainer.byteconv import ByteConvert
 
 import logging
 import pathlib

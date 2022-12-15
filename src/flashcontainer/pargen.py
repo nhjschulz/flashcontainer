@@ -30,11 +30,11 @@
 
 __version__ = "0.0.1"
 
-from  xmlparser import XmlParser
-import datamodel as DM
-import hexwriter
-import cfilewriter
-import gnuldwriter
+from flashcontainer.xmlparser import XmlParser
+import flashcontainer.datamodel as DM
+import flashcontainer.hexwriter
+import flashcontainer.cfilewriter
+import flashcontainer.gnuldwriter
 
 import datetime
 import argparse

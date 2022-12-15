@@ -1,6 +1,5 @@
 import pytest
-import xmlparser as XP
-import datamodel as DM
+import flashcontainer.datamodel as DM
 
 import crc
 
