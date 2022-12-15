@@ -30,11 +30,10 @@
 
 __version__ = "0.0.1"
 
+from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
-import flashcontainer.datamodel as DM
-import flashcontainer.hexwriter
-import flashcontainer.cfilewriter
-import flashcontainer.gnuldwriter
+from flashcontainer.cfilewriter import CFileWriter
+from flashcontainer.gnuldwriter import GnuLdWriter
 
 import datetime
 import argparse
@@ -81,7 +80,7 @@ def pargen() -> int:
             my_params = copy.deepcopy(param)
             my_params.update({"FN" : args.ihex[0]})
             print(f"Generating intelhex file {args.ihex[0]}")
-            writer = hexwriter.HexWriter(model, my_params)
+            writer = HexWriter(model, my_params)
             writer.run()
         except Exception as exc:
             logging.exception(exc)
@@ -92,7 +91,7 @@ def pargen() -> int:
             my_params = copy.deepcopy(param)
             my_params.update({"FN" : args.csrc[0]})
             print(f"Generating C-files {args.csrc[0]}.[ch]")
-            writer = cfilewriter.CFileWriter(model, my_params)
+            writer = CFileWriter(model, my_params)
             writer.run()
         except Exception as exc:
             logging.exception(exc)
@@ -103,7 +102,7 @@ def pargen() -> int:
             my_params = copy.deepcopy(param)
             my_params.update({"FN" : args.gld[0]})
             print(f"Generating GNU Linker script {args.gld[0]}")
-            writer = gnuldwriter.GnuLdWriter(model, my_params)
+            writer = GnuLdWriter(model, my_params)
             writer.run()
         except Exception as exc:
             logging.exception(exc)
