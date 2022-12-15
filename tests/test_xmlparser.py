@@ -1,5 +1,6 @@
 import pytest
-import flashcontainer.xmlparser as XP
+from flashcontainer import xmlparser as XP
+
 
 def test_parse_int():
     assert XP.XmlParser._parse_int("0") == 0
@@ -18,6 +19,7 @@ def test_parse_int():
 
     with pytest.raises(Exception) as e_info:
         XP.XmlParser._parse_int("0x1X")
+
 
 def test_calc_addr():
     assert XP.XmlParser.calc_addr(0x100, 0x0, "0x0", 1) == 0x100   # numeric offset applied to base

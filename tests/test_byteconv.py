@@ -1,7 +1,6 @@
-import pytest
+from flashcontainer import datamodel as DM
+from flashcontainer.byteconv import ByteConvert
 
-import flashcontainer.datamodel as DM
-from  flashcontainer.byteconv import ByteConvert
 
 def test_convert_valstr_to_byte():
 
