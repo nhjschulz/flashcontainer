@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pd:parameterDef xmlns:pd="http://www.schulznorbert.de/1.0/pargen"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.schulznorbert.de/1.0/pargen ../xsd/pargen_1.0.xsd" >
+
+    <pd:container name="CodeFlash" at="0x80000000">
+        <pd:blocks>
+            <pd:block offset="0x00000000" name="paraBlkQm" endianness="LE" fill="0x55">
+                <pd:comment>This block is used for non-safety related parameters only.</pd:comment>
+                <pd:header id="0xFFFF" major="1" minor="0" version="0" length="0x100"></pd:header>
+                <pd:data>
+                    <pd:param offset="0x10" name="tag" type="uint16">
+                        <pd:comment>Integer array example</pd:comment>
+                        <pd:value>[1,2,3,4,5,6,7,8]</pd:value>
+                    </pd:param>
+                </pd:data>
+            </pd:block>
+
+            <pd:block name="paraBlkSafety" offset="." endianness="LE" align="512" fill="0xab">
+                <pd:comment>This block is used for any-safety related parameters.</pd:comment>
+                <pd:header id="0x0D00" major="1" minor="0" version="0" length="0x200"/>
+                <pd:data>
+                    <pd:param offset="0x10" name="array" type="float32" align="4">
+                        <pd:value>[1.0,2.1,3.2,4.5,5.4,6.5]</pd:value>
+                    </pd:param>
+                    <pd:param offset="0x100" name="hello" type="utf8">
+                        <pd:value>"Hello world!"</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="val" type="uint16" align="2">
+                        <pd:value>0x1604</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="birthday" type="float32">
+                        <pd:value>0.160469</pd:value>
+                    </pd:param>
+                </pd:data>
+            </pd:block>
+        </pd:blocks>
+
+    </pd:container>
+</pd:parameterDef>

@@ -1,0 +1,70 @@
+@startuml Pargen Overview
+
+database database [
+ Definition
+ in <b>XML
+
+===
+xsd validation
+]
+
+Package ParGen {
+left to right direction
+
+    ["pargen.py"]
+    Package Writer {
+        ["Hex Writer"]
+        ["C-File Writer"]
+         ["GNU LD Writer"]
+    }
+}
+
+database --> ["pargen.py"]
+["pargen.py"] --> ["Hex Writer"]
+["pargen.py"] --> ["C-File Writer"]
+["pargen.py"] --> ["GNU LD Writer"]
+
+database hex [
+    Hex-file
+]
+
+database C [
+    C-Source
+]
+
+database  H [
+    C-Header
+]
+
+database  LD [
+    Linker-Script
+]
+
+["Hex Writer"] --> hex
+["C-File Writer"] --> C
+["C-File Writer"] --> H
+["GNU LD Writer"] --> LD
+
+Actor Linker [
+    Linker
+]
+
+Actor Programmer [
+    Programmer
+]
+
+Actor APP [
+    Application
+]
+
+Actor UT [
+    Test Env
+]
+
+LD --> Linker
+hex --> Programmer
+H --> APP
+H --> UT
+C --> UT
+
+@enduml
