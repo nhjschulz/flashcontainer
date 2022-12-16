@@ -31,7 +31,7 @@ def test_calc_addr():
     assert XP.XmlParser.calc_addr(0x101, 0xff, "0x1", 8) == 0x108  # numeric offset applied to base
     assert XP.XmlParser.calc_addr(0x101, 0xff, "0x1", 16) == 0x110  # numeric offset applied to base
     assert XP.XmlParser.calc_addr(0x102, 0xff, "0x1", 32) == 0x120  # numeric offset applied to base
-    assert XP.XmlParser.calc_addr(0x103, 0xff, "0x1", 64) == 0x140 #  numeric offset applied to base
+    assert XP.XmlParser.calc_addr(0x103, 0xff, "0x1", 64) == 0x140  # numeric offset applied to base
 
     # "."  = run + align
     assert XP.XmlParser.calc_addr(0x10, 0x101, ".", 1) == 0x101  # offset  added to run

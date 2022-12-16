@@ -40,20 +40,6 @@ import os
 schema_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "pargen_1.0.xsd")
 NS = '{http://www.schulznorbert.de/1.0/pargen}'
 
-# little endian struct formatter to bytes
-STRUCT_FMTS= {
-    DM.ParamType.uint32 : "L",
-    DM.ParamType.uint8 : "B",
-    DM.ParamType.uint16 : "H",
-    DM.ParamType.uint64 : "Q",
-    DM.ParamType.int8 : "b",
-    DM.ParamType.int16 : "h",
-    DM.ParamType.int32 : "l",
-    DM.ParamType.int64 : "q",
-    DM.ParamType.float32 : "f",
-    DM.ParamType.float64 : "d",
-    DM.ParamType.utf8 : "1c"
-}
 
 class XmlParser:
     def __init__(self):
@@ -64,7 +50,7 @@ class XmlParser:
         return cls.parse(file)
 
     @staticmethod
-    def parse(file : str) -> DM.Model:
+    def parse(file: str) -> DM.Model:
         """ Parse given XML file into datamodel. """
         model = None
         try:
@@ -85,43 +71,43 @@ class XmlParser:
         return model
 
     @staticmethod
-    def _parse_int(val_str : str) -> int:
+    def _parse_int(val_str: str) -> int:
         """ Parse int as decimal or hex."""
 
         try:
-            return int(val_str, base = 10)
+            return int(val_str, base=10)
         except ValueError:
-            return int(val_str, base = 16)
+            return int(val_str, base=16)
 
     @staticmethod
-    def get_alignment(element : ET.Element) -> int:
+    def get_alignment(element: ET.Element) -> int:
         """Parse alignment argument."""
 
         val_str = element.get("align")
         return 1 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
-    def get_endianess(element : ET.Element) -> DM.Endianness:
+    def get_endianess(element: ET.Element) -> DM.Endianness:
         """Parse alignment argument."""
 
         val_str = element.get("endianness")
-        if  val_str is not None:
+        if val_str is not None:
             return DM.Endianness.LE if val_str == "LE" else DM.Endianness.BE
 
         else:
             return DM.Endianness.LE
 
     @staticmethod
-    def get_fill(element : ET.Element) -> int:
+    def get_fill(element: ET.Element) -> int:
         """Parse fill argument."""
 
         val_str = element.get("fill")
         return 0x00 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
-    def _build_parameters(block : DM.Block, element) -> None:
+    def _build_parameters(block: DM.Block, element) -> None:
         data_element = element.find(f"{NS}data")
-        running_addr = block.addr + 16 # 16 = sizeof header
+        running_addr = block.addr + 16  # 16 = sizeof header
 
         for parameter_element in data_element:
 
@@ -131,7 +117,7 @@ class XmlParser:
                 parameter_element.get("offset"),
                 XmlParser.get_alignment(parameter_element))
 
-            if (offset > running_addr):  # we need to insert a gap
+            if (offset > running_addr):   # we need to insert a gap
                 gap = DM.Parameter.as_gap(running_addr, offset-running_addr, block.fill)
                 logging.info(f"    Gap {gap}")
                 block.add_parameter(gap)
@@ -150,14 +136,14 @@ class XmlParser:
             logging.info(f"    Adding {parameter}")
             running_addr = offset + len(bytes)
 
-        end_addr = block.addr + (block.header.length-4) # 4 byte crc at end
+        end_addr = block.addr + (block.header.length-4)  # 4 byte crc at end
         if (end_addr > running_addr):  # we need to insert a gap at the end
-                gap = DM.Parameter.as_gap(running_addr, end_addr-running_addr, block.fill)
-                logging.info(f"    Gap {gap}")
-                block.add_parameter(gap)
+            gap = DM.Parameter.as_gap(running_addr, end_addr-running_addr, block.fill)
+            logging.info(f"    Gap {gap}")
+            block.add_parameter(gap)
 
     @staticmethod
-    def _build_model(root : ET.Element, filename : str) -> DM.Model:
+    def _build_model(root: ET.Element, filename: str) -> DM.Model:
         model = DM.Model(filename)
 
         # iterate over container list
@@ -167,14 +153,14 @@ class XmlParser:
 
             container = DM.Container(name, address)
             logging.info(f"Loading container definition for {name}")
-            blocks = XmlParser._build_blocks(container, element)
+            XmlParser._build_blocks(container, element)
 
             model.add_container(container)
 
         return model
 
     @staticmethod
-    def calc_addr(base_addr: int, running_addr : int, offset_str : str, alignment: int) -> int:
+    def calc_addr(base_addr: int, running_addr: int, offset_str: str, alignment: int) -> int:
         if ("." == offset_str):
             result_addr = running_addr
 
@@ -189,7 +175,7 @@ class XmlParser:
         return result_addr
 
     @staticmethod
-    def _build_blocks(container : DM.Container, element : ET.Element) -> None:
+    def _build_blocks(container: DM.Container, element: ET.Element) -> None:
         """ Load block list for given container """
 
         running_addr = container.addr
@@ -197,7 +183,7 @@ class XmlParser:
 
         for element in blocks_element:
             align = XmlParser.get_alignment(element)
-            block_addr = XmlParser.calc_addr( container.addr, running_addr, element.get("offset"), align)
+            block_addr = XmlParser.calc_addr(container.addr, running_addr, element.get("offset"), align)
             name = element.get("name")
             endianess = XmlParser.get_endianess(element)
             fill = XmlParser.get_fill(element)
@@ -225,4 +211,3 @@ class XmlParser:
             container.add_block(block)
 
             running_addr += length
-
