@@ -35,47 +35,48 @@ import json5
 import struct
 
 #  Map model types to struct formats
-_STRUCT_FMTS= {
-    DM.ParamType.uint32 : "L",
-    DM.ParamType.uint8 : "B",
-    DM.ParamType.uint16 : "H",
-    DM.ParamType.uint64 : "Q",
-    DM.ParamType.int8 : "b",
-    DM.ParamType.int16 : "h",
-    DM.ParamType.int32 : "l",
-    DM.ParamType.int64 : "q",
-    DM.ParamType.float32 : "f",
-    DM.ParamType.float64 : "d",
-    DM.ParamType.utf8 : "1c"
+_STRUCT_FMTS = {
+    DM.ParamType.uint32: "L",
+    DM.ParamType.uint8: "B",
+    DM.ParamType.uint16: "H",
+    DM.ParamType.uint64: "Q",
+    DM.ParamType.int8: "b",
+    DM.ParamType.int16: "h",
+    DM.ParamType.int32: "l",
+    DM.ParamType.int64: "q",
+    DM.ParamType.float32: "f",
+    DM.ParamType.float64: "d",
+    DM.ParamType.utf8: "1c"
 }
 
 #  Map model types to sizeof() in bytes
 _SIZE_MAPPING = {
-    DM.ParamType.uint32  : 4,
-    DM.ParamType.uint8   : 1,
-    DM.ParamType.uint16  : 2,
-    DM.ParamType.uint64  : 8,
-    DM.ParamType.int8    : 1,
-    DM.ParamType.int16   : 2,
-    DM.ParamType.int32   : 4,
-    DM.ParamType.int64   : 8,
-    DM.ParamType.float32 : 4,
-    DM.ParamType.float64 : 8,
-    DM.ParamType.utf8    : 1,
+    DM.ParamType.uint32: 4,
+    DM.ParamType.uint8: 1,
+    DM.ParamType.uint16: 2,
+    DM.ParamType.uint64: 8,
+    DM.ParamType.int8: 1,
+    DM.ParamType.int16: 2,
+    DM.ParamType.int32: 4,
+    DM.ParamType.int64: 8,
+    DM.ParamType.float32: 4,
+    DM.ParamType.float64: 8,
+    DM.ParamType.utf8: 1,
 }
+
 
 class ByteConvert:
     def __init__(self):
         pass
 
     @staticmethod
-    def get_type_size(ptype : DM.ParamType) -> int:
+    def get_type_size(ptype: DM.ParamType) -> int:
         """Get bytesize of type"""
 
         return _SIZE_MAPPING.get(ptype)
 
     @staticmethod
-    def json_to_bytes(ptype : DM.ParamType,  endianess : DM.Endianness, value_str : str ) -> bytearray:
+    def json_to_bytes(ptype: DM.ParamType,  endianess: DM.Endianness, value_str: str) -> bytearray:
         """Convert from json string into raw bytes """
 
         result = bytearray()
@@ -85,7 +86,7 @@ class ByteConvert:
         fmt += _STRUCT_FMTS[ptype]
 
         if (variant == list):  # == array
-            for i in range(0,len(from_json)):
+            for i in range(0, len(from_json)):
                 result.extend(struct.pack(fmt, from_json[i]))
 
         elif (variant in [int, float]):
@@ -102,7 +103,7 @@ class ByteConvert:
 
         return result
 
-    def bytes_to_c_init(ptype : DM.ParamType,  endianess : DM.Endianness, data : bytearray) -> str:
+    def bytes_to_c_init(ptype: DM.ParamType,  endianess: DM.Endianness, data: bytearray) -> str:
         """Convert raw data to C-Language initializer"""
 
         result = ""
@@ -123,16 +124,14 @@ class ByteConvert:
             elif (isinstance(val, bytes)):
                 result += f"0x{val.hex().upper()}"
             else:
-                 result += f"0x{val :0X}"
+                result += f"0x{val:0X}"
 
             if i < (entries-1):
                 result += ', '
                 if 3 == (i % 4):
-                    result +="\n    "
+                    result += "\n    "
 
         if 1 < entries:
             result += "\n}"
 
         return result
-
-

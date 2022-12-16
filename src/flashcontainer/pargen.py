@@ -42,6 +42,7 @@ import copy
 import uuid
 import sys
 
+
 def pargen() -> int:
     """ Parameter generator tool entry point"""
 
@@ -50,35 +51,34 @@ def pargen() -> int:
     about = 'A tool for generating flashable parameter container.'
     name = "pargen"
 
-    parser = argparse.ArgumentParser(prog = name, description=about)
+    parser = argparse.ArgumentParser(prog=name, description=about)
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    parser.add_argument('--ihex', nargs=1,help="Generate intelhex file with given name.")
-    parser.add_argument('--csrc', nargs=1,help="Generate c/c++ header and source file using given basename.")
-    parser.add_argument('--gld', nargs=1,help="Generate GNU linker include file for parameter symbol generation.")
+    parser.add_argument('--ihex', nargs=1, help="Generate intelhex file with given name.")
+    parser.add_argument('--csrc', nargs=1, help="Generate c/c++ header and source file using given basename.")
+    parser.add_argument('--gld', nargs=1, help="Generate GNU linker include file for parameter symbol generation.")
     parser.add_argument('file',   nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
 
-    print(f"{name} {__version__} : {about}")
-    print ("copyright (c) 2022 haju.schulz@online.de\n")
-
+    print(f"{name} {__version__}: {about}")
+    print("copyright (c) 2022 haju.schulz@online.de\n")
 
     model = XmlParser.from_file(args.file[0])
 
     # writer context options
     param = {
-        "PNAME"   : name,
-        "VERSION" : __version__,
-        "INPUT"   : args.file[0],
-        "GUID"    : uuid.uuid4(),
-        "CMDLINE" : ' '.join(sys.argv[0:]),
+        "PNAME": name,
+        "VERSION": __version__,
+        "INPUT": args.file[0],
+        "GUID": uuid.uuid4(),
+        "CMDLINE": ' '.join(sys.argv[0:]),
         "DATETIME": datetime.datetime.now()
         }
 
     if (args.ihex is not None):
         try:
             my_params = copy.deepcopy(param)
-            my_params.update({"FN" : args.ihex[0]})
+            my_params.update({"FN": args.ihex[0]})
             print(f"Generating intelhex file {args.ihex[0]}")
             writer = HexWriter(model, my_params)
             writer.run()
@@ -89,7 +89,7 @@ def pargen() -> int:
     if (args.csrc is not None):
         try:
             my_params = copy.deepcopy(param)
-            my_params.update({"FN" : args.csrc[0]})
+            my_params.update({"FN": args.csrc[0]})
             print(f"Generating C-files {args.csrc[0]}.[ch]")
             writer = CFileWriter(model, my_params)
             writer.run()
@@ -100,7 +100,7 @@ def pargen() -> int:
     if (args.gld is not None):
         try:
             my_params = copy.deepcopy(param)
-            my_params.update({"FN" : args.gld[0]})
+            my_params.update({"FN": args.gld[0]})
             print(f"Generating GNU Linker script {args.gld[0]}")
             writer = GnuLdWriter(model, my_params)
             writer.run()
@@ -110,11 +110,13 @@ def pargen() -> int:
 
     return 0
 
+
 if __name__ == "__main__":
     try:
         pargen()
         print("Done.")
         sys.exit(0)
+
     except Exception as exc:
         print("Failed.")
         sys.exit(1)

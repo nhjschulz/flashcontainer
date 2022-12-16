@@ -29,9 +29,12 @@
 #
 
 from enum import Enum
+from typing import Dict
+
 import struct
 import logging
 import crc
+
 
 class Version:
     """Version number data type"""
@@ -41,9 +44,9 @@ class Version:
         self.minor = minor
         self.version = version
 
-
     def __print__(self):
         return f"{self.major}.{self.minor}.{self.version}"
+
 
 class BlockHeader:
     """Parameter block header container """
@@ -53,18 +56,20 @@ class BlockHeader:
         self.version = version
         self.length = length
 
+
 class Endianness(Enum):
     """Byte ordering """
 
     LE = 1    # little endian (like x86)
     BE = 2    # big endian (like Motorola 68k)
 
+
 class Block:
     """Block data container """
 
-    _crc_calc = crc.Calculator(crc.Crc32.CRC32) # IEEE 802.3 crc32
+    _crc_calc = crc.Calculator(crc.Crc32.CRC32)  # IEEE 802.3 crc32
 
-    def __init__(self, addr : int, name : str,  endianess : Endianness, fill : int):
+    def __init__(self, addr: int, name: str,  endianess: Endianness, fill: int):
         self.addr = addr
         self.name = name
         self.header = None
@@ -79,7 +84,7 @@ class Block:
     def add_parameter(self, parameter):
         self.parameter.append(parameter)
 
-    def set_comment(self, comment : str) -> None:
+    def set_comment(self, comment: str) -> None:
         """Set optional comment"""
 
         self.comment = comment
@@ -119,6 +124,7 @@ class Block:
     def __str__(self):
         return f"Block({self.name} @ {hex(self.addr)})"
 
+
 class ParamType(Enum):
     uint32 = 1
     uint8 = 2
@@ -130,13 +136,14 @@ class ParamType(Enum):
     int64 = 8
     float32 = 9
     float64 = 10
-    utf8    = 11
+    utf8 = 11
     GAPFILL = 12
+
 
 class Parameter:
     """Parameter definition data container"""
 
-    def __init__(self, offset : int, name : str, type : ParamType, value : bytearray):
+    def __init__(self, offset: int, name: str, type: ParamType, value: bytearray):
         self.offset = offset
         self.name = name
         self.type = type
@@ -144,16 +151,18 @@ class Parameter:
         self.comment = None
 
     @classmethod
-    def as_gap(cls, address : int, length : int, pattern : int):
+    def as_gap(cls, address: int, length: int, pattern: int):
         val = bytearray([pattern & 0xFF] * length)
         return Parameter(address, None, ParamType.GAPFILL, val)
 
-    def set_comment(self, comment : str) -> None:
+    def set_comment(self, comment: str) -> None:
         """Set optional comment"""
         self.comment = comment
 
     def __str__(self):
-        return f"{self.name} @ {hex(self.offset)} = {self.value.hex()} len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */"
+        return f"{self.name} @ {hex(self.offset)} = {self.value.hex()} "\
+            f"len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */"
+
 
 class Container:
     """Data container for a parameter block container"""
@@ -169,6 +178,7 @@ class Container:
     def __str__(self):
         return f"{self.name} @ {hex(self.addr)}"
 
+
 class Model:
     """Top level model data container"""
 
@@ -182,7 +192,6 @@ class Model:
     def __str__(self):
         return f"Model({self.name} {self.container})"
 
-from typing import Dict
 
 class Walker:
     """A data model walker class
@@ -193,7 +202,7 @@ class Walker:
     real processing.
     """
 
-    def __init__(self, model : Model, options : Dict[str, any]) :
+    def __init__(self, model: Model, options: Dict[str, any]):
         self.options = options
         self.model = model
 
@@ -212,39 +221,39 @@ class Walker:
 
         pass
 
-    def begin_container(self, container : Container) -> None:
+    def begin_container(self, container: Container) -> None:
         """Run actions when entering container """
 
         pass
 
-    def end_container(self, container : Container) -> None:
+    def end_container(self, container: Container) -> None:
         """Run actions when leaving container """
 
         pass
 
-    def begin_block(self, block : Block) -> None:
+    def begin_block(self, block: Block) -> None:
         """Run actions when entering block """
 
         pass
 
-    def end_block(self, block : Block) -> None:
+    def end_block(self, block: Block) -> None:
         """Run actions when leaving block """
 
         pass
 
-    def begin_parameter(self, param : Parameter) -> None:
+    def begin_parameter(self, param: Parameter) -> None:
         pass
 
-    def end_parameter(self, param : Parameter) -> None:
+    def end_parameter(self, param: Parameter) -> None:
         pass
 
-    def begin_gap(self, param : Parameter) -> None:
+    def begin_gap(self, param: Parameter) -> None:
         pass
 
-    def end_gap(self, param : Parameter) -> None:
+    def end_gap(self, param: Parameter) -> None:
         pass
 
-    def run(self) :
+    def run(self):
         """Walk the data model."""
 
         self.pre_run()
@@ -279,7 +288,6 @@ class Walker:
                 self.end_block(block)
                 self.ctx_block = None
                 logging.debug(f"end_block({block})")
-
 
             self.end_container(container)
             self.ctx_container = None
