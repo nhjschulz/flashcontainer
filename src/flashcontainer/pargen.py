@@ -28,7 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
