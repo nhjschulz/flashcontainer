@@ -75,6 +75,9 @@ def pargen() -> int:
         "DATETIME": datetime.datetime.now()
         }
 
+    if model.validate(param) is False:
+        raise Exception("Model Validation Failure")
+
     if (args.ihex is not None):
         try:
             my_params = copy.deepcopy(param)

@@ -192,6 +192,12 @@ class Model:
     def __str__(self):
         return f"Model({self.name} {self.container})"
 
+    def validate(self, options: Dict[str, any]) -> bool:
+        validator = Validator(self, options)
+        validator.run()
+
+        return validator.result
+
 
 class Walker:
     """A data model walker class
@@ -294,3 +300,51 @@ class Walker:
 
         logging.debug(f"end_container({container})")
         self.post_run()
+
+
+class Validator(Walker):
+    """Perform checks on the model to detect errors like overlapping parameter."""
+    def __init__(self, model: Model, options: Dict[str, any]):
+        super().__init__(model, options)
+        self.result = True
+        self.last_param = None
+
+    def begin_block(self, block: Block):
+        self.last_param = None
+
+    def begin_parameter(self, param: Parameter):
+
+        block_end = self.ctx_block.addr + self.ctx_block.header.length
+
+        if param.offset > block_end:
+            self.error(
+                f" parameter {param.name} offset 0x{param.offset-self.ctx_block.addr:0X} is out of block range.")
+
+        elif (param.offset + len(param.value)) > block_end:
+            self.error(
+                f" parameter '{param.name}' data exceeds block range by "
+                f"{param.offset + len(param.value) - block_end} bytes.")
+
+        if self.last_param is not None:
+            end_last = self.last_param.offset + len(self.last_param.value)
+            if (param.offset < end_last):
+
+                self.error(
+                    f" parameter '{param.name}' overlaps with '{self.last_param.name}'"
+                    f" @ 0x{self.last_param.offset - self.ctx_block.addr:0X}.")
+
+        self.last_param = param
+
+    def error(self, msg: str) -> None:
+        "issue error message"
+        pfx = ""
+
+        if self.ctx_container is not None:
+            pfx += f"{self.ctx_container.name}:"
+
+            if self.ctx_block is not None:
+                pfx += f"{self.ctx_block.name}"
+
+        logging.error(pfx + msg)
+
+        self.result = False
