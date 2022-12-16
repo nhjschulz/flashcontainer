@@ -6,8 +6,7 @@ It allows to alter/update parameter values without recompilations.
 
 ## Concept and Planned Features
 
-![Concept](./Concept.png)
-
+![Concept](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/nhjschulz/flashcontainer/master/overview.plantuml)
 
 * Read input from a schema validated XML file
 * Generate C-Source stubs for embedding into the application source amd testing environments
@@ -24,15 +23,20 @@ checked out sandbox folder:
 ### MacOS/Linux
 
     python3 -m venv .venv
-    python3 -m pip install -r requirements.txt
     source .venv/bin/activate
 
 ### Windows
 
     python -m venv .venv
-    python -m pip install -r requirements.txt
     .venv\Scripts\activate.bat (or Activate.ps1 for powershell)
 
+## Create a Development Editable Install
+
+An editable install is needed for running the unittests and development of the package itself.
+It installs the package in the local virtual environment, but uses the python files form the
+src folder.
+
+    python3 -m pip install -e .
 ## Build a Installation Package
 
 An installable wheel file can be created using the build package and the following commands:
@@ -44,14 +48,6 @@ The wheel file will be generated in the dist folder:
 
     ls dist
     flashcontainer-0.0.1-py3-none-any.whl   flashcontainer-0.0.1.tar.gz
-
-## Create a Development Editable Install
-
-An editable install is needed for running the unittests and development of the package itself.
-It installs the package in the local virtual environment, but uses the python files form the
-src folder.
-
-    python3 -m pip install -e .
 
 The parameter generator tool can then by called on cmdline using 
 
