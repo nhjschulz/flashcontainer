@@ -14,77 +14,38 @@ It allows to alter/update parameter values without recompilations.
 * Generate GNU linker include file for mapping the parameter to absolute addresses
 * Generate A2L fragments for accessing the parameters from AUTOSAR test environments
 
-## Installing Python Dependencies
+## Installation
 
-An example configuration is in the 'example' folder. To run it make sure to have
-all dependencies from requirements.txt installed. Run the following inside the
-checked out sandbox folder:
+The package is available on Pypi and can be installed using
 
-### MacOS/Linux
+    pip install flashcontainer
 
-    python3 -m venv .venv
-    source .venv/bin/activate
+A python 3.8 or higher version is required.
 
-### Windows
-
-    python -m venv .venv
-    .venv\Scripts\activate.bat (or Activate.ps1 for powershell)
-
-## Create a Development Editable Install
-
-An editable install is needed for running the unittests and development of the package itself.
-It installs the package in the local virtual environment, but uses the python files form the
-src folder.
-
-    python3 -m pip install -e .
-## Build a Installation Package
-
-An installable wheel file can be created using the build package and the following commands:
-    
-    python3 -m pip install --upgrade build
-    python3 -m build
-
-The wheel file will be generated in the dist folder:
-
-    ls dist
-    flashcontainer-0.0.1-py3-none-any.whl   flashcontainer-0.0.1.tar.gz
-
-The parameter generator tool can then by called on cmdline using 
+The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
-    usage: pargen [-h] [--version] [--ihex IHEX] [--csrc CSRC] [--gld GLD] file
-
     A tool for generating flashable parameter container.
 
     positional arguments:
-        file         XML parameter definition file
+      file                  XML parameter definition file
 
-    options:
-        -h, --help   show this help message and exit
-        --version    show program's version number and exit
-        --ihex IHEX  Generate intelhex file with given name.
-        --csrc CSRC  Generate c/c++ header and source file using given basename.
-         --gld GLD    Generate GNU linker include file for parameter symbol generation.    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --ihex                Generate intelhex file
+      --csrc                Generate c/c++ header and source files
+      --gld                 Generate GNU linker include file for parameter symbol generation.
+      --dump                Generate pyHexDump print configuration file.
+      --destdir DESTDIR, -o DESTDIR
+                            Specify output directory for generated files
+      --filename FILENAME, -f FILENAME
+                            Set basename for generated files.
 
-## Running the Example
+## Example Usage
 
-Go to the folder example and run the "run.bat" or "run.sh" script. It should create
-the following output:
+TODO
 
-    pargen 0.0.1 : A tool for generating flashable parameter container.
-    copyright (c) 2022 haju.schulz@online.de
-
-    Generating intelhex file example.hex
-    Generating C-files param.[ch]
-    Generating GNU Linker script example.ld
-    Done.
-
-The tools parses the example.xml parameter definition file and converts it into
-* Intel hex files for flashing
-* C/H files for accessing the parameter in applications (H-File) and unittests (C-File)
-* GNU Linker script for generating parameter symbols at the flash adresses
-
-# Issues, Ideas And Bugs
+## Issues, Ideas And Bugs
 
 If you have further ideas or you found some bugs, great! Create an [issue](https://github.com/issues) or if you are able and willing to fix it by yourself, clone the repository and create a pull request.
 
@@ -95,4 +56,4 @@ Consider also the different licenses of used third party libraries too!
 
 ## Contribution
 
-We welcome contribution, but unless you explicitly state otherwise: Any contribution intentionally submitted for inclusion in the work by you, shall be licensed as above, without anyadditional terms or conditions.
+We welcome contribution, but unless you explicitly state otherwise: Any contribution intentionally submitted for inclusion in the work by you, shall be licensed as above, without any additional terms or conditions.

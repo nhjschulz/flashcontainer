@@ -28,7 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
@@ -38,9 +38,18 @@ from flashcontainer.gnuldwriter import GnuLdWriter
 import datetime
 import argparse
 import logging
-import copy
 import uuid
 import sys
+import os
+from pathlib import Path
+
+# List of output writers
+_WRITER = [
+    {"key": "ihex", "class": HexWriter, "help": "Generate intelhex file"},
+    {"key": "csrc", "class": CFileWriter, "help": "Generate c/c++ header and source files"},
+    {"key": "gld", "class": GnuLdWriter, "help": "Generate GNU linker include file for parameter symbol generation."},
+    {"key": "dump", "class": None, "help": "Generate pyHexDump print configuration file."}
+]
 
 
 def pargen() -> int:
@@ -52,16 +61,32 @@ def pargen() -> int:
     name = "pargen"
 
     parser = argparse.ArgumentParser(prog=name, description=about)
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    parser.add_argument('--ihex', nargs=1, help="Generate intelhex file with given name.")
-    parser.add_argument('--csrc', nargs=1, help="Generate c/c++ header and source file using given basename.")
-    parser.add_argument('--gld', nargs=1, help="Generate GNU linker include file for parameter symbol generation.")
-    parser.add_argument('file',   nargs=1, help='XML parameter definition file')
+
+    for writer in _WRITER:
+        parser.add_argument("--" + writer["key"], action='store_true', help=writer["help"])
+
+    parser.add_argument(
+        '--destdir', '-o', nargs=1,
+        help='Specify output directory for generated files', default=str(Path.cwd()))
+    parser.add_argument(
+        '--filename', '-f', nargs=1,
+        help='Set basename for generated files.')
+
+    parser.add_argument('file', nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
 
     print(f"{name} {__version__}: {about}")
     print("copyright (c) 2022 haju.schulz@online.de\n")
+
+    # Create output directory (if necessary)
+    destdir = Path.resolve(Path(args.destdir[0]))
+    destdir.mkdir(parents=True, exist_ok=True)
+
+    outfilename = args.filename
+    if (outfilename is None):
+        outfilename = os.path.basename(args.file[0])
+    outfilename = Path(outfilename).stem
 
     model = XmlParser.from_file(args.file[0])
 
@@ -72,46 +97,18 @@ def pargen() -> int:
         "INPUT": args.file[0],
         "GUID": uuid.uuid4(),
         "CMDLINE": ' '.join(sys.argv[0:]),
-        "DATETIME": datetime.datetime.now()
+        "DATETIME": datetime.datetime.now(),
+        "MODEL": model,
+        "DESTDIR": destdir,
+        "BASENAME": outfilename
         }
 
     if model.validate(param) is False:
-        raise Exception("Model Validation Failure")
+        sys.exit(2)
 
-    if (args.ihex is not None):
-        try:
-            my_params = copy.deepcopy(param)
-            my_params.update({"FN": args.ihex[0]})
-            print(f"Generating intelhex file {args.ihex[0]}")
-            writer = HexWriter(model, my_params)
-            writer.run()
-        except Exception as exc:
-            logging.exception(exc)
-            raise
-
-    if (args.csrc is not None):
-        try:
-            my_params = copy.deepcopy(param)
-            my_params.update({"FN": args.csrc[0]})
-            print(f"Generating C-files {args.csrc[0]}.[ch]")
-            writer = CFileWriter(model, my_params)
-            writer.run()
-        except Exception as exc:
-            logging.exception(exc)
-            raise
-
-    if (args.gld is not None):
-        try:
-            my_params = copy.deepcopy(param)
-            my_params.update({"FN": args.gld[0]})
-            print(f"Generating GNU Linker script {args.gld[0]}")
-            writer = GnuLdWriter(model, my_params)
-            writer.run()
-        except Exception as exc:
-            logging.exception(exc)
-            raise
-
-    return 0
+    for writer in _WRITER:
+        if getattr(args, writer["key"]):
+            writer["class"](model, param).run()
 
 
 if __name__ == "__main__":
@@ -121,5 +118,5 @@ if __name__ == "__main__":
         sys.exit(0)
 
     except Exception as exc:
-        print("Failed.")
+        logging.exception(exc)
         sys.exit(1)

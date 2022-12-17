@@ -22,5 +22,12 @@
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
             "--max-line-length=120"
+    ],
+    "cSpell.words": [
+        "flashcontainer"
+    ],
+    "cSpell.enabled": true,
+    "cSpell.enableFiletypes": [
+        "markdown"
     ]
 }
