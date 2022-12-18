@@ -34,6 +34,7 @@ from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
 from flashcontainer.cfilewriter import CFileWriter
 from flashcontainer.gnuldwriter import GnuLdWriter
+from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
 
 import datetime
 import argparse
@@ -48,7 +49,7 @@ _WRITER = [
     {"key": "ihex", "class": HexWriter, "help": "Generate intelhex file"},
     {"key": "csrc", "class": CFileWriter, "help": "Generate c/c++ header and source files"},
     {"key": "gld", "class": GnuLdWriter, "help": "Generate GNU linker include file for parameter symbol generation."},
-    {"key": "dump", "class": None, "help": "Generate pyHexDump print configuration file."}
+    {"key": "dump", "class": PyHexDumpWriter, "help": "Generate pyHexDump print configuration file."}
 ]
 
 
