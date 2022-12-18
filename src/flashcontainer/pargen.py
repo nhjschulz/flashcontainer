@@ -35,6 +35,7 @@ from flashcontainer.xmlparser import XmlParser
 from flashcontainer.cfilewriter import CFileWriter
 from flashcontainer.gnuldwriter import GnuLdWriter
 from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
+import flashcontainer.datamodel as DM
 
 import datetime
 import argparse
@@ -43,6 +44,7 @@ import uuid
 import sys
 import os
 from pathlib import Path
+from typing import List
 
 # List of output writers
 _WRITER = [
@@ -53,8 +55,8 @@ _WRITER = [
 ]
 
 
-def pargen() -> int:
-    """ Parameter generator tool entry point"""
+def pargen_cli() -> int:
+    """ cmd line interface for pagen"""
 
     logging.basicConfig(encoding='utf-8', level=logging.WARN)
 
@@ -80,22 +82,38 @@ def pargen() -> int:
     print(f"{name} {__version__}: {about}")
     print("copyright (c) 2022 haju.schulz@online.de\n")
 
+    writers = []
+
+    for writer in _WRITER:
+        if getattr(args, writer["key"]):
+            writers.append(writer["class"])
+
+    return pargen(
+        cfgfile=args.file[0],
+        filename=args.filename,
+        dir=Path(args.destdir[0]),
+        writers=writers)
+
+
+def pargen(cfgfile: str, filename: str, dir: Path, writers: List[DM.Walker]) -> int:
+    """ Parameter generator tool entry point"""
+
     # Create output directory (if necessary)
-    destdir = Path.resolve(Path(args.destdir[0]))
+    destdir = Path.resolve(dir)
     destdir.mkdir(parents=True, exist_ok=True)
 
-    outfilename = args.filename
+    outfilename = filename
     if (outfilename is None):
-        outfilename = os.path.basename(args.file[0])
+        outfilename = os.path.basename(cfgfile)
     outfilename = Path(outfilename).stem
 
-    model = XmlParser.from_file(args.file[0])
+    model = XmlParser.from_file(cfgfile)
 
     # writer context options
     param = {
-        "PNAME": name,
+        "PNAME": "pargen",
         "VERSION": __version__,
-        "INPUT": args.file[0],
+        "INPUT": cfgfile,
         "GUID": uuid.uuid4(),
         "CMDLINE": ' '.join(sys.argv[0:]),
         "DATETIME": datetime.datetime.now(),
@@ -105,18 +123,23 @@ def pargen() -> int:
         }
 
     if model.validate(param) is False:
-        sys.exit(2)
+        return 2
 
-    for writer in _WRITER:
-        if getattr(args, writer["key"]):
-            writer["class"](model, param).run()
+    if 0 == len(writers):
+        logging.warn("no writers defined, generating nothing.")
+        return 0
+
+    for writer in writers:
+        writer(model, param).run()
+
+    print("Done.")
+    return 0
 
 
 if __name__ == "__main__":
     try:
-        pargen()
-        print("Done.")
-        sys.exit(0)
+        ret = pargen_cli()
+        sys.exit(ret)
 
     except Exception as exc:
         logging.exception(exc)

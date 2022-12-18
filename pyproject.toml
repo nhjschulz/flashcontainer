@@ -40,7 +40,7 @@ test = [
 repository = "https://github.com/nhjschulz/parameter-container"
 
 [project.scripts]
-pargen = "flashcontainer.pargen:pargen"
+pargen = "flashcontainer.pargen:pargen_cli"
 
 [tool.pytest.ini_options]
 pythonpath = [
