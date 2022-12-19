@@ -34,6 +34,7 @@ from typing import Dict
 import struct
 import logging
 import crc
+from collections import namedtuple
 
 
 class Version:
@@ -348,3 +349,26 @@ class Validator(Walker):
         logging.error(pfx + msg)
 
         self.result = False
+
+
+# A tuple holding additional information for datamodel types
+#
+# fmt: format character used in struct.pack/unpack
+# size: # if bytes used by one elemnent of this type
+# witdh: preferned print width
+# ctype: C-Language type
+TypeData = namedtuple('TypeData', ['fmt', 'size', 'width', 'signed', 'ctype'])
+
+TYPE_DATA = {
+    ParamType.uint32:  TypeData("L", 4, 10, False, "uint32_t"),
+    ParamType.uint8:   TypeData("B", 1, 4, False, "uint8_t"),
+    ParamType.uint16:  TypeData("H", 2, 6, False, "uint16_t"),
+    ParamType.uint64:  TypeData("Q", 8, 18, False, "uint64_t"),
+    ParamType.int8:    TypeData("b", 1, 4, True, "int8_t"),
+    ParamType.int16:   TypeData("h", 2, 6, True, "int16_t"),
+    ParamType.int32:   TypeData("l", 4, 10, True, "int32_t"),
+    ParamType.int64:   TypeData("q", 8, 16, True, "int64_t"),
+    ParamType.float32: TypeData("f", 4, 12, True, "float"),
+    ParamType.float64: TypeData("d", 8, 16, True, "double"),
+    ParamType.utf8:    TypeData("1c", 1, 4, False, "char")
+}

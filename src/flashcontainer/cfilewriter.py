@@ -99,20 +99,6 @@ class CFileWriter(DM.Walker):
         self.cfile.close()
         self.hfile.close()
 
-    _TYPE_MAPPING = {
-        DM.ParamType.uint32: "uint32_t",
-        DM.ParamType.uint8: "uint8_t",
-        DM.ParamType.uint16: "uint16_t",
-        DM.ParamType.uint64: "uint64_t",
-        DM.ParamType.int8: "int8_t",
-        DM.ParamType.int16: "int16_t",
-        DM.ParamType.int32: "int32_t",
-        DM.ParamType.int64: "int64_t",
-        DM.ParamType.float32: "float",
-        DM.ParamType.float64: "double",
-        DM.ParamType.utf8: "char"
-    }
-
     def begin_block(self, block: DM.Block) -> None:
         """Write block comment and header """
 
@@ -138,8 +124,6 @@ class CFileWriter(DM.Walker):
             f"    0x{block.header.version.version:04X},\n"
             f"    0x00000000,\n"
             f"    0x{block.header.length:08X},\n"
-
-
             "}")
 
         self._write_both(";\n\n")
@@ -163,18 +147,13 @@ class CFileWriter(DM.Walker):
         self.hfile.write("extern ")
         self._write_both(
             f"volatile const "
-            f"{CFileWriter._TYPE_MAPPING.get(param.type)} "
+            f"{DM.TYPE_DATA[param.type].ctype} "
             f"{name}")
 
         element_size = ByteConvert.get_type_size(param.type)
         if (DM.ParamType.utf8 == param.type) or (element_size < len(param.value)):
             self._write_both(f"[{int(len(param.value)/ element_size)}]")
 
-        self._format_value(param)
-
         self.cfile.write(" = ")
         self.cfile.write(ByteConvert.bytes_to_c_init(param.type, self.ctx_block.endianess, param.value))
         self._write_both(";\n\n")
-
-    def _format_value(self, param: DM.Parameter) -> None:
-        """Format raw data as C-initializer"""

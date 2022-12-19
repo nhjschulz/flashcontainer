@@ -34,36 +34,6 @@ import flashcontainer.datamodel as DM
 import json5
 import struct
 
-#  Map model types to struct formats
-_STRUCT_FMTS = {
-    DM.ParamType.uint32: "L",
-    DM.ParamType.uint8: "B",
-    DM.ParamType.uint16: "H",
-    DM.ParamType.uint64: "Q",
-    DM.ParamType.int8: "b",
-    DM.ParamType.int16: "h",
-    DM.ParamType.int32: "l",
-    DM.ParamType.int64: "q",
-    DM.ParamType.float32: "f",
-    DM.ParamType.float64: "d",
-    DM.ParamType.utf8: "1c"
-}
-
-#  Map model types to sizeof() in bytes
-_SIZE_MAPPING = {
-    DM.ParamType.uint32: 4,
-    DM.ParamType.uint8: 1,
-    DM.ParamType.uint16: 2,
-    DM.ParamType.uint64: 8,
-    DM.ParamType.int8: 1,
-    DM.ParamType.int16: 2,
-    DM.ParamType.int32: 4,
-    DM.ParamType.int64: 8,
-    DM.ParamType.float32: 4,
-    DM.ParamType.float64: 8,
-    DM.ParamType.utf8: 1,
-}
-
 
 class ByteConvert:
     def __init__(self):
@@ -73,7 +43,7 @@ class ByteConvert:
     def get_type_size(ptype: DM.ParamType) -> int:
         """Get bytesize of type"""
 
-        return _SIZE_MAPPING.get(ptype)
+        return DM.TYPE_DATA[ptype].size
 
     @staticmethod
     def json_to_bytes(ptype: DM.ParamType,  endianess: DM.Endianness, value_str: str) -> bytearray:
@@ -83,7 +53,7 @@ class ByteConvert:
         from_json = json5.loads(value_str)
         variant = type(from_json)
         fmt = "<" if endianess == DM.Endianness.LE else ">"
-        fmt += _STRUCT_FMTS[ptype]
+        fmt += DM.TYPE_DATA[ptype].fmt
 
         if (variant == list):  # == array
             for i in range(0, len(from_json)):
@@ -103,13 +73,15 @@ class ByteConvert:
 
         return result
 
+    @staticmethod
     def bytes_to_c_init(ptype: DM.ParamType,  endianess: DM.Endianness, data: bytearray) -> str:
         """Convert raw data to C-Language initializer"""
 
         result = ""
-        item_size = ByteConvert.get_type_size(ptype)
+        type_data = DM.TYPE_DATA[ptype]
+        item_size = type_data.size
         fmt = "<" if endianess == DM.Endianness.LE else ">"
-        fmt += _STRUCT_FMTS[ptype] * (len(data) // item_size)
+        fmt += type_data.fmt * (len(data) // item_size)
 
         values = struct.unpack(fmt, data)
         entries = len(values)
@@ -120,11 +92,14 @@ class ByteConvert:
             val = values[i]
 
             if (isinstance(val, float)):
-                result += f"{val:.8f}"
+                result += f"{val:>{type_data.width}.8f}"
             elif (isinstance(val, bytes)):
                 result += f"0x{val.hex().upper()}"
             else:
-                result += f"0x{val:0X}"
+                if (type_data.signed):
+                    result += f"{val:>{type_data.width}}"
+                else:
+                    result += f"0x{val:0{2*type_data.size}X}"
 
             if i < (entries-1):
                 result += ', '

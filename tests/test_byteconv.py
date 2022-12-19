@@ -47,3 +47,41 @@ def test_convert_valstr_to_byte():
     assert ByteConvert.json_to_bytes(DM.ParamType.uint64, DM.Endianness.BE, "0x12345678abcdef99") == b'\x12\x34\x56\x78\xab\xcd\xef\x99'
 
     assert ByteConvert.json_to_bytes(DM.ParamType.int8, DM.Endianness.BE, "-127") == b'\x81'
+
+
+def _trim(text: str) -> str:
+    "remove newlines, tabls and multiple spaces from formatted string for easier compare"
+    result = text.replace('\r', '')
+    result = result.replace('\n', '')
+    result = result.replace('\t', '')
+    result = result.replace(' ', '')
+
+    return result
+
+
+def test_bytes_to_c_init():
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int8, DM.Endianness.LE, b'\x00')) == "0"
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int8, DM.Endianness.LE, b'\x00\x01')) == '{0,1}'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int16, DM.Endianness.LE, b'\xff\x11')) == '4607'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int16, DM.Endianness.LE, b'\xaa\xbb\xcc\xdd')) == '{-17494,-8756}'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int32, DM.Endianness.LE, b'\x00\x00\x00\x00')) == '0'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int32, DM.Endianness.LE, b'\xb2\x9e\x43\xff')) == '-12345678'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int32, DM.Endianness.LE, b'\xb2\x9e\x43\xff\xb1\x9e\x43\xff')) == '{-12345678,-12345679}'
+
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int8, DM.Endianness.BE, b'\x00')) == "0"
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int8, DM.Endianness.BE, b'\x00\x01')) == '{0,1}'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int16, DM.Endianness.BE, b'\xff\x11')) == '-239'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int16, DM.Endianness.BE, b'\xaa\xbb\xcc\xdd')) == '{-21829,-13091}'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int32, DM.Endianness.BE, b'\x00\x00\x00\x00')) == '0'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int32, DM.Endianness.BE, b'\xb2\x9e\x43\xff')) == '-1298250753'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.int32, DM.Endianness.BE, b'\xb2\x9e\x43\xff\xb1\x9e\x43\xff')) == '{-1298250753,-1315027969}'
+
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.float32, DM.Endianness.BE, b'\x3f\xc0\x00\x00')) == '1.50000000'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.float32, DM.Endianness.BE, b'\x3f\xc0\x00\x00\x3f\xc0\x00\x00')) == '{1.50000000,1.50000000}'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.float32, DM.Endianness.LE, b'\x00\x00\xc0\x3f')) == '1.50000000'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.float32, DM.Endianness.LE, b'\x00\x00\xc0\x3f\x00\x00\xc0\x3f')) == '{1.50000000,1.50000000}'
+
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.float64, DM.Endianness.BE, b'\x40\x30\x0C\x01\xA3\x6E\x2E\xB2')) == '16.04690000'
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.float64, DM.Endianness.LE, b'\xB2\x2e\x6e\xa3\x01\x0c\x30\x40')) == '16.04690000'
+
+    assert _trim(ByteConvert.bytes_to_c_init(DM.ParamType.utf8, DM.Endianness.LE, b'\x30\x31\x32\x33\x00')) == '{0x30,0x31,0x32,0x33,0x00}'
