@@ -29,12 +29,43 @@
 #
 
 from enum import Enum
-from typing import Dict
+from typing import Dict, NamedTuple
 
 import struct
 import logging
 import crc
 from collections import namedtuple
+
+
+class CrcConfig(NamedTuple):
+    """Configuration data for arbitrary CRCs
+
+        poly(int): Generator polynomial to use in the CRC calculation.
+                   The bits in this integer are the coefficients in the polynomial.
+        bit_width(int): Number of bits for the CRC calculation. They have to match with
+                        the generator polynomial
+        init(int): Seed value for the CRC calculation
+        revin(bool): Reflect each single input byte if True
+        revout(bool): Reflect the final CRC value if True
+        xor(bool): Xor the final result with the value 0xff before returning the soulution
+        start(int): Address to start computation from.
+        end(int): End address to stop computation. This address is not included anymore.
+    """
+    poly: int = 0x04C11DB7
+    width: int = 32
+    init: int = 0xFFFFFFFF
+    revin: bool = True
+    revout: bool = True
+    xor: bool = True
+    start: int = 0
+    end: int = 0
+
+    def __str__(self):
+        return f"0x{self.start:08X}-0x{self.end:08X} "\
+            f"polynomial:0x{self.poly:08X}, {self.width} Bit, "\
+            f"init: 0x{self.init:08X}, "\
+            f"reverse in: {self.revin}, reverse out: {self.revout}, "\
+            f"final xor: {self.xor}"
 
 
 class Version:
@@ -67,8 +98,6 @@ class Endianness(Enum):
 
 class Block:
     """Block data container """
-
-    _crc_calc = crc.Calculator(crc.Crc32.CRC32)  # IEEE 802.3 crc32
 
     def __init__(self, addr: int, name: str,  endianess: Endianness, fill: int):
         self.addr = addr
@@ -105,22 +134,43 @@ class Block:
             0x00000000,
             self.header.length)
 
-    def update_crc32(self) -> int:
+    def update_crc(self) -> None:
         """Add IEEE802.3 CRC32 at the end of the block as a parameter"""
 
+        crcparams = []
+        # build block raw data
         blk_bytes = bytearray()
         blk_bytes.extend(self.get_header_bytes())
 
         for param in self.parameter:
             blk_bytes.extend(param.value)
+            if (param.crc_cfg is not None):
+                crcparams.append(param)
 
-        crc32 = Block._crc_calc.checksum(blk_bytes)
-        fmt = "<I" if self.endianess == Endianness.LE else ">I"
-        data = struct.pack(fmt, crc32)
-        crc_param = Parameter(
-            self.addr + self.header.length - 4,
-            "crc32", ParamType.uint32, data)
-        self.add_parameter(crc_param)
+        # compute each crc parameter value
+        for crcparam in crcparams:
+            cfg = crcparam.crc_cfg
+
+            crc_calculator = crc.Calculator(
+                crc.Configuration(
+                    polynomial=cfg.poly, width=cfg.width,
+                    init_value=cfg.init,
+                    reverse_input=cfg.revin, reverse_output=cfg.revout,
+                    final_xor_value=0 if cfg.xor is False else (0x1 << cfg.width)-1
+                )
+            )
+
+            start = cfg.start - self.addr
+            end = start + (cfg.end - cfg.start) -1
+            crc_input = blk_bytes[start:end]
+            checksum = crc_calculator.checksum(crc_input)
+
+            if self.endianess == Endianness.LE:
+                fmt = f"<{TYPE_DATA[crcparam.type].fmt}"
+            else:
+                fmt = f">{TYPE_DATA[crcparam.type].fmt}"
+
+            crcparam.value = struct.pack(fmt, checksum)
 
     def __str__(self):
         return f"Block({self.name} @ {hex(self.addr)})"
@@ -144,15 +194,26 @@ class ParamType(Enum):
 class Parameter:
     """Parameter definition data container"""
 
-    def __init__(self, offset: int, name: str, type: ParamType, value: bytearray):
+    def __init__(self, offset: int, name: str, type: ParamType, value: bytearray, crc: CrcConfig = None):
         self.offset = offset
         self.name = name
         self.type = type
         self.value = value
         self.comment = None
+        self.crc_cfg = crc
 
     @classmethod
     def as_gap(cls, address: int, length: int, pattern: int):
+        """Create parameter as a gap fill range with given pattern.
+
+        Args:
+            address (int): gap start offset
+            length (int): Number of bytes in gap area
+            pattern (int): Fill pattern for gap (only lowest 8bits used)
+
+        Returns:
+            Parameter object representing the gap
+        """
         val = bytearray([pattern & 0xFF] * length)
         return Parameter(address, None, ParamType.GAPFILL, val)
 

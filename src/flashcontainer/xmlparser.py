@@ -71,6 +71,28 @@ class XmlParser:
         return model
 
     @staticmethod
+    def _get_optional(element: ET.Element, attr: str, default: str) -> str:
+        """Get optional attribute value."""
+
+        val = element.get(attr)
+        if val is None:
+            val = default
+
+        return val
+
+    @staticmethod
+    def _parse_bool(val_str: str) -> bool:
+        """ Parse input as boolean """
+
+        result = False
+        if val_str is not None:
+            val_str = val_str.lower()
+            if ("true" == val_str) or ("1" == val_str):
+                result = True
+
+        return result
+
+    @staticmethod
     def _parse_int(val_str: str) -> int:
         """ Parse int as decimal or hex."""
 
@@ -105,6 +127,50 @@ class XmlParser:
         return 0x00 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
+    def _parse_crc_config(element: ET.Element, start: int, end: int) -> DM.CrcConfig:
+        """Parse a crc element.
+
+        Args:
+            element (ET.Element): The XML element to read
+            start (int): Start address for crc computation
+            end (int): End address for crc computation
+
+        Returns:
+            A CrcConfig from the datamodel
+        """
+        defaults = DM.CrcConfig()  # get defaults
+        poly = defaults.poly
+        width = defaults.width
+        init = defaults.init
+        revin = defaults.revin
+        revout = defaults.revout
+        xor = defaults.xor
+
+        val = element.get('polynomial')
+        if val is not None:
+            poly = XmlParser._parse_int(val)
+
+        width = DM.TYPE_DATA[DM.ParamType[element.get("type")]].size * 8
+
+        val = element.get('init')
+        if val is not None:
+            init = XmlParser._parse_int(val)
+
+        val = element.get('rev_in')
+        if val is not None:
+            revin = XmlParser._parse_bool(val)
+
+        val = element.get('rev_out')
+        if val is not None:
+            revin = XmlParser._parse_bool(val)
+
+        val = element.get('final_xor')
+        if val is not None:
+            xor = XmlParser._parse_bool(val)
+
+        return DM.CrcConfig(poly, width, init, revin, revout, xor, start, end)
+
+    @staticmethod
     def _build_parameters(block: DM.Block, element) -> None:
         data_element = element.find(f"{NS}data")
         running_addr = block.addr + 16  # 16 = sizeof header
@@ -124,9 +190,30 @@ class XmlParser:
 
             name = parameter_element.get("name")
             ptype = DM.ParamType[parameter_element.get("type")]
-            value_element = parameter_element.find(f"{NS}value")
-            bytes = ByteConvert.json_to_bytes(ptype, block.endianess, value_element.text)
-            parameter = DM.Parameter(offset, name, ptype, bytes)
+            crc_cfg = None
+            val_text = None
+
+            if f"{NS}crc" == parameter_element.tag:
+                start = XmlParser.calc_addr(
+                    block.addr,
+                    offset,
+                    XmlParser._get_optional(parameter_element, "from", "0"),
+                    1)
+                end = XmlParser.calc_addr(
+                    block.addr,
+                    offset,
+                    XmlParser._get_optional(parameter_element, "to", "."),
+                    1)
+                crc_cfg = XmlParser._parse_crc_config(parameter_element, start, end)
+                val_text = '0x0'  # crc bits get calculated at end of block
+                logging.info("    got CRC data: " + str(crc_cfg))
+            else:
+                value_element = parameter_element.find(f"{NS}value")
+                val_text = value_element.text
+
+            bytes = ByteConvert.json_to_bytes(ptype, block.endianess, val_text)
+
+            parameter = DM.Parameter(offset, name, ptype, bytes, crc_cfg)
 
             comment = parameter_element.find(f"{NS}comment")
             if comment is not None:
@@ -136,7 +223,7 @@ class XmlParser:
             logging.info(f"    Adding {parameter}")
             running_addr = offset + len(bytes)
 
-        end_addr = block.addr + (block.header.length-4)  # 4 byte crc at end
+        end_addr = block.addr + (block.header.length)
         if (end_addr > running_addr):  # we need to insert a gap at the end
             gap = DM.Parameter.as_gap(running_addr, end_addr-running_addr, block.fill)
             logging.info(f"    Gap {gap}")
@@ -207,7 +294,7 @@ class XmlParser:
 
             XmlParser._build_parameters(block, element)
 
-            block.update_crc32()
+            block.update_crc()
             container.add_block(block)
 
             running_addr += length

@@ -142,6 +142,11 @@ class CFileWriter(DM.Walker):
         if param.comment is not None:
             for line in param.comment.splitlines():
                 self._write_both(" * " + line + "\n")
+
+        # write CRC data
+        if (param.crc_cfg is not None):
+            self._write_both(f" * crc: {param.crc_cfg}\n")
+
         self._write_both(" */\n")
 
         self.hfile.write("extern ")
