@@ -204,6 +204,11 @@ class XmlParser:
                     offset,
                     XmlParser._get_optional(parameter_element, "to", "."),
                     1)
+
+                # special case for CRC: "." means end before current address, not at it.
+                if "." == XmlParser._get_optional(parameter_element, "to", "."):
+                    end = end - 1
+
                 crc_cfg = XmlParser._parse_crc_config(parameter_element, start, end)
                 val_text = '0x0'  # crc bits get calculated at end of block
                 logging.info("    got CRC data: " + str(crc_cfg))

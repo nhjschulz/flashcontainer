@@ -49,7 +49,7 @@ class CrcConfig(NamedTuple):
         revout(bool): Reflect the final CRC value if True
         xor(bool): Xor the final result with the value 0xff before returning the soulution
         start(int): Address to start computation from.
-        end(int): End address to stop computation. This address is not included anymore.
+        end(int): End address to stop computation at.
     """
     poly: int = 0x04C11DB7
     width: int = 32
@@ -160,8 +160,9 @@ class Block:
                 )
             )
 
+            # update crc value in parameter structure
             start = cfg.start - self.addr
-            end = start + (cfg.end - cfg.start) -1
+            end = start + (cfg.end - cfg.start)
             crc_input = blk_bytes[start:end]
             checksum = crc_calculator.checksum(crc_input)
 
@@ -171,6 +172,11 @@ class Block:
                 fmt = f">{TYPE_DATA[crcparam.type].fmt}"
 
             crcparam.value = struct.pack(fmt, checksum)
+
+            # patch crc into block memory to be considered in successive crcs
+            slice_start = crcparam.offset - self.addr
+            slice_end = slice_start + len(crcparam.value)
+            blk_bytes[slice_start:slice_end] = crcparam.value
 
     def __str__(self):
         return f"Block({self.name} @ {hex(self.addr)})"

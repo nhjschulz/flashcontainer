@@ -106,7 +106,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     <xs:complexType name="param">
         <xs:complexContent>
-            <xs:extension base="pargen:param_base"> 
+            <xs:extension base="pargen:param_base">
                 <xs:sequence>
                     <xs:element name="value" type="pargen:textonly" minOccurs="1" maxOccurs="1"></xs:element>
                 </xs:sequence>
@@ -116,7 +116,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     <xs:complexType name="crc">
         <xs:complexContent>
-            <xs:extension base="pargen:param_base"> 
+            <xs:extension base="pargen:param_base">
                 <xs:attribute name="from" type="pargen:address" default="0x0000" />
                 <xs:attribute name="to" type="pargen:address" default="." />
                 <xs:attribute name="width" type="pargen:crcwidth" use="optional" default="32" />
@@ -235,5 +235,4 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <xs:minLength value="1"/>
         </xs:restriction>
     </xs:simpleType>
-
 </xs:schema>
