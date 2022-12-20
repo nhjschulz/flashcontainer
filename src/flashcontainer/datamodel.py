@@ -264,6 +264,9 @@ class Model:
         validator = Validator(self, options)
         validator.run()
 
+        if (validator.result is False) or (validator.warnings is True):
+            print("")
+
         return validator.result
 
 
@@ -376,11 +379,32 @@ class Validator(Walker):
         super().__init__(model, options)
         self.result = True
         self.last_param = None
+        self.blocklist = {}
+        self.paramlist = {}
+        self.warnings = False
+
+    def begin_container(self, container: Container) -> None:
+        self.blocklist = {}
 
     def begin_block(self, block: Block):
         self.last_param = None
+        self.paramlist = {}
+
+        if (block.name in self.blocklist):
+            self.warning(
+                f"block with name {block.name} already exists "
+                f"@ 0x{self.blocklist[block.name].addr:08X}")
+        else:
+            self.blocklist[block.name] = block
 
     def begin_parameter(self, param: Parameter):
+
+        if (param.name in self.paramlist):
+            self.warning(
+                f"parameter with name {param.name} already exists "
+                f"@ 0x{self.paramlist[param.name].offset:08X}")
+        else:
+            self.paramlist[param.name] = param
 
         block_end = self.ctx_block.addr + self.ctx_block.header.length
 
@@ -404,7 +428,12 @@ class Validator(Walker):
         self.last_param = param
 
     def error(self, msg: str) -> None:
-        "issue error message"
+        """
+        Issue error message.
+
+        Args:
+            msg(str): error message to print
+        """
         pfx = ""
 
         if self.ctx_container is not None:
@@ -416,6 +445,24 @@ class Validator(Walker):
         logging.error(pfx + msg)
 
         self.result = False
+
+    def warning(self, msg: str) -> None:
+        """
+        Issue warning message.
+
+        Args:
+            msg(str): error message to print
+        """
+        pfx = ""
+
+        if self.ctx_container is not None:
+            pfx += f"{self.ctx_container.name}:"
+
+            if self.ctx_block is not None:
+                pfx += f"{self.ctx_block.name}"
+
+        logging.warn(pfx + msg)
+        self.warnings = True
 
 
 # A tuple holding additional information for datamodel types

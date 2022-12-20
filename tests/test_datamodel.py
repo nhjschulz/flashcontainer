@@ -28,7 +28,7 @@ def test_crc():
 
     block = DM.Block(0, None, DM.Endianness.LE, 0x0)
     block.set_header(DM.BlockHeader(0, DM.Version(0, 0, 0), 0x100))
-    block.add_parameter(DM.Parameter(0x10, "p", DM.ParamType.uint8, b'\x31\x32\x33\x34\x35\x36\x37\x38\x39',None))
+    block.add_parameter(DM.Parameter(0x10, "p", DM.ParamType.uint8, b'\x31\x32\x33\x34\x35\x36\x37\x38\x39', None))
 
     crc_param = DM.Parameter(0x1A, "crc", DM.ParamType.uint32, b'\x00\x00\x00\x00', DM.CrcConfig(start=0x10, end=0x19))
     block.add_parameter(crc_param)
@@ -38,4 +38,3 @@ def test_crc():
     block.endianess = DM.Endianness.BE
     block.update_crc()
     assert crc_param.value == b'\xcb\xf4\x39\x26'
-
