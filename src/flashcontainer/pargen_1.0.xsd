@@ -117,18 +117,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <xs:complexType name="crc">
         <xs:complexContent>
             <xs:extension base="pargen:param_base">
-                <xs:attribute name="from" type="pargen:address" default="0x0000" />
-                <xs:attribute name="to" type="pargen:address" default="." />
-                <xs:attribute name="width" type="pargen:crcwidth" use="optional" default="32" />
+                <xs:sequence>
+                    <xs:element name="memory" type="pargen:memory" minOccurs="1" maxOccurs="1"></xs:element>
+                    <xs:element name="config" type="pargen:crccfg" minOccurs="0" maxOccurs="1"></xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="crccfg">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
                 <xs:attribute name="polynomial" type="uint32" use="optional" default="0x04C11DB7" />
                 <xs:attribute name="init" type="uint32" use="optional" default="0xFFFFFFFF" />
                 <xs:attribute name="rev_in" type="xs:boolean" use="optional" default="true" />
                 <xs:attribute name="rev_out" type="xs:boolean" use="optional" default="true" />
                 <xs:attribute name="final_xor" type="xs:boolean" use="optional" default="true" />
             </xs:extension>
-        </xs:complexContent>
+        </xs:simpleContent>
     </xs:complexType>
 
+    <xs:complexType name="memory">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="from" type="pargen:address" default="0x0000" />
+                <xs:attribute name="to" type="pargen:address" default="." />
+                <xs:attribute name="access" type="pargen:access" use="optional" default="8" />
+                <xs:attribute name="swap" type="xs:boolean" use="optional" default="false" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
 
     <xs:complexType name="utf8">
         <xs:simpleContent>
@@ -221,7 +239,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="crcwidth">
+    <xs:simpleType name="access">
         <xs:restriction base="xs:string">
             <xs:enumeration value="8" />
             <xs:enumeration value="16" />

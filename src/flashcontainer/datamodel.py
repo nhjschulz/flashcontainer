@@ -27,45 +27,28 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from flashcontainer.checksum import Crc, CrcConfig
 
 from enum import Enum
 from typing import Dict, NamedTuple
-
 import struct
 import logging
-import crc
 from collections import namedtuple
 
 
-class CrcConfig(NamedTuple):
+class CrcData(NamedTuple):
     """Configuration data for arbitrary CRCs
 
-        poly(int): Generator polynomial to use in the CRC calculation.
-                   The bits in this integer are the coefficients in the polynomial.
-        bit_width(int): Number of bits for the CRC calculation. They have to match with
-                        the generator polynomial
-        init(int): Seed value for the CRC calculation
-        revin(bool): Reflect each single input byte if True
-        revout(bool): Reflect the final CRC value if True
-        xor(bool): Xor the final result with the value 0xff before returning the soulution
+        crc_cfg: Crc configuration data
         start(int): Address to start computation from.
         end(int): End address to stop computation at.
     """
-    poly: int = 0x04C11DB7
-    width: int = 32
-    init: int = 0xFFFFFFFF
-    revin: bool = True
-    revout: bool = True
-    xor: bool = True
+    crc_cfg: CrcConfig = CrcConfig()
     start: int = 0
     end: int = 0
 
     def __str__(self):
-        return f"0x{self.start:08X}-0x{self.end:08X} "\
-            f"polynomial:0x{self.poly:08X}, {self.width} Bit, "\
-            f"init: 0x{self.init:08X}, "\
-            f"reverse in: {self.revin}, reverse out: {self.revout}, "\
-            f"final xor: {self.xor}"
+        return f"0x{self.start:X}-0x{self.end:X}  {self.crc_cfg}"
 
 
 class Version:
@@ -137,11 +120,11 @@ class Block:
     def update_crc(self) -> None:
         """Add IEEE802.3 CRC32 at the end of the block as a parameter"""
 
-        crcparams = []
         # build block raw data
         blk_bytes = bytearray()
         blk_bytes.extend(self.get_header_bytes())
 
+        crcparams = []
         for param in self.parameter:
             blk_bytes.extend(param.value)
             if (param.crc_cfg is not None):
@@ -150,20 +133,15 @@ class Block:
         # compute each crc parameter value
         for crcparam in crcparams:
             cfg = crcparam.crc_cfg
+            crc_calculator = Crc(cfg.crc_cfg)
 
-            crc_calculator = crc.Calculator(
-                crc.Configuration(
-                    polynomial=cfg.poly, width=cfg.width,
-                    init_value=cfg.init,
-                    reverse_input=cfg.revin, reverse_output=cfg.revout,
-                    final_xor_value=0 if cfg.xor is False else (0x1 << cfg.width)-1
-                )
-            )
+            # update buffer in case of byte swapped 16/32/64 bit access
+            buffer = crc_calculator.prepare(blk_bytes)
 
             # update crc value in parameter structure
             start = cfg.start - self.addr
             end = start + (cfg.end - cfg.start)
-            crc_input = blk_bytes[start:end]
+            crc_input = buffer[start:end+1]
             checksum = crc_calculator.checksum(crc_input)
 
             if self.endianess == Endianness.LE:
@@ -200,7 +178,7 @@ class ParamType(Enum):
 class Parameter:
     """Parameter definition data container"""
 
-    def __init__(self, offset: int, name: str, type: ParamType, value: bytearray, crc: CrcConfig = None):
+    def __init__(self, offset: int, name: str, type: ParamType, value: bytearray, crc: CrcData = None):
         self.offset = offset
         self.name = name
         self.type = type

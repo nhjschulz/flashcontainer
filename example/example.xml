@@ -9,22 +9,22 @@
                 <pd:comment>This block is used for non-safety related parameters only.</pd:comment>
                 <pd:header id="0xFFFF" major="1" minor="0" version="0" length="0x100"></pd:header>
                 <pd:data>
-                    <pd:param offset="0x10" name="crcTestInput" type="utf8">
+                    <pd:param offset="0x10" name="crcTestInput" type="uint8">
                         <pd:comment>see https://www.boost.org/doc/libs/1_79_0/libs/crc/test/crc_test2.cpp</pd:comment>
-                        <pd:value>"123456789"</pd:value>
+                        <pd:value>[0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39]</pd:value>
                     </pd:param>
-                    <pd:crc offset="." name="crcTestResult" type="uint32" from="0x10" to=".">
+                    <pd:crc offset="." name="crcTestResult" type="uint32">
                         <pd:comment>expected: CBF43926</pd:comment>
+                        <pd:memory from="0x10" to="."></pd:memory>
                     </pd:crc>
                    <pd:param offset="0x20" name="tag" type="int16">
                             <pd:comment>Integer array example</pd:comment>
                             <pd:value>[-4, -3, -2, -1, 0, 1, 2, 3, 4]</pd:value>
                         </pd:param>
-                    <pd:crc offset="0xfc" name="crc" type="uint32"
-                        from="0x0000" to="." 
-                        polynomial="0x04C11DB7"
-                        init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true">
-                         <pd:comment>block crc32 (IEEE802.3)</pd:comment>
+                    <pd:crc offset="0xfc" name="crc" type="uint32">
+                        <pd:comment>block crc32 (IEEE802.3)</pd:comment>
+                        <pd:memory from="0x0000" to="."/>
+                        <pd:config  polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true"></pd:config>
                     </pd:crc>
                 </pd:data>
             </pd:block>
@@ -50,6 +50,7 @@
                     </pd:param>
                     <pd:crc offset="0x1fc" name="crc" type="uint32">
                          <pd:comment>block crc32 (IEEE802.3)</pd:comment>
+                         <pd:memory from="0x0000" to="."/>
                     </pd:crc>
                 </pd:data>
             </pd:block>

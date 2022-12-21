@@ -30,7 +30,7 @@ def test_crc():
     block.set_header(DM.BlockHeader(0, DM.Version(0, 0, 0), 0x100))
     block.add_parameter(DM.Parameter(0x10, "p", DM.ParamType.uint8, b'\x31\x32\x33\x34\x35\x36\x37\x38\x39', None))
 
-    crc_param = DM.Parameter(0x1A, "crc", DM.ParamType.uint32, b'\x00\x00\x00\x00', DM.CrcConfig(start=0x10, end=0x19))
+    crc_param = DM.Parameter(0x1A, "crc", DM.ParamType.uint32, b'\x00\x00\x00\x00', DM.CrcData(start=0x10, end=0x18))
     block.add_parameter(crc_param)
     block.update_crc()
     assert crc_param.value == b'\x26\x39\xf4\xcb'

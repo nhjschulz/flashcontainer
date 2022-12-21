@@ -32,6 +32,7 @@
 import lxml.etree as ET
 import flashcontainer.datamodel as DM
 from flashcontainer.byteconv import ByteConvert
+from flashcontainer.checksum import CrcConfig
 
 import logging
 import pathlib
@@ -71,12 +72,15 @@ class XmlParser:
         return model
 
     @staticmethod
-    def _get_optional(element: ET.Element, attr: str, default: str) -> str:
+    def _get_optional(element: ET.Element, attr: str, default: any) -> str:
         """Get optional attribute value."""
+
+        if element is None:
+            return str(default)
 
         val = element.get(attr)
         if val is None:
-            val = default
+            val = str(default)
 
         return val
 
@@ -127,48 +131,57 @@ class XmlParser:
         return 0x00 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
-    def _parse_crc_config(element: ET.Element, start: int, end: int) -> DM.CrcConfig:
+    def _parse_crc_config(param: ET.Element, block: DM.Block, offset: int) -> DM.CrcConfig:
         """Parse a crc element.
 
         Args:
-            element (ET.Element): The XML element to read
-            start (int): Start address for crc computation
-            end (int): End address for crc computation
+            param (ET.Element): The XML parameter element to read
+            block (DM.Block): current block
+            offset (int): offset of this parameter in block (used to resolve ".")
 
         Returns:
-            A CrcConfig from the datamodel
+            A CrcConfig from the data model
         """
-        defaults = DM.CrcConfig()  # get defaults
-        poly = defaults.poly
-        width = defaults.width
-        init = defaults.init
-        revin = defaults.revin
-        revout = defaults.revout
-        xor = defaults.xor
 
-        val = element.get('polynomial')
-        if val is not None:
-            poly = XmlParser._parse_int(val)
+        mem_element = param.find(f"{NS}memory")
+        cfg_element = param.find(f"{NS}config")
 
-        width = DM.TYPE_DATA[DM.ParamType[element.get("type")]].size * 8
+        defaults = CrcConfig()  # get defaults
 
-        val = element.get('init')
-        if val is not None:
-            init = XmlParser._parse_int(val)
+        # parse cfg element
+        width = DM.TYPE_DATA[DM.ParamType[param.get("type")]].size * 8
+        poly = XmlParser._parse_int(XmlParser._get_optional(cfg_element, 'polynomial', defaults.poly))
+        init = XmlParser._parse_int(XmlParser._get_optional(cfg_element, 'init',  defaults.init))
+        revin = XmlParser._parse_bool(XmlParser._get_optional(cfg_element, 'rev_in',  defaults.revin))
+        revout = XmlParser._parse_bool(XmlParser._get_optional(cfg_element, 'rev_out',  defaults.revout))
+        xor = XmlParser._parse_bool(XmlParser._get_optional(cfg_element, 'final_xor',  defaults.xor))
 
-        val = element.get('rev_in')
-        if val is not None:
-            revin = XmlParser._parse_bool(val)
+        # parse memory element
+        start = XmlParser.calc_addr(
+            block.addr,
+            offset,
+            XmlParser._get_optional(mem_element, "from", "0"),
+            1)
+        end = XmlParser.calc_addr(
+            block.addr,
+            offset,
+            XmlParser._get_optional(mem_element, "to", "."),
+            1)
 
-        val = element.get('rev_out')
-        if val is not None:
-            revin = XmlParser._parse_bool(val)
+        access = XmlParser._parse_int(XmlParser._get_optional(mem_element, 'access',  defaults.access))
+        swap = XmlParser._parse_bool(XmlParser._get_optional(mem_element, 'swap',  defaults.swap))
 
-        val = element.get('final_xor')
-        if val is not None:
-            xor = XmlParser._parse_bool(val)
+        # special case for CRC: "." means end before current address, not at it.
+        if "." == XmlParser._get_optional(mem_element, "to", "."):
+            end = end - 1
 
-        return DM.CrcConfig(poly, width, init, revin, revout, xor, start, end)
+        return DM.CrcData(
+            crc_cfg=CrcConfig(
+                poly=poly, width=width,
+                init=init, revin=revin, revout=revout, xor=xor,
+                access=access, swap=swap),
+            start=start,
+            end=end)
 
     @staticmethod
     def _build_parameters(block: DM.Block, element) -> None:
@@ -194,22 +207,7 @@ class XmlParser:
             val_text = None
 
             if f"{NS}crc" == parameter_element.tag:
-                start = XmlParser.calc_addr(
-                    block.addr,
-                    offset,
-                    XmlParser._get_optional(parameter_element, "from", "0"),
-                    1)
-                end = XmlParser.calc_addr(
-                    block.addr,
-                    offset,
-                    XmlParser._get_optional(parameter_element, "to", "."),
-                    1)
-
-                # special case for CRC: "." means end before current address, not at it.
-                if "." == XmlParser._get_optional(parameter_element, "to", "."):
-                    end = end - 1
-
-                crc_cfg = XmlParser._parse_crc_config(parameter_element, start, end)
+                crc_cfg = XmlParser._parse_crc_config(parameter_element, block, offset)
                 val_text = '0x0'  # crc bits get calculated at end of block
                 logging.info("    got CRC data: " + str(crc_cfg))
             else:
