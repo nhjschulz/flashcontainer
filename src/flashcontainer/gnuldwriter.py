@@ -67,8 +67,9 @@ class GnuLdWriter(DM.Walker):
 
     def begin_block(self, block: DM.Block) -> None:
         self.ldfile.write("\n")
-        header_param = f"{self.ctx_block.name}_blkhdr"
-        self.ldfile.write(f"{header_param: <40} = {hex(block.addr)};\n")
+        if block.header is not None:
+            header_param = f"{block.name}_blkhdr"
+            self.ldfile.write(f"{header_param: <40} = {hex(block.addr)};\n")
 
     def begin_parameter(self, param: DM.Parameter) -> None:
         """Add parameter name and address mapping"""

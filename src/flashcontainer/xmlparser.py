@@ -226,7 +226,7 @@ class XmlParser:
             logging.info(f"    Adding {parameter}")
             running_addr = offset + len(bytes)
 
-        end_addr = block.addr + (block.header.length)
+        end_addr = block.addr + block.length
         if (end_addr > running_addr):  # we need to insert a gap at the end
             gap = DM.Parameter.as_gap(running_addr, end_addr-running_addr, block.fill)
             logging.info(f"    Gap {gap}")
@@ -275,9 +275,11 @@ class XmlParser:
             align = XmlParser.get_alignment(element)
             block_addr = XmlParser.calc_addr(container.addr, running_addr, element.get("offset"), align)
             name = element.get("name")
+            length = XmlParser._parse_int(element.get("length"))
+
             endianess = XmlParser.get_endianess(element)
             fill = XmlParser.get_fill(element)
-            block = DM.Block(block_addr, name, endianess, fill)
+            block = DM.Block(block_addr, name, length, endianess, fill)
 
             comment = element.find(f"{NS}comment")
             if comment is not None:
@@ -285,15 +287,14 @@ class XmlParser:
 
             logging.info(f"  Loading block definition {block}")
 
-            # mandatory block header
+            # optional block header
             header_element = element.find(f"{NS}header")
-
-            id = XmlParser._parse_int(header_element.get("id"))
-            major = XmlParser._parse_int(header_element.get("major"))
-            minor = XmlParser._parse_int(header_element.get("minor"))
-            version = XmlParser._parse_int(header_element.get("version"))
-            length = XmlParser._parse_int(header_element.get("length"))
-            block.set_header(DM.BlockHeader(id, DM.Version(major, minor, version), length))
+            if header_element is not None:
+                id = XmlParser._parse_int(header_element.get("id"))
+                major = XmlParser._parse_int(header_element.get("major"))
+                minor = XmlParser._parse_int(header_element.get("minor"))
+                version = XmlParser._parse_int(header_element.get("version"))
+                block.set_header(DM.BlockHeader(id, DM.Version(major, minor, version)))
 
             XmlParser._build_parameters(block, element)
 

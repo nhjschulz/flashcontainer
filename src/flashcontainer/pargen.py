@@ -80,7 +80,7 @@ def pargen_cli() -> int:
     args = parser.parse_args()
 
     print(f"{name} {__version__}: {about}")
-    print("copyright (c) 2022 haju.schulz@online.de\n")
+    print("copyright (c) 2022 haju.schulz@online.de [https://github.com/nhjschulz/flashcontainer]\n")
 
     writers = []
 

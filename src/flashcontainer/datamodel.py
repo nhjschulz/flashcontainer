@@ -66,10 +66,9 @@ class Version:
 class BlockHeader:
     """Parameter block header container """
 
-    def __init__(self, id, version, length):
+    def __init__(self, id, version):
         self.id = id
         self.version = version
-        self.length = length
 
 
 class Endianness(Enum):
@@ -82,9 +81,19 @@ class Endianness(Enum):
 class Block:
     """Block data container """
 
-    def __init__(self, addr: int, name: str,  endianess: Endianness, fill: int):
+    def __init__(self, addr: int, name: str, length: int, endianess: Endianness, fill: int):
+        """ Construct a block.
+
+            Args:
+                addr(int): address of the block
+                name(str): the name of the block
+                length(int): the length of the block
+                endianess(Endianess): the byte ordering of the block
+                fill(int:) the fill value for gaps
+        """
         self.addr = addr
         self.name = name
+        self.length = length
         self.header = None
         self.endianess = endianess
         self.fill = fill & 0xFF
@@ -115,14 +124,15 @@ class Block:
             self.header.version.minor,
             self.header.version.version,
             0x00000000,
-            self.header.length)
+            self.length)
 
     def update_crc(self) -> None:
         """Add IEEE802.3 CRC32 at the end of the block as a parameter"""
 
         # build block raw data
         blk_bytes = bytearray()
-        blk_bytes.extend(self.get_header_bytes())
+        if self.header is not None:
+            blk_bytes.extend(self.get_header_bytes())
 
         crcparams = []
         for param in self.parameter:
@@ -384,7 +394,7 @@ class Validator(Walker):
         else:
             self.paramlist[param.name] = param
 
-        block_end = self.ctx_block.addr + self.ctx_block.header.length
+        block_end = self.ctx_block.addr + self.ctx_block.length
 
         if param.offset > block_end:
             self.error(

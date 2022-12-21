@@ -113,20 +113,21 @@ class CFileWriter(DM.Walker):
                 self._write_both(" * " + line + "\n")
             self._write_both(" */\n")
 
-        self.hfile.write("extern ")
-        self._write_both(f"volatile const pargen_header_type_t {self.ctx_block.name}_blkhdr")
+        if block.header is not None:
+            self.hfile.write("extern ")
+            self._write_both(f"volatile const pargen_header_type_t {self.ctx_block.name}_blkhdr")
 
-        self.cfile.write(
-            " =\n{\n"
-            f"    0x{block.header.id:04X},\n"
-            f"    0x{block.header.version.major:04X},\n"
-            f"    0x{block.header.version.minor:04X},\n"
-            f"    0x{block.header.version.version:04X},\n"
-            f"    0x00000000,\n"
-            f"    0x{block.header.length:08X},\n"
-            "}")
+            self.cfile.write(
+                " =\n{\n"
+                f"    0x{block.header.id:04X},\n"
+                f"    0x{block.header.version.major:04X},\n"
+                f"    0x{block.header.version.minor:04X},\n"
+                f"    0x{block.header.version.version:04X},\n"
+                f"    0x00000000,\n"
+                f"    0x{block.length:08X},\n"
+                "}")
 
-        self._write_both(";\n\n")
+            self._write_both(";\n\n")
 
     def end_block(self, block: DM.Block) -> None:
         self._write_both(f"/* END Block {self.ctx_block.name}\n */\n\n")

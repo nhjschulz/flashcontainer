@@ -49,7 +49,7 @@ class PyHexDumpWriter(DM.Walker):
         DM.ParamType.int32: ("u32le", "u32be"),
         DM.ParamType.int64: ("u64le", "u64be"),
         DM.ParamType.float32: ("float32le", "float32be"),
-        DM.ParamType.float64: ("float64le", "float64be"),  # float unsupported
+        DM.ParamType.float64: ("float64le", "float64be"),
         DM.ParamType.utf8: ("u8", "u8")
     }
 

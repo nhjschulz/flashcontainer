@@ -47,10 +47,11 @@ class HexWriter(DM.Walker):
 
     def begin_block(self, block: DM.Block) -> None:
         addr = block.addr
-        bytes = block.get_header_bytes()
-        for byte in bytes:
-            self.ihex[addr] = byte
-            addr += 1
+        if block.header is not None:
+            bytes = block.get_header_bytes()
+            for byte in bytes:
+                self.ihex[addr] = byte
+                addr += 1
 
     def begin_gap(self, param: DM.Parameter):
         """Gaps are same as parameter as far as hex dumping is concerned"""
