@@ -34,6 +34,7 @@ from typing import Dict, NamedTuple
 import struct
 import logging
 from collections import namedtuple
+from operator import attrgetter
 
 
 class CrcData(NamedTuple):
@@ -126,22 +127,75 @@ class Block:
             0x00000000,
             self.length)
 
-    def update_crc(self) -> None:
-        """Add IEEE802.3 CRC32 at the end of the block as a parameter"""
+    def _insert_gap(self, addr: int, len: int) -> None:
+        """Insert a gap at address of with len bytes.
+
+        Args:
+            addr(int): start address of gap
+            len(int): length of gap
+        """
+
+        gap = Parameter.as_gap(addr, len, self.fill)
+        logging.info(f"    Gap {gap}")
+        self.add_parameter(gap)
+
+    def fill_gaps(self) -> None:
+        """Insert gap parameter between the parameters."""
+
+        # sort parameter by address
+        param_list = sorted(self.parameter, key=attrgetter('offset'))
+
+        running_addr = self.addr
+        if self.header is not None:
+            running_addr += len(self.get_header_bytes())
+
+        for param in param_list:
+            if param.offset > running_addr:   # we need to insert a gap
+                self._insert_gap(running_addr, param.offset - running_addr)
+
+            running_addr = param.offset + len(param.value)
+
+        # tail gap at end of block needed ?
+        end_addr = self.addr + self.length
+        if (end_addr > running_addr):  # we need to insert a gap at the end
+            self._insert_gap(running_addr, end_addr - running_addr)
+
+        self.parameter = sorted(self.parameter, key=attrgetter('offset'))
+
+    def get_bytes(self) -> bytearray:
+        """Get the block data as byte stream
+
+            Note: Contant is only accurate if block contains
+                  no gaps.
+
+            Returns:
+                bytearray representing the block memory
+        """
 
         # build block raw data
         blk_bytes = bytearray()
         if self.header is not None:
             blk_bytes.extend(self.get_header_bytes())
 
-        crcparams = []
         for param in self.parameter:
             blk_bytes.extend(param.value)
-            if (param.crc_cfg is not None):
-                crcparams.append(param)
+
+        return blk_bytes
+
+    def update_crcs(self) -> None:
+        """Compute crc parameters inside the block.
+
+        Must be called after all parameters and
+        fill gaps got added.
+        """
+
+        blk_bytes = self.get_bytes()
 
         # compute each crc parameter value
-        for crcparam in crcparams:
+        for crcparam in self.parameter:
+            if (crcparam.crc_cfg is None):
+                continue
+
             cfg = crcparam.crc_cfg
             crc_calculator = Crc(cfg.crc_cfg)
 

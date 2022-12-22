@@ -22,7 +22,7 @@ def test_header_bytes():
     assert block.get_header_bytes() == b'\xaf\xfe\x12\x34\xab\xcd\x56\x78\x00\x00\x00\x00\xaa\xbb\xcc\xdd'
 
 
-def test_crc():
+def test_block_crc():
 
     # Test input "123456789" with expected CRC 0xCBF43926
 
@@ -32,9 +32,40 @@ def test_crc():
 
     crc_param = DM.Parameter(0x1A, "crc", DM.ParamType.uint32, b'\x00\x00\x00\x00', DM.CrcData(start=0x10, end=0x18))
     block.add_parameter(crc_param)
-    block.update_crc()
+    block.update_crcs()
     assert crc_param.value == b'\x26\x39\xf4\xcb'
 
     block.endianess = DM.Endianness.BE
-    block.update_crc()
+    block.update_crcs()
     assert crc_param.value == b'\xcb\xf4\x39\x26'
+
+
+def test_get_bytes_empty():
+    block = DM.Block(0, None, 0x0, DM.Endianness.LE, 0xAA)
+    assert block.get_bytes() == b''
+
+
+def test_get_bytes():
+    block = DM.Block(0, None, 0x10, DM.Endianness.LE, 0xAA)
+    block.set_header(DM.BlockHeader(0, DM.Version(0, 0, 0)))
+    assert block.get_bytes() == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x10\x00\x00\x00'
+
+    block.add_parameter(DM.Parameter(0x10, "foo", DM.ParamType.uint8, b'\x55', None))
+    assert block.get_bytes() == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x10\x00\x00\x00\x55'
+
+    block.add_parameter(DM.Parameter(0x11, "foo", DM.ParamType.uint8, b'\xbb', None))
+    assert block.get_bytes() == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x10\x00\x00\x00\x55\xbb'
+
+
+def test_get_bytes_with_gaps():
+    block = DM.Block(0, None, 10, DM.Endianness.LE, 0xAA)
+    block.fill_gaps()
+    assert block.get_bytes() == b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa'
+
+    block = DM.Block(0, None, 10, DM.Endianness.LE, 0xAA)
+    block.add_parameter(DM.Parameter(0x2, "_2", DM.ParamType.uint8, b'\x22', None))
+    block.add_parameter(DM.Parameter(0x7, "_7", DM.ParamType.uint8, b'\x77', None))
+    block.fill_gaps()
+    assert block.get_bytes() == b'\xaa\xaa\x22\xaa\xaa\xaa\xaa\x77\xaa\xaa'
+
+

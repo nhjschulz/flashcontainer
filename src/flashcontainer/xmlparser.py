@@ -186,7 +186,9 @@ class XmlParser:
     @staticmethod
     def _build_parameters(block: DM.Block, element) -> None:
         data_element = element.find(f"{NS}data")
-        running_addr = block.addr + 16  # 16 = sizeof header
+        running_addr = block.addr
+        if block.header is not None:
+            running_addr += len(block.get_header_bytes())
 
         for parameter_element in data_element:
 
@@ -195,11 +197,6 @@ class XmlParser:
                 running_addr,
                 parameter_element.get("offset"),
                 XmlParser.get_alignment(parameter_element))
-
-            if (offset > running_addr):   # we need to insert a gap
-                gap = DM.Parameter.as_gap(running_addr, offset-running_addr, block.fill)
-                logging.info(f"    Gap {gap}")
-                block.add_parameter(gap)
 
             name = parameter_element.get("name")
             ptype = DM.ParamType[parameter_element.get("type")]
@@ -225,12 +222,6 @@ class XmlParser:
             block.add_parameter(parameter)
             logging.info(f"    Adding {parameter}")
             running_addr = offset + len(bytes)
-
-        end_addr = block.addr + block.length
-        if (end_addr > running_addr):  # we need to insert a gap at the end
-            gap = DM.Parameter.as_gap(running_addr, end_addr-running_addr, block.fill)
-            logging.info(f"    Gap {gap}")
-            block.add_parameter(gap)
 
     @staticmethod
     def _build_model(root: ET.Element, filename: str) -> DM.Model:
@@ -298,7 +289,8 @@ class XmlParser:
 
             XmlParser._build_parameters(block, element)
 
-            block.update_crc()
+            block.fill_gaps()
+            block.update_crcs()
             container.add_block(block)
 
             running_addr += length

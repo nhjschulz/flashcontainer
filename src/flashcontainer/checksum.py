@@ -77,13 +77,13 @@ class Crc:
         """
         self.cfg = cfg
         self.calculator = crc.Calculator(
-                crc.Configuration(
-                    polynomial=cfg.poly, width=cfg.width,
-                    init_value=cfg.init,
-                    reverse_input=cfg.revin, reverse_output=cfg.revout,
-                    final_xor_value=0 if cfg.xor is False else (0x1 << cfg.width)-1
-                )
+            crc.Configuration(
+                polynomial=cfg.poly, width=cfg.width,
+                init_value=cfg.init,
+                reverse_input=cfg.revin, reverse_output=cfg.revout,
+                final_xor_value=0 if cfg.xor is False else (0x1 << cfg.width)-1
             )
+        )
 
     def __str__(self):
         return f"{self.cfg}"
