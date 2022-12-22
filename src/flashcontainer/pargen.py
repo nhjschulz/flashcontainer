@@ -70,7 +70,7 @@ def pargen_cli() -> int:
 
     parser.add_argument(
         '--destdir', '-o', nargs=1,
-        help='Specify output directory for generated files', default=str(Path.cwd()))
+        help='Specify output directory for generated files', default=[str(Path.cwd())])
     parser.add_argument(
         '--filename', '-f', nargs=1,
         help='Set basename for generated files.')
