@@ -2,6 +2,7 @@ lxml
 json5
 intelhex
 crc
+toml
 tox
 black
 isort

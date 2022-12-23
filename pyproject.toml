@@ -24,7 +24,8 @@ dependencies = [
     "crc >= 3.0",
     "intelhex >= 2.3.0",
     "json5 >= 0.9.10",
-    "lxml >= 4.9.2"
+    "lxml >= 4.9.2",
+    "toml >= 0.10.2"
 ]
 
 [project.optional-dependencies]
