@@ -40,14 +40,14 @@ class PyHexDumpWriter(DM.Walker):
     """Create configuration file for pyHexDump (see https://github.com/BlueAndi/pyHexDump) """
 
     _TYPE_MAPPING = {
-        DM.ParamType.uint32: ("u32le", "u32be"),
         DM.ParamType.uint8: ("u8", "u8"),
         DM.ParamType.uint16: ("u16le", "u16be"),
+        DM.ParamType.uint32: ("u32le", "u32be"),
         DM.ParamType.uint64: ("u64le", "u64be"),
-        DM.ParamType.int8: ("u8", "u8"),
-        DM.ParamType.int16: ("u16le", "u16be"),
-        DM.ParamType.int32: ("u32le", "u32be"),
-        DM.ParamType.int64: ("u64le", "u64be"),
+        DM.ParamType.int8: ("s8", "s8"),
+        DM.ParamType.int16: ("s16le", "s16be"),
+        DM.ParamType.int32: ("s32le", "s32be"),
+        DM.ParamType.int64: ("s64le", "s64be"),
         DM.ParamType.float32: ("float32le", "float32be"),
         DM.ParamType.float64: ("float64le", "float64be"),
         DM.ParamType.utf8: ("u8", "u8")
