@@ -28,13 +28,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-__version__ = "0.0.4"
-
 from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
 from flashcontainer.cfilewriter import CFileWriter
 from flashcontainer.gnuldwriter import GnuLdWriter
 from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
+from flashcontainer.packageinfo import __version__
 import flashcontainer.datamodel as DM
 
 import datetime

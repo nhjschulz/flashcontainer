@@ -28,4 +28,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from .packageinfo import __version__, __author__, __email__, __repository__, __license__
+import toml
+
+_data = toml.load("pyproject.toml")
+
+__version__ = _data["project"]["version"]
+__author__ = _data["project"]["authors"][0]["name"]
+__email__ = _data["project"]["authors"][0]["email"]
+__repository__ = _data["project"]["urls"]["repository"]
+__license__ = _data["project"]["license"]["text"]
