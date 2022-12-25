@@ -20,11 +20,13 @@ def test_convert_valstr_to_byte():
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.LE, "1.0") ==  b'\x00\x00\x80\x3f'
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.LE, "-1.0") ==  b'\x00\x00\x80\xbf'
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.LE, "3.141592653589793238462643383") == b'\xdb\x0f\x49\x40'
+    assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.LE, "1.0E+2") == b'\x00\x00\xc8\x42'
 
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.BE, "1") ==  b'\x3f\x80\x00\x00'
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.BE, "1.0") ==  b'\x3f\x80\x00\x00'
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.BE, "-1.0") ==  b'\xbf\x80\x00\x00'
     assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.BE, "3.141592653589793238462643383") == b'\x40\x49\x0f\xdb'
+    assert ByteConvert.json_to_bytes(DM.ParamType.float32, DM.Endianness.BE, "1.0E+2") == b'\x42\xc8\x00\x00'
 
     # double result bytes taken from https://www.binaryconvert.com/convert_double.html
     assert ByteConvert.json_to_bytes(DM.ParamType.float64, DM.Endianness.LE, "1") ==  b'\x00\x00\x00\x00\x00\x00\xf0\x3f'
