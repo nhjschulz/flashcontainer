@@ -61,7 +61,7 @@ XML capabilities in depth, read on.
 
 ### XML Configuration File Anatomy
 
-The XML follows an XSD-schema defined n pargen_1.0.xsd. It is highly
+The XML follows an XSD-schema defined in pargen_1.0.xsd. It is highly
 recommended to use an XML editor with schema validation support to
 avoid or detect validations already while editing. Visual Studio Code would
 be a perfect choice, given the "XML Language Support" extension from 
@@ -96,9 +96,8 @@ beginning of the file:
 
 ### Container Element
 The top level configuration element is the **container**. A container
-maps contained blocks to their absolute address by the **at** attribute.
-All address specified on block element level are offsets to the
-**at** attribute.
+maps its parameter blocks to absolute addresses by the **at** attribute. Address attributes inside block elements are offsets to the
+**at** attribute value.
 
 #### Container Element Attributes
 
@@ -132,7 +131,7 @@ Blocks hold an optional header and a list of parameters or crc elements.
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
 | name      | The block name.         |   No   |       |
-| offset    | Memory start offset inside container. Value may be "*" to use the next free offset in container.|No||
+| offset    | Memory start offset inside container. Value may be "*" to use the next free offset inside the  container.|No||
 | length    | Number of bytes covered by this block|No|
 | align     | block alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 | fill      | byte value used to fill gaps.|Yes| 0x00 |
@@ -167,8 +166,15 @@ The header data is a 16 byte long data structure with the following layout:
         uint32_t length;    /* from length block attribute */
     };
 
-The header is internally handled as a parameter. That mean the space for any
-further parameter starts at offset 16 (0xA) if the header is used.
+Application can freely decide how to use the id, major, minor and dataver
+fields. The proposed usage is as follows:
+
+* id - A unique id to identify the blocks purpose. (Example: 1:CAN Bus settings, 2 :Motor parameters, ...)
+* Major.Minor - A version pair defining the layout of the block
+* dataver - The version or build number of the parameter set
+
+The header data is internally handled as a parameter. Space for any
+further parameter starts at offset 16 (0x10) if the header is used.
 
 #### Example Block Element
 
@@ -188,7 +194,7 @@ A parameter element defines a single parameter inside a block.
 
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
-| offset    | Memory start offset inside block. Value may be "*" to use the next free offset in container.|No||
+| offset    | Memory start offset inside block. Value may be "*" to use the next free offset inside the block.|No||
 | name      | The parameter name.         |   No   |       |
 | type      |Parameter type, one of [u]int{bits} with bits one of 8,16,32,64 or float32,float64 or utf8|No|
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
@@ -207,8 +213,9 @@ A parameter element defines a single parameter inside a block.
       <pd:value>0x80028000</pd:value>
 
 #### Parameter Value Element
-The value element text of a parameter holds the parameter value using
-a JSON style syntax. The following  subset of Json literals is supported:
+The value element of a parameter holds the parameter value in the text
+element using a JSON style syntax. The following subset of Json
+definitions are supported:
 
 |Value type                        | Examples    |
 |----------------------------------|--------------|
@@ -221,15 +228,15 @@ a JSON style syntax. The following  subset of Json literals is supported:
 
 The crc element defines a an integer parameter. The difference to an
 integer parameter is the automatic value calculation using a
-crc algorithm. Instead of a value child element, a memory
-and config element are used to define the crc calculation parameters.
+crc algorithm. Instead of a value child element, the memory
+and config elements are used to define the crc calculation parameters.
 
 #### Crc Element Attributes
 
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
-| offset    | Memory start offset inside block. Value may be "*" to use the next free offset in container.|No||
-| name      | The parameter name.         |   No   |       |
+| offset    | Memory start offset inside block. Value may be "*" to use the next free offset inside the block|No||
+| name      | The crc parameter name.   |   No   |       |
 | type      |Parameter type, one of uint{bits} with bits one of 8,16,32,64|No|
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 
