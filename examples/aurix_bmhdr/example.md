@@ -36,7 +36,7 @@ configurable binary data dumper. The template file bmhdr.mao
 uses the generated hex file and pyhexdump configuration to
 pretty print and verify the hex data into markdown format.
 
-    $ pyHexDump.exe print  -tf ./bmhdr.mao ./gen/bmhdr.hex ./gen/bmhdr.pyhexdump
+    $ pyHexDump print  -tf ./bmhdr.mao ./gen/bmhdr.hex ./gen/bmhdr.pyhexdump
 
     # Aurix TC397 - Blinky Example
 
