@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Flashcontainer example configuration for a parameter block with safety measures
+-->
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    <pd:container name="CodeFlash" at="0x80000000">
+        <pd:blocks>
+            <pd:block name="paraBlkSafety" offset="0x0000" length="0x200" endianness="LE" fill="0xaa">
+                <pd:comment>This block is used for safety related parameters using header identification and block crc.</pd:comment>
+                <pd:header id="0xFF01" major="1" minor="0" version="3"/>
+                <pd:data>
+                    <pd:param offset="0x10" name="calibration" type="float32" align="4">
+                        <pd:comment>Safety critical calibration values.</pd:comment>
+                        <pd:value>[1.0, -2.1, 3.2, 4.5, 5.4, 6.5]</pd:value>
+                    </pd:param>
+                    <pd:crc offset="0x1fc" name="crc" type="uint32">
+                         <pd:comment>Entire block crc32 (IEEE802.3)</pd:comment>
+                         <pd:memory from="0x0000" to="."/>
+                    </pd:crc>
+                </pd:data>
+            </pd:block>
+        </pd:blocks>
+    </pd:container>
+</pd:pargen>
