@@ -3,6 +3,9 @@ json5
 intelhex
 crc
 toml
+git+https://github.com/BlueAndi/pyHexDump
+pytest
+pylint
 tox
 black
 isort

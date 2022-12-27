@@ -25,24 +25,26 @@ A python 3.8 or higher version is required.
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
+    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] file
+
     A tool for generating flashable parameter container.
 
     positional arguments:
-      file                  XML parameter definition file
+    file                  XML parameter definition file
 
     optional arguments:
       -h, --help            show this help message and exit
       --ihex                Generate intelhex file
       --csrc                Generate c/c++ header and source files
       --gld                 Generate GNU linker include file for parameter symbol generation.
-      --dump                Generate pyHexDump print configuration file.
+      --pyhexdump           Generate pyHexDump print configuration file.
       --destdir DESTDIR, -o DESTDIR
                             Specify output directory for generated files
       --filename FILENAME, -f FILENAME
                             Set basename for generated files.
 
 To use unreleased development builds or setting up a
-development environment for Pargen, please read the
+development environment for ParGen, please read the
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github.
 
@@ -64,7 +66,7 @@ XML capabilities in depth, read on.
 The XML follows an XSD-schema defined in pargen_1.0.xsd. It is highly
 recommended to use an XML editor with schema validation support to
 avoid or detect validations already while editing. Visual Studio Code would
-be a perfect choice, given the "XML Language Support" extension from 
+be a perfect choice, given the "XML Language Support" extension from
 Red Hat is installed. This extensions brings validation and "IntelliSense"
 to editing XML files.
 
@@ -81,10 +83,10 @@ that the preceding element may appear multiple times:
         <pd:blocks>
         ...
       </pd:Container>
-    
+
 
 ### XML Root Element
-The XML file uses XSD schema validation and a namespace. This requires the 
+The XML file uses XSD schema validation and a namespace. This requires the
 following (static) XML element to be used as the root XML element at the
 beginning of the file:
 
@@ -92,7 +94,7 @@ beginning of the file:
     <pd:parameterDef xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen https://nhjschulz.github.io/xsd/pargen_1.0.xsd"">
-    
+
 
 ### Container Element
 The top level configuration element is the **container**. A container
@@ -106,7 +108,7 @@ maps its parameter blocks to absolute addresses by the **at** attribute. Address
 | name      | The container name.     |   No   |       |
 | at        | Absolute address of the container.|No||
 
-#### Container Child Elements 
+#### Container Child Elements
 
 |Element  |Description              | Multiplicity |
 |---------|-------------------------|--------------|
@@ -125,7 +127,7 @@ maps its parameter blocks to absolute addresses by the **at** attribute. Address
 
 A block element defines a contiguous memory area inside a container.
 Blocks contain an optional header and parameters at unique offsets
-inside the block memory range. Gaps between parameters are filled 
+inside the block memory range. Gaps between parameters are filled
 with the byte value specified using the 'fill' attribute.
 A container may have 1 to many block children inside a blocks element.
 
@@ -138,9 +140,9 @@ A container may have 1 to many block children inside a blocks element.
 | length    | Number of bytes covered by this block|No|
 | align     | block alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 | fill      | byte value used to fill gaps.|Yes| 0x00 |
-| endianness| LE or BE: Little or or big endian byte order |Yes|LE| 
+| endianness| LE or BE: Little or or big endian byte order |Yes|LE|
 
-#### Block Child Elements 
+#### Block Child Elements
 
 |Element  |Description              | Multiplicity |
 |---------|-------------------------|--------------|
@@ -150,14 +152,14 @@ A container may have 1 to many block children inside a blocks element.
 
 #### Block Header Element
 
-Pargen blocks may contain a header at the beginning of the 
+Pargen blocks may contain a header at the beginning of the
 block memory area. This optional header contains block identification,
 version and length information. The header supports parameter validation
 to verify correctness and compatibility with the using application during
-runtime. The safety example in the examples folder shows how to use the 
+runtime. The safety example in the examples folder shows how to use the
 header in combination with a CRC for this purpose.
 
-The header data is a 16 byte long data structure with the following 
+The header data is a 16 byte long data structure with the following
 layout as a C-Language data structure:
 
     struct sruct_pargen_header_type
@@ -205,7 +207,7 @@ have one to many parameter elements.
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 
 
-#### Parameter Child Elements 
+#### Parameter Child Elements
 
 |Element  |Description              | Multiplicity |
 |---------|-------------------------|--------------|
@@ -227,7 +229,7 @@ Json definitions are supported:
 |Value type                        | Examples    |
 |----------------------------------|--------------|
 | Integer values in decimal or hexadecimal | 1, -2, 0xABCDEF |
-| Floating point variables  | 3.141, 1E-005 | 
+| Floating point variables  | 3.141, 1E-005 |
 | Strings in double quotes  | "Hello world!" |
 | One-dimensional arrays    | [1, 2, 3, 4, 5, 6] |
 
@@ -247,7 +249,7 @@ and config elements are used to define crc calculation parameters.
 | type      | Parameter type, one of uint{bits} with bits one of 8,16,32,64|No|
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 
-#### Crc Child Elements 
+#### Crc Child Elements
 
 |Element  |Description              | Multiplicity |
 |---------|-------------------------|--------------|
@@ -258,9 +260,9 @@ and config elements are used to define crc calculation parameters.
 #### Crc Memory Element
 
 The memory element defines the memory range used to calculate
-the crc and the access method to this memory range if 
+the crc and the access method to this memory range if
 byte swapping is needed. The bytes at the range boundaries are
-included into the crc calculation. 
+included into the crc calculation.
 
 Attribute  |Description              |optional|default |
 |-----------|-------------------------|--------|-------|
@@ -271,7 +273,7 @@ Attribute  |Description              |optional|default |
 
 #### Crc Config Element
 
-The config element defines the crc calculation parameters to 
+The config element defines the crc calculation parameters to
 enable arbitrary crc methods. The values for common used crc methods
 can be taken from this
 [crc catalog page](https://reveng.sourceforge.io/crc-catalogue/all.htm).
@@ -293,7 +295,7 @@ Attribute  |Description              |optional|default |
       <pd:memory from="0x0000" to="0x0007" access="32" swap="true"/>
       <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
     </pd:crc>
-     
+
 
 ## Issues, Ideas And Bugs
 
