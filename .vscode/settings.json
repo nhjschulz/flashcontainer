@@ -19,7 +19,7 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Enabled": false,
     "python.linting.flake8Args": [
             "--max-line-length=120"
     ],
@@ -29,5 +29,6 @@
     "cSpell.enabled": true,
     "cSpell.enableFiletypes": [
         "markdown"
-    ]
+    ],
+    "python.linting.pylintEnabled": true
 }
