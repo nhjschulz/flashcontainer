@@ -49,7 +49,9 @@ This shows a minimal crc definition using the default CRC-32 computation
 defined by IEEE802.3. The crc is placed 4 bytes before the end of the
 0x200 bytes long block. It covers the entire block space. The "." value
 in the 'to' attribute translates to the address right before the Crc
-parameter.
+parameter. The default values for calculation are:
+
+    polynomial:0x4C11DB7, 32 Bit, init:0xFFFFFFFF, reverse in:True, reverse out:True, final xor:True, access:1, swap:False
 
 ## Running pyHexDump for Validation
 
@@ -59,6 +61,20 @@ configurable binary data dumper. The tool reads the hex file data
 and formats the contained parameter data using the pyhexdump configuration
 file from pargen:
 
-    $ pyHexdump print .\gen\safety.hex .\gen\safety.pyhexdump
-    paraBlkSafety_calibration @ 80000010: [1.0, -2.0999999046325684, 3.200000047683716, 4.5, 5.400000095367432, 6.5]
-    paraBlkSafety_crc @ 800001FC: 733588664
+    $ pyHexdump print -oih .\gen\safety.hex .\gen\safety.pyhexdump
+    paraBlkSafety_blkhdr.id @ 80000000: 0xFF01
+    paraBlkSafety_blkhdr.major @ 80000002: 0x0001
+    paraBlkSafety_blkhdr.minor @ 80000004: 0x0000
+    paraBlkSafety_blkhdr.dataver @ 80000006: 0x0003
+    paraBlkSafety_blkhdr.reserved @ 80000008: 0x00000000
+    paraBlkSafety_blkhdr.length @ 8000000C: 0x00000200
+    paraBlkSafety_calibration @ 80000010: [0x3F800000, 0xC0066666, 0x404CCCCD, 0x40900000, 0x40ACCCCD, 0x40D00000]
+    paraBlkSafety_crc @ 800001FC: 0x2BB9ACB8
+
+The block crc shown in the end of the above hex output can be checked using
+the checksum command from pyHexDump. Note that unlike pargen's crc
+configuration, the end address is not included and must therefore
+be incremented by one.
+
+    $ pyHexdump checksum -sa 0x80000000 -ea 0x800001FC -s 0xFFFFFFFF -p 0x4C11DB7 -ri -ro -fx  .\gen\safety.hex
+    2BB9ACB8

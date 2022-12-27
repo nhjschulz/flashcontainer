@@ -36,6 +36,84 @@ import json5
 
 import flashcontainer.datamodel as DM
 from flashcontainer.byteconv import ByteConvert
+
+# Header data types
+_HEADER_STRUCTURES = [
+    {
+        "name": "pargen_header_le_t",
+        "elements":
+        [
+            {
+                "name": "id",
+                "dataType": "u16le",
+                "count": 1
+            },
+            {
+                "name": "major",
+                "dataType": "u16le",
+                "count": 1
+            },
+            {
+                "name": "minor",
+                "dataType": "u16le",
+                "count": 1
+            },
+            {
+                "name": "dataver",
+                "dataType": "u16le",
+                "count": 1
+            },
+            {
+                "name": "reserved",
+                "dataType": "u32le",
+                "count": 1
+            },
+            {
+                "name": "length",
+                "dataType": "u32le",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "name": "pargen_header_be_t",
+        "elements":
+        [
+            {
+                "name": "id",
+                "dataType": "u16be",
+                "count": 1
+            },
+            {
+                "name": "major",
+                "dataType": "u16be",
+                "count": 1
+            },
+            {
+                "name": "minor",
+                "dataType": "u16be",
+                "count": 1
+            },
+            {
+                "name": "dataver",
+                "dataType": "u16be",
+                "count": 1
+            },
+            {
+                "name": "reserved",
+                "dataType": "u32be",
+                "count": 1
+            },
+            {
+                "name": "length",
+                "dataType": "u32be",
+                "count": 1
+            }
+        ]
+    }
+]
+
+
 class PyHexDumpWriter(DM.Walker):
     """Create configuration file for pyHexDump (see https://github.com/BlueAndi/pyHexDump) """
 
@@ -67,6 +145,24 @@ class PyHexDumpWriter(DM.Walker):
 
         self.dmpfile = filename.open(mode='w')
 
+    def begin_block(self, block: DM.Block) -> None:
+        """Add header if present"""
+
+        if block.header is not None:
+
+            subtype = "le"
+            if self.ctx_block.endianess == DM.Endianness.BE:
+                subtype = "be"
+
+            element = {
+                "name": f"{self.ctx_block.name}_blkhdr",
+                "addr": f"{hex(block.addr)}",
+                "dataType": f"pargen_header_{subtype}_t",
+                "count": 1
+            }
+
+            self.elements.append(element)
+
     def begin_parameter(self, param: DM.Parameter) -> None:
         """Add element to data array """
 
@@ -91,6 +187,7 @@ class PyHexDumpWriter(DM.Walker):
                     f"cmd: {self.options.get('CMDLINE')}",
                     f"Buildkey: {self.options.get('GUID')}"
                 ],
+            "structures": _HEADER_STRUCTURES,
             "elements": self.elements
             }
 
