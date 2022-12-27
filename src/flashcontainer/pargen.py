@@ -1,3 +1,6 @@
+"""Pargen main function
+"""
+
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -28,23 +31,50 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-__version__ = "0.0.1"
+import datetime
+import argparse
+import logging
+import uuid
+import sys
+import os
+from pathlib import Path
+from typing import List
 
 from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
 from flashcontainer.cfilewriter import CFileWriter
 from flashcontainer.gnuldwriter import GnuLdWriter
+from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
+from flashcontainer.packageinfo import __version__, __email__, __repository__
+import flashcontainer.datamodel as DM
 
-import datetime
-import argparse
-import logging
-import copy
-import uuid
-import sys
+# List of output writers
+_WRITER = [
+    {
+        "key": "ihex",
+        "class": HexWriter,
+        "help": "Generate intelhex file"
+    },
+    {
+        "key": "csrc",
+        "class": CFileWriter,
+        "help": "Generate c/c++ header and source files"
+    },
+    {
+        "key": "gld",
+        "class": GnuLdWriter,
+        "help": "Generate GNU linker include file for parameter symbol generation."
+    },
+    {
+        "key": "pyhexdump",
+        "class": PyHexDumpWriter,
+        "help": "Generate pyHexDump print configuration file."
+    }
+]
 
 
-def pargen() -> int:
-    """ Parameter generator tool entry point"""
+def pargen_cli() -> int:
+    """ cmd line interface for pagen"""
 
     logging.basicConfig(encoding='utf-8', level=logging.WARN)
 
@@ -52,74 +82,81 @@ def pargen() -> int:
     name = "pargen"
 
     parser = argparse.ArgumentParser(prog=name, description=about)
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    parser.add_argument('--ihex', nargs=1, help="Generate intelhex file with given name.")
-    parser.add_argument('--csrc', nargs=1, help="Generate c/c++ header and source file using given basename.")
-    parser.add_argument('--gld', nargs=1, help="Generate GNU linker include file for parameter symbol generation.")
-    parser.add_argument('file',   nargs=1, help='XML parameter definition file')
+
+    for writer in _WRITER:
+        parser.add_argument("--" + writer["key"], action='store_true', help=writer["help"])
+
+    parser.add_argument(
+        '--destdir', '-o', nargs=1,
+        help='Specify output directory for generated files', default=[str(Path.cwd())])
+    parser.add_argument(
+        '--filename', '-f', nargs=1,
+        help='Set basename for generated files.')
+
+    parser.add_argument('file', nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
 
     print(f"{name} {__version__}: {about}")
-    print("copyright (c) 2022 haju.schulz@online.de\n")
+    print(f"Copyright (c) 2022 {__email__}\n")
 
-    model = XmlParser.from_file(args.file[0])
+    writers = []
+
+    for writer in _WRITER:
+        if getattr(args, writer["key"]):
+            writers.append(writer["class"])
+
+    return pargen(
+        cfgfile=args.file[0],
+        filename=args.filename,
+        outdir=Path(args.destdir[0]),
+        writers=writers)
+
+
+def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) -> int:
+    """ Parameter generator tool entry point"""
+
+    # Create output directory (if necessary)
+    destdir = Path.resolve(outdir)
+    destdir.mkdir(parents=True, exist_ok=True)
+
+    outfilename = filename
+    if outfilename is None:
+        outfilename = os.path.basename(cfgfile)
+    outfilename = Path(outfilename).stem
+
+    model = XmlParser.from_file(cfgfile)
 
     # writer context options
     param = {
-        "PNAME": name,
+        "PNAME": "pargen",
         "VERSION": __version__,
-        "INPUT": args.file[0],
+        "INPUT": cfgfile,
         "GUID": uuid.uuid4(),
         "CMDLINE": ' '.join(sys.argv[0:]),
-        "DATETIME": datetime.datetime.now()
+        "DATETIME": datetime.datetime.now(),
+        "MODEL": model,
+        "DESTDIR": destdir,
+        "BASENAME": outfilename
         }
 
     if model.validate(param) is False:
-        raise Exception("Model Validation Failure")
+        return 2
 
-    if (args.ihex is not None):
-        try:
-            my_params = copy.deepcopy(param)
-            my_params.update({"FN": args.ihex[0]})
-            print(f"Generating intelhex file {args.ihex[0]}")
-            writer = HexWriter(model, my_params)
-            writer.run()
-        except Exception as exc:
-            logging.exception(exc)
-            raise
+    if 0 == len(writers):
+        logging.warning("no writers defined, generating nothing.")
+        return 0
 
-    if (args.csrc is not None):
-        try:
-            my_params = copy.deepcopy(param)
-            my_params.update({"FN": args.csrc[0]})
-            print(f"Generating C-files {args.csrc[0]}.[ch]")
-            writer = CFileWriter(model, my_params)
-            writer.run()
-        except Exception as exc:
-            logging.exception(exc)
-            raise
+    for writer in writers:
+        writer(model, param).run()
 
-    if (args.gld is not None):
-        try:
-            my_params = copy.deepcopy(param)
-            my_params.update({"FN": args.gld[0]})
-            print(f"Generating GNU Linker script {args.gld[0]}")
-            writer = GnuLdWriter(model, my_params)
-            writer.run()
-        except Exception as exc:
-            logging.exception(exc)
-            raise
-
+    print("Done.")
     return 0
 
 
 if __name__ == "__main__":
     try:
-        pargen()
-        print("Done.")
-        sys.exit(0)
-
-    except Exception as exc:
-        print("Failed.")
+        sys.exit(pargen_cli())
+    except Exception as exc:  # pylint: disable=broad-except
+        logging.exception(exc)
         sys.exit(1)

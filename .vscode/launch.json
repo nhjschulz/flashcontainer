@@ -10,9 +10,9 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["--ihex", "example.hex", "--csrc", "param", "${workspaceFolder}/example/example.xml", "--gld", "example.ld"],
+            "args": ["--ihex", "--csrc", "--gld", "--pyhexdump", "--destdir", "./gen", "example.xml"],
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/example",
+            "cwd": "${workspaceFolder}/tests/example",
             "justMyCode": true
         }
     ]

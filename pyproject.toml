@@ -1,6 +1,44 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm", "wheel", "toml"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "flashcontainer"
+version = "0.1.0"
+requires-python = ">=3.8"
+description = "A tooling for flashable parameter data container generation"
+readme = "README.md"
+license = {text = "BSD License"}
+authors = [
+  {name = "Haju Schulz", email = "haju.schulz@online.de"}
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10"
+]
+
+dependencies = [
+    "crc >= 3.0",
+    "intelhex >= 2.3.0",
+    "json5 >= 0.9.10",
+    "lxml >= 4.9.2",
+    "toml >= 0.10.2"
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest > 5.0.0",
+  "pytest-cov[all]"
+]
+
+[project.urls]
+repository = "https://github.com/nhjschulz/parameter-container"
+
+[project.scripts]
+pargen = "flashcontainer.pargen:pargen_cli"
 
 [tool.pytest.ini_options]
 pythonpath = [

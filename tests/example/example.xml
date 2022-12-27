@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    <pd:container name="CodeFlash" at="0x80000000">
+        <pd:blocks>
+            <pd:block offset="0x00000000" name="paraBlkQm" length="0x100" endianness="LE" fill="0x55">
+                <pd:comment>This block is used for non-safety related parameters only.</pd:comment>
+                <pd:header id="0xFFFF" major="1" minor="0" version="0"></pd:header>
+                <pd:data>
+                    <pd:param offset="0x10" name="crcTestInput" type="uint8">
+                        <pd:comment>see https://www.boost.org/doc/libs/1_79_0/libs/crc/test/crc_test2.cpp</pd:comment>
+                        <pd:value>[0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39]</pd:value>
+                    </pd:param>
+                    <pd:crc offset="." name="crcTestResult" type="uint32">
+                        <pd:comment>expected: CBF43926</pd:comment>
+                        <pd:memory from="0x10" to="."></pd:memory>
+                    </pd:crc>
+                   <pd:param offset="0x20" name="tag" type="int16">
+                            <pd:comment>Integer array example</pd:comment>
+                            <pd:value>[-4, -3, -2, -1, 0, 1, 2, 3, 4]</pd:value>
+                        </pd:param>
+                    <pd:crc offset="0xfc" name="crc" type="uint32">
+                        <pd:comment>block crc32 (IEEE802.3)</pd:comment>
+                        <pd:memory from="0x0000" to="."/>
+                        <pd:config  polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true"></pd:config>
+                    </pd:crc>
+                </pd:data>
+            </pd:block>
+
+            <pd:block name="paraBlkSafety" offset="." length="0x200" endianness="LE" align="512" fill="0xab">
+                <pd:comment>This block is used for any-safety related parameters.</pd:comment>
+                <pd:header id="0x0D00" major="1" minor="0" version="0"/>
+                <pd:data>
+                    <pd:param offset="0x10" name="array" type="float32" align="4">
+                        <pd:value>[1.0,-2.1,3.2,4.5,5.4,6.5]</pd:value>
+                    </pd:param>
+                    <pd:param offset="0x100" name="hello" type="utf8">
+                        <pd:value>"Hello world!"</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="val" type="uint16" align="2">
+                        <pd:value>0x1604</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="birthday" type="float32">
+                        <pd:value>0.160469</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="negativePi" type="float32">
+                        <pd:value>-3.141</pd:value>
+                    </pd:param>
+                    <pd:crc offset="0x1fc" name="crc" type="uint32">
+                         <pd:comment>block crc32 (IEEE802.3)</pd:comment>
+                         <pd:memory from="0x0000" to="."/>
+                    </pd:crc>
+                </pd:data>
+            </pd:block>
+        </pd:blocks>
+    </pd:container>
+</pd:pargen>

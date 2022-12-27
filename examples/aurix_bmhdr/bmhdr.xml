@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Flashcontainer example configuration for Aurix TC3xx boot mode header generation
+-->
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    <pd:container name="UCBRange" at="0xAF400000">
+        <pd:blocks>
+            <pd:block offset="0x0000" name="UCB_BMHD0" length="0x1F4" fill="0x00" endianness="LE">
+                <pd:comment>Aurix Bootmode Headers</pd:comment>
+                    <pd:data>
+                        <pd:param offset="0x000" name="BMI_BMHDID" type="uint32">
+                            <pd:value>0xB359013E</pd:value>
+                        </pd:param>
+                        <pd:param offset="0x004" name="STAD" type="uint32">
+                            <pd:value>0x80028000</pd:value>
+                        </pd:param>
+                        <pd:crc offset="0x008" name="CRCBMHD" type="uint32" >
+                            <pd:memory from="0x0000" to="0x0007" access="32" swap="true"/>
+                            <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
+                        </pd:crc>
+                        <pd:crc offset="0x00C" name="CRCBMHD_N" type="uint32">
+                            <pd:memory from="0x0000" to="0x007" access="32" swap="true"/>
+                            <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="false" ></pd:config>
+                        </pd:crc>
+                        <pd:param offset="0x100" name="PW" type="uint32">
+                            <pd:value>[0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000]</pd:value>
+                        </pd:param>
+                        <pd:param offset="0x1F0" name="CONFIRMATION" type="uint32">
+                            <pd:value>0x43211234</pd:value>
+                        </pd:param>
+                    </pd:data>
+            </pd:block>
+        </pd:blocks>
+    </pd:container>
+</pd:pargen>

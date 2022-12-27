@@ -1,4 +1,4 @@
-    <!--
+<!--
 BSD 3-Clause License
 
 Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -32,12 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  <!-- XSD grammer for pargen XML input -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://www.schulznorbert.de/1.0/pargen"
-    xmlns="http://www.schulznorbert.de/1.0/pargen"
-    xmlns:pargen="http://www.schulznorbert.de/1.0/pargen"
+    targetNamespace="http://nhjschulz.github.io/1.0/pargen"
+    xmlns="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:pargen="http://nhjschulz.github.io/1.0/pargen"
     elementFormDefault="qualified">
 
-    <xs:element name="parameterDef">
+    <xs:element name="pargen">
         <xs:complexType>
             <xs:sequence minOccurs="1" maxOccurs="unbounded">
                 <xs:element name="container">
@@ -62,17 +62,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <xs:complexType name="block">
         <xs:sequence>
             <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
-            <xs:element name="header" type="pargen:header"></xs:element>
+            <xs:element name="header" type="pargen:header" minOccurs="0" maxOccurs="1"></xs:element>
             <xs:element name="data" type="pargen:data"></xs:element>
         </xs:sequence>
         <xs:attribute name="offset" type="pargen:address" use="required" />
         <xs:attribute name="name" type="pargen:identifier" use="required" />
+        <xs:attribute name="length" type="pargen:uint32" use="required" />
         <xs:attribute name="endianness" type="pargen:endianness" use="optional" default="LE" />
         <xs:attribute name="align" type="pargen:align" use="optional" default="1" />
         <xs:attribute name="fill" type="pargen:uint8" use="optional" default="0x00" />
-
     </xs:complexType>
-
 
     <xs:complexType name="header">
         <xs:simpleContent>
@@ -81,26 +80,69 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <xs:attribute name="major" type="pargen:uint16" use="required" />
                 <xs:attribute name="minor" type="pargen:uint16" use="required" />
                 <xs:attribute name="version" type="pargen:uint16" use="required" />
-                <xs:attribute name="length" type="pargen:uint32" use="required" />
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
 
     <xs:complexType name="data">
-        <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="param" type="pargen:param"></xs:element>
-        </xs:sequence>
+            <xs:element name="crc" type="pargen:crc"></xs:element>
+        </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="param">
+    <xs:complexType name="param_base">
         <xs:sequence>
             <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
-            <xs:element name="value" type="pargen:textonly" minOccurs="1" maxOccurs="1"></xs:element>
         </xs:sequence>
         <xs:attribute name="offset" type="pargen:address" use="required" />
         <xs:attribute name="name" type="pargen:identifier" use="required" />
         <xs:attribute name="type" type="pargen:type" use="required" />
         <xs:attribute name="align" type="pargen:align" use="optional" default="1" />
+    </xs:complexType>
+
+    <xs:complexType name="param">
+        <xs:complexContent>
+            <xs:extension base="pargen:param_base">
+                <xs:sequence>
+                    <xs:element name="value" type="pargen:textonly" minOccurs="1" maxOccurs="1"></xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="crc">
+        <xs:complexContent>
+            <xs:extension base="pargen:param_base">
+                <xs:sequence>
+                    <xs:element name="memory" type="pargen:memory" minOccurs="1" maxOccurs="1"></xs:element>
+                    <xs:element name="config" type="pargen:crccfg" minOccurs="0" maxOccurs="1"></xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="crccfg">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="polynomial" type="uint32" use="optional" default="0x04C11DB7" />
+                <xs:attribute name="init" type="uint32" use="optional" default="0xFFFFFFFF" />
+                <xs:attribute name="rev_in" type="xs:boolean" use="optional" default="true" />
+                <xs:attribute name="rev_out" type="xs:boolean" use="optional" default="true" />
+                <xs:attribute name="final_xor" type="xs:boolean" use="optional" default="true" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="memory">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="from" type="pargen:address" default="0x0000" />
+                <xs:attribute name="to" type="pargen:address" default="." />
+                <xs:attribute name="access" type="pargen:access" use="optional" default="8" />
+                <xs:attribute name="swap" type="xs:boolean" use="optional" default="false" />
+            </xs:extension>
+        </xs:simpleContent>
     </xs:complexType>
 
     <xs:complexType name="utf8">
@@ -191,9 +233,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <xs:enumeration value="4096" />
             <xs:enumeration value="8192" />
             <xs:enumeration value="16384" />
-
-
        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="access">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="8" />
+            <xs:enumeration value="16" />
+            <xs:enumeration value="32" />
+            <xs:enumeration value="64" />
+        </xs:restriction>
     </xs:simpleType>
 
     <xs:simpleType name="textonly">
@@ -201,5 +250,4 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <xs:minLength value="1"/>
         </xs:restriction>
     </xs:simpleType>
-
 </xs:schema>

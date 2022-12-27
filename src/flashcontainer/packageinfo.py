@@ -1,4 +1,5 @@
-""" package initialisation"""
+"""Provide packaging information metadata """
+
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -29,4 +30,52 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from .packageinfo import __version__, __author__, __email__, __repository__, __license__
+import importlib.metadata as meta
+import pathlib
+
+import toml
+
+__version__ = "???"
+__author__ = "???"
+__email__ = "???"
+__repository__ = "???"
+__license__ = "???"
+
+def init_from_metadata() -> None:
+    """Initialize dunders from importlib.metadata
+
+    Requires that the pacakge was installed.
+    """
+
+    my_metadata = meta.metadata('flashcontainer')
+    return \
+        my_metadata['Version'],\
+        my_metadata['Author'],\
+        my_metadata['Author-email'],\
+        my_metadata['Project-URL'].replace("repository, ", ""),\
+        my_metadata['License']
+
+
+
+def init_from_toml() -> None:
+    """Initialize dunders from pypackage.toml file
+
+    Tried if package wasn't installed
+    """
+
+    dist_dir = pathlib.Path(__file__).resolve().parents[2]
+    toml_file = pathlib.Path.joinpath(dist_dir, "pyproject.toml")
+    data = toml.load(toml_file)
+
+    return \
+        data["project"]["version"],\
+        data["project"]["authors"][0]["name"],\
+        data["project"]["authors"][0]["email"],\
+        data["project"]["urls"]["repository"],\
+        data["project"]["license"]["text"]
+
+try:
+    __version__, __author__, __email__, __repository__, __license__ = init_from_metadata()
+
+except meta.PackageNotFoundError:
+    __version__, __author__, __email__, __repository__, __license__ = init_from_toml()
