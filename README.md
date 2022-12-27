@@ -122,16 +122,19 @@ maps its parameter blocks to absolute addresses by the **at** attribute. Address
 
 
 ### Block Element
-A block element defines a coherent memory area inside a container. 
+
+A block element defines a contiguous memory area inside a container.
+Blocks contain an optional header and parameters at unique offsets
+inside the block memory range. Gaps between parameters are filled 
+with the byte value specified using the 'fill' attribute.
 A container may have 1 to many block children inside a blocks element.
-Blocks hold an optional header and a list of parameters or crc elements.
 
 #### Block Attributes
 
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
 | name      | The block name.         |   No   |       |
-| offset    | Memory start offset inside container. Value may be "*" to use the next free offset inside the  container.|No||
+| offset    | Memory start offset inside container. Value may be "." to use the next free offset inside the  container.|No||
 | length    | Number of bytes covered by this block|No|
 | align     | block alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 | fill      | byte value used to fill gaps.|Yes| 0x00 |
@@ -147,14 +150,15 @@ Blocks hold an optional header and a list of parameters or crc elements.
 
 #### Block Header Element
 
-Pargen blocks offers the generation of a header at the beginning of the 
+Pargen blocks may contain a header at the beginning of the 
 block memory area. This optional header contains block identification,
 version and length information. The header supports parameter validation
 to verify correctness and compatibility with the using application during
 runtime. The safety example in the examples folder shows how to use the 
 header in combination with a CRC for this purpose.
 
-The header data is a 16 byte long data structure with the following layout:
+The header data is a 16 byte long data structure with the following 
+layout as a C-Language data structure:
 
     struct sruct_pargen_header_type
     {
@@ -167,7 +171,7 @@ The header data is a 16 byte long data structure with the following layout:
     };
 
 Application can freely decide how to use the id, major, minor and dataver
-fields. The proposed usage is as follows:
+header fields. The proposed usage is as follows:
 
 * id - A unique id to identify the blocks purpose. (Example: 1:CAN Bus settings, 2 :Motor parameters, ...)
 * Major.Minor - A version pair defining the layout of the block
@@ -188,13 +192,14 @@ further parameter starts at offset 16 (0x10) if the header is used.
 
 ### Parameter Element
 
-A parameter element defines a single parameter inside a block. 
+A parameter element defines a single parameter inside a block. Blocks may
+have one to many parameter elements.
 
 #### Parameter Element Attributes
 
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
-| offset    | Memory start offset inside block. Value may be "*" to use the next free offset inside the block.|No||
+| offset    | Memory start offset inside block. Value may be "." to use the next free offset inside the block.|No||
 | name      | The parameter name.         |   No   |       |
 | type      |Parameter type, one of [u]int{bits} with bits one of 8,16,32,64 or float32,float64 or utf8|No|
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
@@ -208,14 +213,16 @@ A parameter element defines a single parameter inside a block.
 | value   | The parameter value     | 1  |
 
 #### Parameter Element Example
+
     <pd:param offset="0x004" name="STAD" type="uint32">
       <pd:comment>Application entry point address</pd:comment>
       <pd:value>0x80028000</pd:value>
 
 #### Parameter Value Element
-The value element of a parameter holds the parameter value in the text
-element using a JSON style syntax. The following subset of Json
-definitions are supported:
+
+The value element of a parameter holds the parameter value inside
+its text element using a JSON style syntax. The following subset of
+Json definitions are supported:
 
 |Value type                        | Examples    |
 |----------------------------------|--------------|
@@ -226,18 +233,18 @@ definitions are supported:
 
 ### Crc Element
 
-The crc element defines a an integer parameter. The difference to an
-integer parameter is the automatic value calculation using a
-crc algorithm. Instead of a value child element, the memory
-and config elements are used to define the crc calculation parameters.
+The crc element defines a an integer parameter. The difference to a
+normal integer parameter is the automatic value calculation using a
+crc algorithm. Instead of a parameter value child element, memory
+and config elements are used to define crc calculation parameters.
 
 #### Crc Element Attributes
 
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
-| offset    | Memory start offset inside block. Value may be "*" to use the next free offset inside the block|No||
+| offset    | Memory start offset inside block. Value may be "." to use the next free offset inside the block|No||
 | name      | The crc parameter name.   |   No   |       |
-| type      |Parameter type, one of uint{bits} with bits one of 8,16,32,64|No|
+| type      | Parameter type, one of uint{bits} with bits one of 8,16,32,64|No|
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 
 #### Crc Child Elements 
@@ -249,9 +256,11 @@ and config elements are used to define the crc calculation parameters.
 | config   | The optional crc computation parameter| 0..1|
 
 #### Crc Memory Element
+
 The memory element defines the memory range used to calculate
 the crc and the access method to this memory range if 
-byte swapping is needed.
+byte swapping is needed. The bytes at the range boundaries are
+included into the crc calculation. 
 
 Attribute  |Description              |optional|default |
 |-----------|-------------------------|--------|-------|
@@ -261,12 +270,14 @@ Attribute  |Description              |optional|default |
 | swap    | Enable bytes swapping using access size|Yes|false|
 
 #### Crc Config Element
+
 The config element defines the crc calculation parameters to 
-enable arbitrary crc methods. The values for common used crc methods can be taken from this
-[crc catatlog page](https://reveng.sourceforge.io/crc-catalogue/all.htm). The default values select the 
-IEEE802.3 calculation also known as CRC-32. Note that the
-bit size of the crc is not part of these parameters, but 
-derived from the type attribute of the crc element.
+enable arbitrary crc methods. The values for common used crc methods
+can be taken from this
+[crc catalog page](https://reveng.sourceforge.io/crc-catalogue/all.htm).
+The default values select the IEEE802.3 crc calculation also known as
+CRC-32. Note that the bit size of the crc is not part of these parameters,
+but derived from the type attribute of the crc element.
 
 Attribute  |Description              |optional|default |
 |-----------|-------------------------|--------|-------|
@@ -277,12 +288,12 @@ Attribute  |Description              |optional|default |
 | final_xor | Perform final XOR of the crc|yes|true|
 
 #### Crc Element Example
+
     <pd:crc offset="0x008" name="CRCBMHD"type="uint32" >
       <pd:memory from="0x0000" to="0x0007" access="32" swap="true"/>
       <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
     </pd:crc>
      
-
 
 ## Issues, Ideas And Bugs
 
