@@ -1,4 +1,4 @@
-
+"""XML Parser code for pargen."""
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -29,25 +29,29 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import lxml.etree as ET
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
-from flashcontainer.checksum import CrcConfig
-
 import logging
 import pathlib
 import os
 
+import lxml.etree as ET
+
+import flashcontainer.datamodel as DM
+from flashcontainer.byteconv import ByteConvert
+from flashcontainer.checksum import CrcConfig
+
 schema_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "pargen_1.0.xsd")
-NS = '{http://www.schulznorbert.de/1.0/pargen}'
+NS = '{http://nhjschulz.github.io/1.0/pargen}'
 
 
 class XmlParser:
+    """XML Parser to generate a datamodel from an XML file"""
+
     def __init__(self):
         pass
 
     @classmethod
     def from_file(cls, file: str) -> DM.Model:
+        """Parser entry point returning model instance"""
         return cls.parse(file)
 
     @staticmethod
@@ -62,12 +66,9 @@ class XmlParser:
             model = XmlParser._build_model(xml_doc.getroot(), file)
 
         except ET.DocumentInvalid as err:
-            logging.critical(f"xml validation failed:\n{str(err.error_log)}")
+            logging.critical(f"xml validation failed:\n{str(err.error_log)}") # pylint: disable=no-member
             return None
 
-        except Exception as e:
-            logging.exception(str(e))
-            return None
 
         return model
 
@@ -149,12 +150,17 @@ class XmlParser:
         defaults = CrcConfig()  # get defaults
 
         # parse cfg element
-        width = DM.TYPE_DATA[DM.ParamType[param.get("type")]].size * 8
-        poly = XmlParser._parse_int(XmlParser._get_optional(cfg_element, 'polynomial', defaults.poly))
-        init = XmlParser._parse_int(XmlParser._get_optional(cfg_element, 'init',  defaults.init))
-        revin = XmlParser._parse_bool(XmlParser._get_optional(cfg_element, 'rev_in',  defaults.revin))
-        revout = XmlParser._parse_bool(XmlParser._get_optional(cfg_element, 'rev_out',  defaults.revout))
-        xor = XmlParser._parse_bool(XmlParser._get_optional(cfg_element, 'final_xor',  defaults.xor))
+        width = DM.TYPE_DATA[DM.ParamType[param.get("type").upper()]].size * 8
+        poly = XmlParser._parse_int(
+            XmlParser._get_optional(cfg_element, 'polynomial', defaults.poly))
+        init = XmlParser._parse_int(
+            XmlParser._get_optional(cfg_element, 'init',  defaults.init))
+        revin = XmlParser._parse_bool(
+            XmlParser._get_optional(cfg_element, 'rev_in',  defaults.revin))
+        revout = XmlParser._parse_bool(
+            XmlParser._get_optional(cfg_element, 'rev_out',  defaults.revout))
+        xor = XmlParser._parse_bool(
+            XmlParser._get_optional(cfg_element, 'final_xor',  defaults.xor))
 
         # parse memory element
         start = XmlParser.calc_addr(
@@ -168,7 +174,8 @@ class XmlParser:
             XmlParser._get_optional(mem_element, "to", "."),
             1)
 
-        access = XmlParser._parse_int(XmlParser._get_optional(mem_element, 'access',  defaults.access))
+        access = XmlParser._parse_int(
+            XmlParser._get_optional(mem_element, 'access',  defaults.access))
         swap = XmlParser._parse_bool(XmlParser._get_optional(mem_element, 'swap',  defaults.swap))
 
         # special case for CRC: "." means end before current address, not at it.
@@ -199,21 +206,21 @@ class XmlParser:
                 XmlParser.get_alignment(parameter_element))
 
             name = parameter_element.get("name")
-            ptype = DM.ParamType[parameter_element.get("type")]
+            ptype = DM.ParamType[parameter_element.get("type").upper()]
             crc_cfg = None
             val_text = None
 
             if f"{NS}crc" == parameter_element.tag:
                 crc_cfg = XmlParser._parse_crc_config(parameter_element, block, offset)
                 val_text = '0x0'  # crc bits get calculated at end of block
-                logging.info("    got CRC data: " + str(crc_cfg))
+                logging.info("    got CRC data: %s", crc_cfg)
             else:
                 value_element = parameter_element.find(f"{NS}value")
                 val_text = value_element.text
 
-            bytes = ByteConvert.json_to_bytes(ptype, block.endianess, val_text)
+            data = ByteConvert.json_to_bytes(ptype, block.endianess, val_text)
 
-            parameter = DM.Parameter(offset, name, ptype, bytes, crc_cfg)
+            parameter = DM.Parameter(offset, name, ptype, data, crc_cfg)
 
             comment = parameter_element.find(f"{NS}comment")
             if comment is not None:
@@ -221,7 +228,7 @@ class XmlParser:
 
             block.add_parameter(parameter)
             logging.info(f"    Adding {parameter}")
-            running_addr = offset + len(bytes)
+            running_addr = offset + len(data)
 
     @staticmethod
     def _build_model(root: ET.Element, filename: str) -> DM.Model:
@@ -242,7 +249,19 @@ class XmlParser:
 
     @staticmethod
     def calc_addr(base_addr: int, running_addr: int, offset_str: str, alignment: int) -> int:
-        if ("." == offset_str):
+        """Calculate address from address input or '.'
+
+        Args:
+            base_addr(int): Start address of parent element
+            running_addr(int): Next unused adderss in parent element
+            offset_str(str): address information from XML
+            alignment(int): optional address alignement to 1,2,4,8... boundary
+
+        Returns:
+            Aligned address if integer is passed or aligned next free address for '.'
+        """
+
+        if "." == offset_str:
             result_addr = running_addr
 
         else:
@@ -250,7 +269,7 @@ class XmlParser:
 
         if 1 < alignment:
             mod = result_addr % alignment
-            if (0 != mod):
+            if 0 != mod:
                 result_addr += alignment - mod
 
         return result_addr
@@ -264,7 +283,8 @@ class XmlParser:
 
         for element in blocks_element:
             align = XmlParser.get_alignment(element)
-            block_addr = XmlParser.calc_addr(container.addr, running_addr, element.get("offset"), align)
+            block_addr = XmlParser.calc_addr(
+                container.addr, running_addr, element.get("offset"), align)
             name = element.get("name")
             length = XmlParser._parse_int(element.get("length"))
 
@@ -281,11 +301,11 @@ class XmlParser:
             # optional block header
             header_element = element.find(f"{NS}header")
             if header_element is not None:
-                id = XmlParser._parse_int(header_element.get("id"))
+                block_id = XmlParser._parse_int(header_element.get("id"))
                 major = XmlParser._parse_int(header_element.get("major"))
                 minor = XmlParser._parse_int(header_element.get("minor"))
                 version = XmlParser._parse_int(header_element.get("version"))
-                block.set_header(DM.BlockHeader(id, DM.Version(major, minor, version)))
+                block.set_header(DM.BlockHeader(block_id, DM.Version(major, minor, version)))
 
             XmlParser._build_parameters(block, element)
 

@@ -1,3 +1,6 @@
+"""Pargen main function
+"""
+
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -28,14 +31,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from flashcontainer.hexwriter import HexWriter
-from flashcontainer.xmlparser import XmlParser
-from flashcontainer.cfilewriter import CFileWriter
-from flashcontainer.gnuldwriter import GnuLdWriter
-from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
-from flashcontainer.packageinfo import __version__
-import flashcontainer.datamodel as DM
-
 import datetime
 import argparse
 import logging
@@ -45,12 +40,36 @@ import os
 from pathlib import Path
 from typing import List
 
+from flashcontainer.hexwriter import HexWriter
+from flashcontainer.xmlparser import XmlParser
+from flashcontainer.cfilewriter import CFileWriter
+from flashcontainer.gnuldwriter import GnuLdWriter
+from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
+from flashcontainer.packageinfo import __version__, __email__, __repository__
+import flashcontainer.datamodel as DM
+
 # List of output writers
 _WRITER = [
-    {"key": "ihex", "class": HexWriter, "help": "Generate intelhex file"},
-    {"key": "csrc", "class": CFileWriter, "help": "Generate c/c++ header and source files"},
-    {"key": "gld", "class": GnuLdWriter, "help": "Generate GNU linker include file for parameter symbol generation."},
-    {"key": "dump", "class": PyHexDumpWriter, "help": "Generate pyHexDump print configuration file."}
+    {
+        "key": "ihex",
+        "class": HexWriter,
+        "help": "Generate intelhex file"
+    },
+    {
+        "key": "csrc",
+        "class": CFileWriter,
+        "help": "Generate c/c++ header and source files"
+    },
+    {
+        "key": "gld",
+        "class": GnuLdWriter,
+        "help": "Generate GNU linker include file for parameter symbol generation."
+    },
+    {
+        "key": "pyhexdump",
+        "class": PyHexDumpWriter,
+        "help": "Generate pyHexDump print configuration file."
+    }
 ]
 
 
@@ -79,7 +98,7 @@ def pargen_cli() -> int:
     args = parser.parse_args()
 
     print(f"{name} {__version__}: {about}")
-    print("copyright (c) 2022 haju.schulz@online.de [https://github.com/nhjschulz/flashcontainer]\n")
+    print(f"Copyright (c) 2022 {__email__}\n")
 
     writers = []
 
@@ -90,19 +109,19 @@ def pargen_cli() -> int:
     return pargen(
         cfgfile=args.file[0],
         filename=args.filename,
-        dir=Path(args.destdir[0]),
+        outdir=Path(args.destdir[0]),
         writers=writers)
 
 
-def pargen(cfgfile: str, filename: str, dir: Path, writers: List[DM.Walker]) -> int:
+def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) -> int:
     """ Parameter generator tool entry point"""
 
     # Create output directory (if necessary)
-    destdir = Path.resolve(dir)
+    destdir = Path.resolve(outdir)
     destdir.mkdir(parents=True, exist_ok=True)
 
     outfilename = filename
-    if (outfilename is None):
+    if outfilename is None:
         outfilename = os.path.basename(cfgfile)
     outfilename = Path(outfilename).stem
 
@@ -125,7 +144,7 @@ def pargen(cfgfile: str, filename: str, dir: Path, writers: List[DM.Walker]) -> 
         return 2
 
     if 0 == len(writers):
-        logging.warn("no writers defined, generating nothing.")
+        logging.warning("no writers defined, generating nothing.")
         return 0
 
     for writer in writers:
@@ -137,9 +156,7 @@ def pargen(cfgfile: str, filename: str, dir: Path, writers: List[DM.Walker]) -> 
 
 if __name__ == "__main__":
     try:
-        ret = pargen_cli()
-        sys.exit(ret)
-
-    except Exception as exc:
+        sys.exit(pargen_cli())
+    except Exception as exc:  # pylint: disable=broad-except
         logging.exception(exc)
         sys.exit(1)

@@ -1,5 +1,4 @@
 """The main module with the program entry point."""
-
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -30,9 +29,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from .pargen import pargen_cli
-
 import sys
+
+from .pargen import pargen_cli
 
 
 def main():

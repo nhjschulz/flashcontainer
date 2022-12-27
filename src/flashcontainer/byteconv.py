@@ -1,4 +1,5 @@
-
+""" Conversions between byte arrays and text
+"""
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -29,13 +30,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import struct
+import json5
+
 import flashcontainer.datamodel as DM
 
-import json5
-import struct
-
-
 class ByteConvert:
+    """Byte to Text convertiona
+    """
+
     def __init__(self):
         pass
 
@@ -55,14 +58,14 @@ class ByteConvert:
         fmt = "<" if endianess == DM.Endianness.LE else ">"
         fmt += DM.TYPE_DATA[ptype].fmt
 
-        if (variant == list):  # == array
-            for i in range(0, len(from_json)):
-                result.extend(struct.pack(fmt, from_json[i]))
+        if variant == list:  # == array
+            for array_item in from_json:
+                result.extend(struct.pack(fmt, array_item))
 
-        elif (variant in [int, float]):
+        elif variant in [int, float]:
             result.extend(bytearray(struct.pack(fmt, from_json)))
 
-        elif (variant == str):
+        elif variant == str:
             enc_utf8 = 'utf-8'
             utf8_bytes = bytes(from_json, enc_utf8)
             result.extend(struct.pack(f"<{len(utf8_bytes)}s", utf8_bytes))
@@ -91,12 +94,12 @@ class ByteConvert:
         for i in range(0, entries):
             val = values[i]
 
-            if (isinstance(val, float)):
+            if isinstance(val, float):
                 result += f"{val:>{type_data.width}.8f}"
-            elif (isinstance(val, bytes)):
+            elif isinstance(val, bytes):
                 result += f"0x{val.hex().upper()}"
             else:
-                if (type_data.signed):
+                if type_data.signed:
                     result += f"{val:>{type_data.width}}"
                 else:
                     result += f"0x{val:0{2*type_data.size}X}"

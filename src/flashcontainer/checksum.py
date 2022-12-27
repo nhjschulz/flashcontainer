@@ -1,3 +1,5 @@
+""" Checksum calculations
+"""
 
 # BSD 3-Clause License
 #
@@ -30,9 +32,9 @@
 #
 
 import struct
-import crc
 from typing import NamedTuple
 
+import crc
 
 class CrcConfig(NamedTuple):
     """Configuration data for arbitrary CRCs
@@ -88,7 +90,7 @@ class Crc:
     def __str__(self):
         return f"{self.cfg}"
 
-    def checksum(self, bytes: bytearray) -> int:
+    def checksum(self, data: bytearray) -> int:
         """Calculate CRC checksum over given bytes
 
             Args:
@@ -98,36 +100,36 @@ class Crc:
                 checksum
         """
 
-        return self.calculator.checksum(bytes)
+        return self.calculator.checksum(data)
 
     @staticmethod
-    def _swap_access_16bit(bytes: bytearray) -> bytearray:
+    def _swap_access_16bit(data: bytearray) -> bytearray:
 
         result = bytearray()
-        for i in range(0, len(bytes), 2):
-            result.extend(struct.pack(">H", struct.unpack("<H", bytes[i:i + 2])[0]))
+        for i in range(0, len(data), 2):
+            result.extend(struct.pack(">H", struct.unpack("<H", data[i:i + 2])[0]))
 
         return result
 
     @staticmethod
-    def _swap_access_32bit(bytes: bytearray) -> bytearray:
+    def _swap_access_32bit(data: bytearray) -> bytearray:
 
         result = bytearray()
-        for i in range(0, len(bytes), 4):
-            result.extend(struct.pack(">I", struct.unpack("<I", bytes[i:i + 4])[0]))
+        for i in range(0, len(data), 4):
+            result.extend(struct.pack(">I", struct.unpack("<I", data[i:i + 4])[0]))
 
         return result
 
     @staticmethod
-    def _swap_access_64bit(bytes: bytearray) -> bytearray:
+    def _swap_access_64bit(data: bytearray) -> bytearray:
 
         result = bytearray()
-        for i in range(0, len(bytes), 8):
-            result.extend(struct.pack(">Q", struct.unpack("<Q", bytes[i:i + 8])[0]))
+        for i in range(0, len(data), 8):
+            result.extend(struct.pack(">Q", struct.unpack("<Q", data[i:i + 8])[0]))
 
         return result
 
-    def prepare(self, bytes: bytearray) -> bytearray:
+    def prepare(self, data: bytearray) -> bytearray:
         """Convert byte stream to match access method from configuration
 
         Args:
@@ -145,6 +147,6 @@ class Crc:
                     32: Crc._swap_access_32bit,
                     64: Crc._swap_access_64bit
                 }
-                return swapper[self.cfg.access](bytes)
+                return swapper[self.cfg.access](data)
 
-        return bytes
+        return data

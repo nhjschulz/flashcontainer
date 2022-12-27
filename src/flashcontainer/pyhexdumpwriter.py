@@ -1,3 +1,4 @@
+"""Write configuraton file for pyHexDump"""
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -28,29 +29,28 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
-
 from typing import Dict
 from pathlib import Path
+
 import json5
 
-
+import flashcontainer.datamodel as DM
+from flashcontainer.byteconv import ByteConvert
 class PyHexDumpWriter(DM.Walker):
     """Create configuration file for pyHexDump (see https://github.com/BlueAndi/pyHexDump) """
 
     _TYPE_MAPPING = {
-        DM.ParamType.uint8: ("u8", "u8"),
-        DM.ParamType.uint16: ("u16le", "u16be"),
-        DM.ParamType.uint32: ("u32le", "u32be"),
-        DM.ParamType.uint64: ("u64le", "u64be"),
-        DM.ParamType.int8: ("s8", "s8"),
-        DM.ParamType.int16: ("s16le", "s16be"),
-        DM.ParamType.int32: ("s32le", "s32be"),
-        DM.ParamType.int64: ("s64le", "s64be"),
-        DM.ParamType.float32: ("float32le", "float32be"),
-        DM.ParamType.float64: ("float64le", "float64be"),
-        DM.ParamType.utf8: ("u8", "u8")
+        DM.ParamType.UINT8: ("u8", "u8"),
+        DM.ParamType.UINT16: ("u16le", "u16be"),
+        DM.ParamType.UINT32: ("u32le", "u32be"),
+        DM.ParamType.UINT64: ("u64le", "u64be"),
+        DM.ParamType.INT8: ("s8", "s8"),
+        DM.ParamType.INT16: ("s16le", "s16be"),
+        DM.ParamType.INT32: ("s32le", "s32be"),
+        DM.ParamType.INT64: ("s64le", "s64be"),
+        DM.ParamType.FLOAT32: ("float32le", "float32be"),
+        DM.ParamType.FLOAT64: ("float64le", "float64be"),
+        DM.ParamType.UTF8: ("u8", "u8")
     }
 
     def __init__(self, model: DM.Model, options: Dict[str, any]):
@@ -73,8 +73,9 @@ class PyHexDumpWriter(DM.Walker):
         element = {
             "name": f"{self.ctx_block.name}_{param.name}",
             "addr": f"{hex(param.offset)}",
-            "dataType": self._TYPE_MAPPING[param.type][0 if self.ctx_block.endianess == DM.Endianness.LE else 1],
-            "count": len(param.value) // ByteConvert.get_type_size(param.type)
+            "dataType": self._TYPE_MAPPING[param.ptype]
+                [0 if self.ctx_block.endianess == DM.Endianness.LE else 1],
+            "count": len(param.value) // ByteConvert.get_type_size(param.ptype)
         }
 
         self.elements.append(element)

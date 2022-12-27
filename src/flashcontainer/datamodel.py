@@ -1,3 +1,5 @@
+""" Internal datamodel for pargen
+"""
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -27,7 +29,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from flashcontainer.checksum import Crc, CrcConfig
 
 from enum import Enum
 from typing import Dict, NamedTuple
@@ -35,6 +36,8 @@ import struct
 import logging
 from collections import namedtuple
 from operator import attrgetter
+
+from flashcontainer.checksum import Crc, CrcConfig
 
 
 class CrcData(NamedTuple):
@@ -52,7 +55,7 @@ class CrcData(NamedTuple):
         return f"0x{self.start:X}-0x{self.end:X}  {self.crc_cfg}"
 
 
-class Version:
+class Version:  # pylint: disable=too-few-public-methods
     """Version number data type"""
 
     def __init__(self, major, minor, version):
@@ -60,15 +63,15 @@ class Version:
         self.minor = minor
         self.version = version
 
-    def __print__(self):
+    def __str__(self):
         return f"{self.major}.{self.minor}.{self.version}"
 
 
-class BlockHeader:
+class BlockHeader:  # pylint: disable=too-few-public-methods
     """Parameter block header container """
 
-    def __init__(self, id, version):
-        self.id = id
+    def __init__(self, block_id, version):
+        self.block_id = block_id
         self.version = version
 
 
@@ -79,10 +82,13 @@ class Endianness(Enum):
     BE = 2    # big endian (like Motorola 68k)
 
 
-class Block:
+class Block: # pylint: disable=too-many-instance-attributes
     """Block data container """
 
-    def __init__(self, addr: int, name: str, length: int, endianess: Endianness, fill: int):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        addr: int, name: str,
+        length: int, endianess: Endianness, fill: int):
         """ Construct a block.
 
             Args:
@@ -102,9 +108,13 @@ class Block:
         self.comment = None
 
     def set_header(self, header):
+        """ Add optional header data
+        """
         self.header = header
 
     def add_parameter(self, parameter):
+        """ Add new parmeter to block.
+        """
         self.parameter.append(parameter)
 
     def set_comment(self, comment: str) -> None:
@@ -120,14 +130,14 @@ class Block:
 
         return struct.pack(
             fmt,
-            self.header.id,
+            self.header.block_id,
             self.header.version.major,
             self.header.version.minor,
             self.header.version.version,
             0x00000000,
             self.length)
 
-    def _insert_gap(self, addr: int, len: int) -> None:
+    def _insert_gap(self, addr: int, length: int) -> None:
         """Insert a gap at address of with len bytes.
 
         Args:
@@ -135,8 +145,8 @@ class Block:
             len(int): length of gap
         """
 
-        gap = Parameter.as_gap(addr, len, self.fill)
-        logging.info(f"    Gap {gap}")
+        gap = Parameter.as_gap(addr, length, self.fill)
+        logging.info("    Gap %s", gap)
         self.add_parameter(gap)
 
     def fill_gaps(self) -> None:
@@ -157,7 +167,7 @@ class Block:
 
         # tail gap at end of block needed ?
         end_addr = self.addr + self.length
-        if (end_addr > running_addr):  # we need to insert a gap at the end
+        if end_addr > running_addr:  # we need to insert a gap at the end
             self._insert_gap(running_addr, end_addr - running_addr)
 
         self.parameter = sorted(self.parameter, key=attrgetter('offset'))
@@ -193,7 +203,7 @@ class Block:
 
         # compute each crc parameter value
         for crcparam in self.parameter:
-            if (crcparam.crc_cfg is None):
+            if crcparam.crc_cfg is None:
                 continue
 
             cfg = crcparam.crc_cfg
@@ -209,9 +219,9 @@ class Block:
             checksum = crc_calculator.checksum(crc_input)
 
             if self.endianess == Endianness.LE:
-                fmt = f"<{TYPE_DATA[crcparam.type].fmt}"
+                fmt = f"<{TYPE_DATA[crcparam.ptype].fmt}"
             else:
-                fmt = f">{TYPE_DATA[crcparam.type].fmt}"
+                fmt = f">{TYPE_DATA[crcparam.ptype].fmt}"
 
             crcparam.value = struct.pack(fmt, checksum)
 
@@ -225,27 +235,30 @@ class Block:
 
 
 class ParamType(Enum):
-    uint32 = 1
-    uint8 = 2
-    uint16 = 3
-    uint64 = 4
-    int8 = 5
-    int16 = 6
-    int32 = 7
-    int64 = 8
-    float32 = 9
-    float64 = 10
-    utf8 = 11
+    """Supported data types"""
+    UINT32 = 1
+    UINT8 = 2
+    UINT16 = 3
+    UINT64 = 4
+    INT8 = 5
+    INT16 = 6
+    INT32 = 7
+    INT64 = 8
+    FLOAT32 = 9
+    FLOAT64 = 10
+    UTF8 = 11
     GAPFILL = 12
 
 
 class Parameter:
     """Parameter definition data container"""
 
-    def __init__(self, offset: int, name: str, type: ParamType, value: bytearray, crc: CrcData = None):
+    def __init__(self, # pylint: disable=too-many-arguments
+            offset: int, name: str, ptype: ParamType,
+            value: bytearray, crc: CrcData = None):
         self.offset = offset
         self.name = name
-        self.type = type
+        self.ptype = ptype
         self.value = value
         self.comment = None
         self.crc_cfg = crc
@@ -283,6 +296,8 @@ class Container:
         self.blocks = []
 
     def add_block(self, block):
+        """Add a block to the container"""
+
         self.blocks.append(block)
 
     def __str__(self):
@@ -297,12 +312,16 @@ class Model:
         self.container = []
 
     def add_container(self, container):
+        """Append container to model"""
+
         self.container.append(container)
 
     def __str__(self):
         return f"Model({self.name} {self.container})"
 
     def validate(self, options: Dict[str, any]) -> bool:
+        """Validate model"""
+
         validator = Validator(self, options)
         validator.run()
 
@@ -333,44 +352,32 @@ class Walker:
     def pre_run(self):
         """Run actions before the model walk"""
 
-        pass
-
     def post_run(self):
         """Run actions after the model walk"""
-
-        pass
 
     def begin_container(self, container: Container) -> None:
         """Run actions when entering container """
 
-        pass
-
     def end_container(self, container: Container) -> None:
         """Run actions when leaving container """
-
-        pass
 
     def begin_block(self, block: Block) -> None:
         """Run actions when entering block """
 
-        pass
-
     def end_block(self, block: Block) -> None:
         """Run actions when leaving block """
 
-        pass
-
     def begin_parameter(self, param: Parameter) -> None:
-        pass
+        """ Run begin actions for parameter"""
 
     def end_parameter(self, param: Parameter) -> None:
-        pass
+        """ Run end actions for parameter"""
 
     def begin_gap(self, param: Parameter) -> None:
-        pass
+        """ Run begin actions for gaps"""
 
     def end_gap(self, param: Parameter) -> None:
-        pass
+        """ Run end actions for gaps"""
 
     def run(self):
         """Walk the data model."""
@@ -379,39 +386,39 @@ class Walker:
 
         for container in self.model.container:
             self.ctx_container = container
-            logging.debug(f"begin_container({container})")
+            logging.debug("begin_container(%s)", container)
             self.begin_container(container)
 
             for block in container.blocks:
                 self.ctx_block = block
-                logging.debug(f"begin_block({block})")
+                logging.debug("begin_block(%s)", block)
 
                 self.begin_block(block)
 
                 for parameter in block.parameter:
                     self.ctx_parameter = parameter
 
-                    if ParamType.GAPFILL == parameter.type:
-                        logging.debug(f"begin_gap({parameter})")
+                    if ParamType.GAPFILL == parameter.ptype:
+                        logging.debug("begin_gap(%s)", parameter)
                         self.begin_gap(parameter)
                         self.end_gap(parameter)
-                        logging.debug(f"end_gap({parameter})")
+                        logging.debug("end_gap(%s)", parameter)
 
                     else:
-                        logging.debug(f"begin_parameter({parameter})")
+                        logging.debug("begin_parameter(%s)", parameter)
                         self.begin_parameter(parameter)
                         self.end_parameter(parameter)
-                        logging.debug(f"end_parameter({parameter})")
+                        logging.debug("end_parameter(%s)", parameter)
                         self.ctx_parameter = None
 
                 self.end_block(block)
                 self.ctx_block = None
-                logging.debug(f"end_block({block})")
+                logging.debug("end_block(%s)", block)
 
             self.end_container(container)
             self.ctx_container = None
 
-        logging.debug(f"end_container({container})")
+            logging.debug("end_container(%s)", container)
         self.post_run()
 
 
@@ -432,7 +439,7 @@ class Validator(Walker):
         self.last_param = None
         self.paramlist = {}
 
-        if (block.name in self.blocklist):
+        if block.name in self.blocklist:
             self.warning(
                 f"block with name {block.name} already exists "
                 f"@ 0x{self.blocklist[block.name].addr:08X}")
@@ -441,7 +448,7 @@ class Validator(Walker):
 
     def begin_parameter(self, param: Parameter):
 
-        if (param.name in self.paramlist):
+        if param.name in self.paramlist:
             self.warning(
                 f"parameter with name {param.name} already exists "
                 f"@ 0x{self.paramlist[param.name].offset:08X}")
@@ -452,7 +459,8 @@ class Validator(Walker):
 
         if param.offset > block_end:
             self.error(
-                f" parameter {param.name} offset 0x{param.offset-self.ctx_block.addr:0X} is out of block range.")
+                f" parameter {param.name} offset 0x{param.offset-self.ctx_block.addr:0X} "\
+                "is out of block range.")
 
         elif (param.offset + len(param.value)) > block_end:
             self.error(
@@ -461,7 +469,7 @@ class Validator(Walker):
 
         if self.last_param is not None:
             end_last = self.last_param.offset + len(self.last_param.value)
-            if (param.offset < end_last):
+            if param.offset < end_last:
 
                 self.error(
                     f" parameter '{param.name}' overlaps with '{self.last_param.name}'"
@@ -503,7 +511,7 @@ class Validator(Walker):
             if self.ctx_block is not None:
                 pfx += f"{self.ctx_block.name}"
 
-        logging.warn(pfx + msg)
+        logging.warning(pfx + msg)
         self.warnings = True
 
 
@@ -516,15 +524,15 @@ class Validator(Walker):
 TypeData = namedtuple('TypeData', ['fmt', 'size', 'width', 'signed', 'ctype'])
 
 TYPE_DATA = {
-    ParamType.uint32:  TypeData("L", 4, 10, False, "uint32_t"),
-    ParamType.uint8:   TypeData("B", 1, 4, False, "uint8_t"),
-    ParamType.uint16:  TypeData("H", 2, 6, False, "uint16_t"),
-    ParamType.uint64:  TypeData("Q", 8, 18, False, "uint64_t"),
-    ParamType.int8:    TypeData("b", 1, 4, True, "int8_t"),
-    ParamType.int16:   TypeData("h", 2, 6, True, "int16_t"),
-    ParamType.int32:   TypeData("l", 4, 10, True, "int32_t"),
-    ParamType.int64:   TypeData("q", 8, 16, True, "int64_t"),
-    ParamType.float32: TypeData("f", 4, 12, True, "float"),
-    ParamType.float64: TypeData("d", 8, 16, True, "double"),
-    ParamType.utf8:    TypeData("1c", 1, 4, False, "char")
+    ParamType.UINT32:  TypeData("L", 4, 10, False, "uint32_t"),
+    ParamType.UINT8:   TypeData("B", 1, 4, False, "uint8_t"),
+    ParamType.UINT16:  TypeData("H", 2, 6, False, "uint16_t"),
+    ParamType.UINT64:  TypeData("Q", 8, 18, False, "uint64_t"),
+    ParamType.INT8:    TypeData("b", 1, 4, True, "int8_t"),
+    ParamType.INT16:   TypeData("h", 2, 6, True, "int16_t"),
+    ParamType.INT32:   TypeData("l", 4, 10, True, "int32_t"),
+    ParamType.INT64:   TypeData("q", 8, 16, True, "int64_t"),
+    ParamType.FLOAT32: TypeData("f", 4, 12, True, "float"),
+    ParamType.FLOAT64: TypeData("d", 8, 16, True, "double"),
+    ParamType.UTF8:    TypeData("1c", 1, 4, False, "char")
 }

@@ -2,9 +2,9 @@
 <!--
     Flashcontainer example configuration for Aurix TC3xx boot mode header generation
 -->
-<pd:parameterDef xmlns:pd="http://www.schulznorbert.de/1.0/pargen"
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.schulznorbert.de/1.0/pargen c:/sb/privat/flashcontainer/src/flashcontainer/pargen_1.0.xsd">
+    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
     <pd:container name="UCBRange" at="0xAF400000">
         <pd:blocks>
             <pd:block offset="0x0000" name="UCB_BMHD0" length="0x1F4" fill="0x00" endianness="LE">
@@ -33,6 +33,5 @@
                     </pd:data>
             </pd:block>
         </pd:blocks>
-
     </pd:container>
-</pd:parameterDef>
+</pd:pargen>

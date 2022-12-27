@@ -7,7 +7,7 @@ For details of this data structure.
 
 The recommended options for this example are
 
-    pargen --ihex --dump -o gen bmhdr.xml
+    pargen --ihex --pyhexdump -o gen bmhdr.xml
 
 This creates both the hex file, and a configuration for the pyHexdump tool
 inside the gen folder. The C-Source or linker data output options are not

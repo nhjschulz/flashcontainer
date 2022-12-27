@@ -32,12 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  <!-- XSD grammer for pargen XML input -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://www.schulznorbert.de/1.0/pargen"
-    xmlns="http://www.schulznorbert.de/1.0/pargen"
-    xmlns:pargen="http://www.schulznorbert.de/1.0/pargen"
+    targetNamespace="http://nhjschulz.github.io/1.0/pargen"
+    xmlns="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:pargen="http://nhjschulz.github.io/1.0/pargen"
     elementFormDefault="qualified">
 
-    <xs:element name="parameterDef">
+    <xs:element name="pargen">
         <xs:complexType>
             <xs:sequence minOccurs="1" maxOccurs="unbounded">
                 <xs:element name="container">

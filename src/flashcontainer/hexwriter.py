@@ -1,3 +1,5 @@
+""" Intel hex data file writer"""
+
 # BSD 3-Clause License
 #
 # Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
@@ -28,19 +30,23 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import flashcontainer.datamodel as DM
 
-from intelhex import IntelHex
 from typing import Dict
 from pathlib import Path
 
+from intelhex import IntelHex
+
+import flashcontainer.datamodel as DM
 
 class HexWriter(DM.Walker):
+    """ Intel hex data file writer"""
 
     def __init__(self, model: DM.Model, options: Dict[str, any]):
         super().__init__(model, options)
         self.ihex = IntelHex()
-        self.filename = Path.joinpath(self.options.get("DESTDIR"), self.options.get("BASENAME") + ".hex")
+        self.filename = Path.joinpath(
+            self.options.get("DESTDIR"),
+            self.options.get("BASENAME") + ".hex")
 
     def pre_run(self) -> None:
         print(f"Generating intelhex file {self.filename}.")
@@ -48,8 +54,8 @@ class HexWriter(DM.Walker):
     def begin_block(self, block: DM.Block) -> None:
         addr = block.addr
         if block.header is not None:
-            bytes = block.get_header_bytes()
-            for byte in bytes:
+            data = block.get_header_bytes()
+            for byte in data:
                 self.ihex[addr] = byte
                 addr += 1
 
