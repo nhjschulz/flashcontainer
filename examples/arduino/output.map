@@ -32,6 +32,8 @@ c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0
                               .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin) (eeprom_read_block)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_byte.o)
                               .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin) (eeprom_read_byte)
+c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_dword.o)
+                              .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin) (eeprom_read_dword)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_word.o)
                               .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin) (eeprom_read_word)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_prologue.o)
@@ -39,17 +41,17 @@ c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_epilogue.o)
                               c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(vfprintf_std.o) (__epilogue_restores__)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_udivmodsi4.o)
-                              C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o (__udivmodsi4)
+                              C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o (__udivmodsi4)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_copy_data.o)
-                              C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o (__do_copy_data)
+                              C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o (__do_copy_data)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_clear_bss.o)
-                              C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o (__do_clear_bss)
+                              C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o (__do_clear_bss)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_ctors.o)
-                              C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o (__do_global_ctors)
+                              C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o (__do_global_ctors)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_tablejump2.o)
                               c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_ctors.o) (__tablejump2__)
 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(abort.o)
-                              C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o (abort)
+                              C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o (abort)
 
 Discarded input sections
 
@@ -58,7 +60,9 @@ Discarded input sections
  .text          0x00000000        0x0 .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin)
  .gnu.linkonce.t._ZN14HardwareSerial5beginEm
                 0x00000000        0x0 .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin)
- .data          0x00000000        0x0 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+ .gnu.linkonce.t._ZN5Crc326updateEh
+                0x00000000        0x0 .pio\build\ATmega328P\src\main.cpp.o (symbol from plugin)
+ .data          0x00000000        0x0 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
  .text          0x00000000        0x0 HardwareSerial.cpp.o (symbol from plugin)
  .gnu.linkonce.t._ZTV14HardwareSerial
                 0x00000000        0x0 HardwareSerial.cpp.o (symbol from plugin)
@@ -131,6 +135,9 @@ Discarded input sections
  .text          0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_byte.o)
  .data          0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_byte.o)
  .bss           0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_byte.o)
+ .text          0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_dword.o)
+ .data          0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_dword.o)
+ .bss           0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_dword.o)
  .text          0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_word.o)
  .data          0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_word.o)
  .bss           0x00000000        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_word.o)
@@ -260,7 +267,7 @@ Linker script and memory map
 Address of section .data set to 0x800100
 LOAD c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega328p.o
 LOAD .pio\build\ATmega328P\src\main.cpp.o
-LOAD C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+LOAD C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
 START GROUP
 LOAD .pio\build\ATmega328P\libFrameworkArduinoVariant.a
 LOAD .pio\build\ATmega328P\libFrameworkArduino.a
@@ -371,7 +378,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0xe54
+.text           0x00000000      0xe94
  *(.vectors)
  .vectors       0x00000000       0x68 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5/crtatmega328p.o
                 0x00000000                __vector_default
@@ -394,7 +401,7 @@ END GROUP
  *(.lowtext*)
                 0x00000068                __ctors_start = .
  *(.ctors)
- .ctors         0x00000068        0x2 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+ .ctors         0x00000068        0x2 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
                 0x0000006a                __ctors_end = .
                 0x0000006a                __dtors_start = .
  *(.dtors)
@@ -456,60 +463,64 @@ END GROUP
                 0x000000ba                __vector_14
                 0x000000ba                __vector_10
                 0x000000ba                __vector_20
- .text          0x000000be      0x3e6 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
-                0x00000360                __vector_16
-                0x000003f4                __vector_19
-                0x00000440                __vector_18
-                0x000004a4                . = ALIGN (0x2)
+ .text          0x000000be      0x412 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
+                0x0000038c                __vector_16
+                0x00000420                __vector_19
+                0x0000046c                __vector_18
+                0x000004d0                . = ALIGN (0x2)
  *(.text.*)
  .text.unlikely
-                0x000004a4       0xd2 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
- .text.startup  0x00000576      0x2b4 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
-                0x00000576                main
+                0x000004d0       0x40 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
+ .text.startup  0x00000510      0x34e C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
+                0x00000510                main
  .text.avr-libc
-                0x0000082a      0x3c2 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(vfprintf_std.o)
-                0x0000082a                vfprintf
+                0x0000085e      0x3c2 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(vfprintf_std.o)
+                0x0000085e                vfprintf
  .text.avr-libc
-                0x00000bec       0x16 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(strnlen_P.o)
-                0x00000bec                strnlen_P
+                0x00000c20       0x16 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(strnlen_P.o)
+                0x00000c20                strnlen_P
  .text.avr-libc
-                0x00000c02       0x16 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(strnlen.o)
-                0x00000c02                strnlen
+                0x00000c36       0x16 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(strnlen.o)
+                0x00000c36                strnlen
  .text.avr-libc
-                0x00000c18       0x78 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(fputc.o)
-                0x00000c18                fputc
+                0x00000c4c       0x78 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(fputc.o)
+                0x00000c4c                fputc
  .text.avr-libc
-                0x00000c90       0xbc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(ultoa_invert.o)
-                0x00000c90                __ultoa_invert
+                0x00000cc4       0xbc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(ultoa_invert.o)
+                0x00000cc4                __ultoa_invert
  .text.avr-libc
-                0x00000d4c       0x20 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_block.o)
-                0x00000d4c                eeprom_read_block
-                0x00000d50                eeprom_read_blraw
+                0x00000d80       0x20 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_block.o)
+                0x00000d80                eeprom_read_block
+                0x00000d84                eeprom_read_blraw
  .text.avr-libc
-                0x00000d6c       0x10 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_byte.o)
-                0x00000d6c                eeprom_read_byte
+                0x00000da0       0x10 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_byte.o)
+                0x00000da0                eeprom_read_byte
  .text.avr-libc
-                0x00000d7c        0xc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_word.o)
-                0x00000d7c                eeprom_read_word
+                0x00000db0        0xc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_dword.o)
+                0x00000db0                eeprom_read_float
+                0x00000db0                eeprom_read_dword
+ .text.avr-libc
+                0x00000dbc        0xc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libatmega328p.a(eerd_word.o)
+                0x00000dbc                eeprom_read_word
  .text.libgcc.prologue
-                0x00000d88       0x38 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_prologue.o)
-                0x00000d88                __prologue_saves__
+                0x00000dc8       0x38 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_prologue.o)
+                0x00000dc8                __prologue_saves__
  .text.libgcc.prologue
-                0x00000dc0       0x36 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_epilogue.o)
-                0x00000dc0                __epilogue_restores__
+                0x00000e00       0x36 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_epilogue.o)
+                0x00000e00                __epilogue_restores__
  .text.libgcc.div
-                0x00000df6       0x44 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_udivmodsi4.o)
-                0x00000df6                __udivmodsi4
- .text.libgcc   0x00000e3a        0xc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_tablejump2.o)
-                0x00000e3a                __tablejump2__
+                0x00000e36       0x44 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x00000e36                __udivmodsi4
+ .text.libgcc   0x00000e7a        0xc c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_tablejump2.o)
+                0x00000e7a                __tablejump2__
  .text.avr-libc
-                0x00000e46        0xa c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(abort.o)
-                0x00000e46                abort
-                0x00000e50                . = ALIGN (0x2)
+                0x00000e86        0xa c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(abort.o)
+                0x00000e86                abort
+                0x00000e90                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000e50        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
-                0x00000e50                _exit
-                0x00000e50                exit
+ .fini9         0x00000e90        0x0 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
+                0x00000e90                _exit
+                0x00000e90                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -528,40 +539,40 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000e50        0x4 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
+ .fini0         0x00000e90        0x4 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000e54                _etext = .
+                0x00000e94                _etext = .
 
-.data           0x00800100       0xac load address 0x00000e54
+.data           0x00800100      0x10a load address 0x00000e94
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
  *(.gnu.linkonce.d*)
  *(.rodata)
- .rodata        0x00800100       0x12 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+ .rodata        0x00800100       0x12 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
  *(.rodata*)
  .rodata.str1.1
-                0x00800112       0x9a C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+                0x00800112       0xf8 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
  *(.gnu.linkonce.r*)
-                0x008001ac                . = ALIGN (0x2)
-                0x008001ac                _edata = .
-                0x008001ac                PROVIDE (__data_end, .)
+                0x0080020a                . = ALIGN (0x2)
+                0x0080020a                _edata = .
+                0x0080020a                PROVIDE (__data_end, .)
 
-.bss            0x008001ac       0xa6
-                0x008001ac                PROVIDE (__bss_start, .)
+.bss            0x0080020a       0xa6
+                0x0080020a                PROVIDE (__bss_start, .)
  *(.bss)
- .bss           0x008001ac       0xa6 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+ .bss           0x0080020a       0xa6 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
  *(.bss*)
  *(COMMON)
-                0x00800252                PROVIDE (__bss_end, .)
-                0x00000e54                __data_load_start = LOADADDR (.data)
-                0x00000f00                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x008002b0                PROVIDE (__bss_end, .)
+                0x00000e94                __data_load_start = LOADADDR (.data)
+                0x00000f9e                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800252        0x0
+.noinit         0x008002b0        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                PROVIDE (__noinit_end, .)
-                0x00800252                _end = .
+                0x008002b0                _end = .
                 [!provide]                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
@@ -607,7 +618,7 @@ END GROUP
 
 .comment        0x00000000       0x5c
  *(.comment)
- .comment       0x00000000       0x31 C:\Users\schulz\AppData\Local\Temp\ccSRrhwl.ltrans0.ltrans.o
+ .comment       0x00000000       0x31 C:\Users\schulz\AppData\Local\Temp\ccIZRvXT.ltrans0.ltrans.o
  .comment       0x00000000       0x2c c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(vfprintf_std.o)
                                  0x2d (size before relaxing)
  .comment       0x0000002c       0x30 c:/users/schulz/.platformio/packages/toolchain-atmelavr/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(fputc.o)
