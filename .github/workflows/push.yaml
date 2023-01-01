@@ -29,4 +29,11 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          pytest
+          pytest --verbose
+     - name: Create Coverage report
+        run: |
+          pytest --cov=src  tests/ --cov-report html
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: htmlcov/ # or path/to/artifact
