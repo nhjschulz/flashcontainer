@@ -12,7 +12,6 @@ It allows to alter/update parameter values without recompilations.
 * Generate C-Source stubs for embedding into the application source amd testing environments
 * Generate Intel Hex files for flashing with a programmer
 * Generate GNU linker include file for mapping the parameter to absolute addresses
-* Generate A2L fragments for accessing the parameters from AUTOSAR test environments
 
 ## Installation
 
@@ -90,10 +89,10 @@ The XML file uses XSD schema validation and a namespace. This requires the
 following (static) XML element to be used as the root XML element at the
 beginning of the file:
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <pd:parameterDef xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen https://nhjschulz.github.io/xsd/pargen_1.0.xsd"">
+    ?xml version="1.0" encoding="utf-8"?>
+    <pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
 
 
 ### Container Element
@@ -156,11 +155,12 @@ Pargen blocks may contain a header at the beginning of the
 block memory area. This optional header contains block identification,
 version and length information. The header supports parameter validation
 to verify correctness and compatibility with the using application during
-runtime. The safety example in the examples folder shows how to use the
-header in combination with a CRC for this purpose.
+runtime. The [safety example](./examples/safety/) in the examples
+folder shows how to use the header in combination with a CRC for
+this purpose.
 
 The header data is a 16 byte long data structure with the following
-layout as a C-Language data structure:
+layout:
 
     struct sruct_pargen_header_type
     {
@@ -267,7 +267,7 @@ included into the crc calculation.
 Attribute  |Description              |optional|default |
 |-----------|-------------------------|--------|-------|
 | from    | Start address for crc calculation  |No|    |
-| to      | End address for crc calculation    |No|    |
+| to      | End address for crc calculation. The value may be "." to represent an address right before the crc offset.|No|    |
 | access  | Bit width in case of swapping (8,16,32,64)|yes|8|
 | swap    | Enable bytes swapping using access size|Yes|false|
 
@@ -281,7 +281,7 @@ The default values select the IEEE802.3 crc calculation also known as
 CRC-32. Note that the bit size of the crc is not part of these parameters,
 but derived from the type attribute of the crc element.
 
-Attribute  |Description              |optional|default |
+|Attribute  |Description              |optional|default |
 |-----------|-------------------------|--------|-------|
 | polynomial| polynomial coefficients   |yes|0x04C11DB7|
 | init      | Start value, usual 0 or -1|yes|0xFFFFFFFF|
@@ -291,7 +291,7 @@ Attribute  |Description              |optional|default |
 
 #### Crc Element Example
 
-    <pd:crc offset="0x008" name="CRCBMHD"type="uint32" >
+    <pd:crc offset="0x008" name="CRCBMHD" type="uint32">
       <pd:memory from="0x0000" to="0x0007" access="32" swap="true"/>
       <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
     </pd:crc>
@@ -303,6 +303,16 @@ If you have further ideas or you found some bugs, great! Create an
 [issue](https://github.com/nhjschulz/flashcontainer/issues)
 or if you are able and willing to fix it by yourself, clone
 the repository and create a pull request.
+
+## Used Non Standard Python Libraries
+
+The project uses the following non standard python libraries:
+|Library  |Purpose |License |                   
+|---------|--------|--------|
+|[lxml](https://pypi.org/project/lxml/)| XML parsing and validation|BSD-3-Clause|
+|[intelhex](https://pypi.org/project/intelhex/)|intel hex file generation|BSD|
+|[json5](https://pypi.org/project/json5/)|Json read and write (with hexadecimal number support|Apache|
+|[toml](https://pypi.org/project/toml/)|Accessing toml file content|MIT|
 
 ## License
 
