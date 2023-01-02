@@ -46,9 +46,6 @@ NS = '{http://nhjschulz.github.io/1.0/pargen}'
 class XmlParser:
     """XML Parser to generate a datamodel from an XML file"""
 
-    def __init__(self):
-        pass
-
     @classmethod
     def from_file(cls, file: str) -> DM.Model:
         """Parser entry point returning model instance"""
@@ -59,14 +56,14 @@ class XmlParser:
         """ Parse given XML file into datamodel. """
         model = None
         try:
-            logging.info(f"Loading parameter definitons from {file}.")
+            logging.info("Loading parameter definitons from %s.", file)
             schema = ET.XMLSchema(ET.parse(schema_file))
             xml_doc = ET.parse(file)
             schema.assertValid(xml_doc)
             model = XmlParser._build_model(xml_doc.getroot(), file)
 
         except ET.DocumentInvalid as err:
-            logging.critical(f"xml validation failed:\n{str(err.error_log)}") # pylint: disable=no-member
+            logging.critical("xml validation failed:\n%s", str(err.error_log)) # pylint: disable=no-member
             return None
 
 
@@ -117,12 +114,8 @@ class XmlParser:
     def get_endianess(element: ET.Element) -> DM.Endianness:
         """Parse alignment argument."""
 
-        val_str = element.get("endianness")
-        if val_str is not None:
-            return DM.Endianness.LE if val_str == "LE" else DM.Endianness.BE
-
-        else:
-            return DM.Endianness.LE
+        val_str = XmlParser._get_optional(element, "endianness", "LE")
+        return DM.Endianness.LE if val_str == "LE" else DM.Endianness.BE
 
     @staticmethod
     def get_fill(element: ET.Element) -> int:

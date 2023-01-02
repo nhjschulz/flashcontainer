@@ -39,9 +39,6 @@ class ByteConvert:
     """Byte to Text convertiona
     """
 
-    def __init__(self):
-        pass
-
     @staticmethod
     def get_type_size(ptype: DM.ParamType) -> int:
         """Get bytesize of type"""

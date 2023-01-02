@@ -301,7 +301,7 @@ class Container:
         self.blocks.append(block)
 
     def __str__(self):
-        return f"{self.name} @ {hex(self.addr)}"
+        return f"Container({self.name} @ {hex(self.addr)})"
 
 
 class Model:
@@ -325,7 +325,7 @@ class Model:
         validator = Validator(self, options)
         validator.run()
 
-        if (validator.result is False) or (validator.warnings is True):
+        if validator.result is False:
             print("")
 
         return validator.result
@@ -430,7 +430,6 @@ class Validator(Walker):
         self.last_param = None
         self.blocklist = {}
         self.paramlist = {}
-        self.warnings = False
 
     def begin_container(self, container: Container) -> None:
         self.blocklist = {}
@@ -440,7 +439,7 @@ class Validator(Walker):
         self.paramlist = {}
 
         if block.name in self.blocklist:
-            self.warning(
+            self.error(
                 f"block with name {block.name} already exists "
                 f"@ 0x{self.blocklist[block.name].addr:08X}")
         else:
@@ -449,7 +448,7 @@ class Validator(Walker):
     def begin_parameter(self, param: Parameter):
 
         if param.name in self.paramlist:
-            self.warning(
+            self.error(
                 f"parameter with name {param.name} already exists "
                 f"@ 0x{self.paramlist[param.name].offset:08X}")
         else:
@@ -457,7 +456,7 @@ class Validator(Walker):
 
         block_end = self.ctx_block.addr + self.ctx_block.length
 
-        if param.offset > block_end:
+        if param.offset >= block_end:
             self.error(
                 f" parameter {param.name} offset 0x{param.offset-self.ctx_block.addr:0X} "\
                 "is out of block range.")
@@ -470,12 +469,32 @@ class Validator(Walker):
         if self.last_param is not None:
             end_last = self.last_param.offset + len(self.last_param.value)
             if param.offset < end_last:
-
                 self.error(
                     f" parameter '{param.name}' overlaps with '{self.last_param.name}'"
                     f" @ 0x{self.last_param.offset - self.ctx_block.addr:0X}.")
 
+        if self.ctx_block.header is not None:
+            min_addr = self.ctx_block.addr + len(self.ctx_block.get_header_bytes())
+            if param.offset < min_addr:
+                self.error(
+                    f" parameter '{param.name}' overlaps with block header.")
+
         self.last_param = param
+
+    def end_container(self, container: Container) -> None:
+
+        # sort parameter by address and check for overlaps.
+        sorted_blocks = sorted(container.blocks, key=attrgetter('addr'))
+        prev = None
+        for block in sorted_blocks:
+            if prev is not None:
+                prev_end = prev.addr + prev.length
+
+                if block.addr < prev_end:
+                    self.error(
+                        f"block {prev.name} overlaps with block "
+                        f"{block.name} @ 0x{block.addr:X}")
+            prev = block
 
     def error(self, msg: str) -> None:
         """
@@ -490,29 +509,11 @@ class Validator(Walker):
             pfx += f"{self.ctx_container.name}:"
 
             if self.ctx_block is not None:
-                pfx += f"{self.ctx_block.name}"
+                pfx += f"{self.ctx_block.name}:"
 
         logging.error(pfx + msg)
 
         self.result = False
-
-    def warning(self, msg: str) -> None:
-        """
-        Issue warning message.
-
-        Args:
-            msg(str): error message to print
-        """
-        pfx = ""
-
-        if self.ctx_container is not None:
-            pfx += f"{self.ctx_container.name}:"
-
-            if self.ctx_block is not None:
-                pfx += f"{self.ctx_block.name}"
-
-        logging.warning(pfx + msg)
-        self.warnings = True
 
 
 # A tuple holding additional information for datamodel types
