@@ -150,9 +150,9 @@ class PyHexDumpWriter(DM.Walker):
 
         if block.header is not None:
 
-            subtype = "le"
-            if self.ctx_block.endianess == DM.Endianness.BE:
-                subtype = "be"
+            subtype = "be"
+            if self.ctx_block.endianess == DM.Endianness.LE:
+                subtype = "le"
 
             element = {
                 "name": f"{self.ctx_block.name}_blkhdr",

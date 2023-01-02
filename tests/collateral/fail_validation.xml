@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    <pd:container name="CodeFlash" at="0x80000000">
+        <pd:blocks>
+            <pd:block offset="0x00000000" name="paraBlkQm" length="0x100" endianness="LE" fill="0x55">
+                <pd:comment>This block is used for non-safety related parameters only.</pd:comment>
+                <pd:header id="0xFFFF" major="1" minor="0" version="0"></pd:header>
+                <pd:data>
+                    <pd:param offset="0x5" name="crcTestInput" type="uint8">
+                        <pd:comment>see https://www.boost.org/doc/libs/1_79_0/libs/crc/test/crc_test2.cpp</pd:comment>
+                        <pd:value>[0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39]</pd:value>
+                    </pd:param>
+                </pd:data>
+            </pd:block>
+        </pd:blocks>
+    </pd:container>
+</pd:pargen>
