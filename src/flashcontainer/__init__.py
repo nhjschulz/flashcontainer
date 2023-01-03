@@ -1,7 +1,7 @@
 """ package initialisation"""
 # BSD 3-Clause License
 #
-# Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
