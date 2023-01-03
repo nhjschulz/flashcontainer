@@ -62,7 +62,7 @@ understand Pargen's XML capabilities in depth, read on.
 ### XML Configuration File Anatomy
 
 The XML follows an XSD-schema defined in 
-[pargen_1.0.xsd.](https://github.com/nhjschulz/flashcontainer/blob/master/src/flashcontainer/pargen_1.0.xsd).
+[pargen_1.0.xsd](https://github.com/nhjschulz/flashcontainer/blob/master/src/flashcontainer/pargen_1.0.xsd).
 It is highly recommended to use an XML editor with schema validation
 support to avoid or detect validations already while editing.
 Visual Studio Code is a perfect choice, given the 

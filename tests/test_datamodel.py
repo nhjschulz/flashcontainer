@@ -70,7 +70,7 @@ def test_get_bytes_with_gaps():
 
 def test_model_str():
     assert DM.Model("hello").__str__() == "Model(hello [])"
-    assert DM.Container("hello", 0xabcd).__str__() == "Container(hello @ 0xabcd)"
+    assert DM.Container("hello", 0xabcd).__str__() == "hello @ 0xabcd"
     assert DM.Block(0xFF, "block", 10, DM.Endianness.LE, 0xAA).__str__() == "Block(block @ 0xff)"
     assert DM.CrcData().__str__() == "0x0-0x0  polynomial:0x4C11DB7, 32 Bit, init:0xFFFFFFFF, reverse in:True, reverse out:True, final xor:True, access:1, swap:False"
     assert DM.Version(2,3,5).__str__() == "2.3.5"

@@ -301,7 +301,7 @@ class Container:
         self.blocks.append(block)
 
     def __str__(self):
-        return f"Container({self.name} @ {hex(self.addr)})"
+        return f"{self.name} @ {hex(self.addr)}"
 
 
 class Model:

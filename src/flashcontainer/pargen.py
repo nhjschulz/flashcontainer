@@ -98,7 +98,7 @@ def pargen_cli() -> int:
     args = parser.parse_args()
 
     print(f"{name} {__version__}: {about}")
-    print(f"Copyright (c) 2022 {__email__}\n")
+    print(f"Copyright (c) 2023 {__email__}\n")
 
     writers = []
 
