@@ -1,7 +1,7 @@
 """Write configuraton file for pyHexDump"""
 # BSD 3-Clause License
 #
-# Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -150,9 +150,9 @@ class PyHexDumpWriter(DM.Walker):
 
         if block.header is not None:
 
-            subtype = "le"
-            if self.ctx_block.endianess == DM.Endianness.BE:
-                subtype = "be"
+            subtype = "be"
+            if self.ctx_block.endianess == DM.Endianness.LE:
+                subtype = "le"
 
             element = {
                 "name": f"{self.ctx_block.name}_blkhdr",

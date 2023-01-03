@@ -3,7 +3,7 @@
 
 # BSD 3-Clause License
 #
-# Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,7 @@ import logging
 import uuid
 import sys
 import os
+from enum import Enum
 from pathlib import Path
 from typing import List
 
@@ -72,7 +73,6 @@ _WRITER = [
     }
 ]
 
-
 def pargen_cli() -> int:
     """ cmd line interface for pagen"""
 
@@ -98,7 +98,7 @@ def pargen_cli() -> int:
     args = parser.parse_args()
 
     print(f"{name} {__version__}: {about}")
-    print(f"Copyright (c) 2022 {__email__}\n")
+    print(f"Copyright (c) 2023 {__email__}\n")
 
     writers = []
 
@@ -112,6 +112,14 @@ def pargen_cli() -> int:
         outdir=Path(args.destdir[0]),
         writers=writers)
 
+class Error(Enum):
+    """Pargen error codes """
+
+    ERROR_OK = 0
+    ERROR_FILE_NOT_FOUND = 1
+    ERROR_INVALID_FORMAT = 2
+    ERROR_VALIDATION_FAIL = 3
+    ERROR_EXCEPTION = 4
 
 def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) -> int:
     """ Parameter generator tool entry point"""
@@ -125,7 +133,14 @@ def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) 
         outfilename = os.path.basename(cfgfile)
     outfilename = Path(outfilename).stem
 
-    model = XmlParser.from_file(cfgfile)
+    if Path(cfgfile).is_file():
+        model = XmlParser.from_file(cfgfile)
+    else:
+        logging.error("file not found: %s", cfgfile)
+        return Error.ERROR_FILE_NOT_FOUND.value
+
+    if model is None:
+        return Error.ERROR_INVALID_FORMAT.value
 
     # writer context options
     param = {
@@ -141,7 +156,7 @@ def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) 
         }
 
     if model.validate(param) is False:
-        return 2
+        return Error.ERROR_VALIDATION_FAIL.value
 
     if 0 == len(writers):
         logging.warning("no writers defined, generating nothing.")
@@ -151,7 +166,7 @@ def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) 
         writer(model, param).run()
 
     print("Done.")
-    return 0
+    return Error.ERROR_OK.value
 
 
 if __name__ == "__main__":
@@ -159,4 +174,4 @@ if __name__ == "__main__":
         sys.exit(pargen_cli())
     except Exception as exc:  # pylint: disable=broad-except
         logging.exception(exc)
-        sys.exit(1)
+        sys.exit(Error.ERROR_EXCEPTION.value)

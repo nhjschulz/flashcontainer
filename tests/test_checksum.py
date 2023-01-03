@@ -21,3 +21,6 @@ def test_swap():
     assert crc2.prepare(b'\xaa\xbb\xcc\xdd') == b'\xaa\xbb\xcc\xdd'
     assert crc4.prepare(b'\xaa\xbb\xcc\xdd') == b'\xaa\xbb\xcc\xdd'
     assert crc8.prepare(b'\x12\x34\x56\x78\x87\x65\x43\x21') == b'\x12\x34\x56\x78\x87\x65\x43\x21'
+
+def test_str():
+    assert Crc(CrcConfig()).__str__() == "polynomial:0x4C11DB7, 32 Bit, init:0xFFFFFFFF, reverse in:True, reverse out:True, final xor:True, access:1, swap:False"
