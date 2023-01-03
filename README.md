@@ -1,4 +1,4 @@
-# Pargen - A tool for Flashable Parameter Container Creation
+# Pargen - A Tool for Flashable Parameter Container Creation
 
 ParGen is an embedded development tool for generation of parameters values that
 can be stored in flash memory and maintained independently from the application.
@@ -41,38 +41,38 @@ The parameter generator tool can then by called on cmdline using
                             Specify output directory for generated files
       --filename FILENAME, -f FILENAME
                             Set basename for generated files.
-
-To use unreleased development builds or setting up a
-development environment for ParGen, please read the
+ The Pargen 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
-page on Github.
+page on Github explains how to use unreleased development builds
+or how to setup a development environment for ParGen.
 
 ## XML Definitions File
 
-The flash container configuration for pargen is provided via an XML
-definition file that is explained below.
+The flash container configuration for Pargen is a XML
+definition file with the format explained below.
 
 ### TL;DR
 
 The [examples](https://github.com/nhjschulz/flashcontainer/tree/master/examples)
-folder shows how to configure Pargen for various flash container
-use cases and most of it is likely self explanatory. Refer to the examples.md
-files inside the examples folder to learn more about them. To understand Pargen's
-XML capabilities in depth, read on.
+folder shows how to configure Pargen for various use cases.
+Most of it is likely self explanatory. Read to the examples.md
+files inside the examples folder to learn more about them. To
+understand Pargen's XML capabilities in depth, read on.
 
 ### XML Configuration File Anatomy
 
-The XML follows an XSD-schema defined in pargen_1.0.xsd. It is highly
-recommended to use an XML editor with schema validation support to
-avoid or detect validations already while editing. Visual Studio Code would
-be a perfect choice, given the "XML Language Support" extension from
-Red Hat is installed. This extensions brings validation and "IntelliSense"
-to editing XML files.
+The XML follows an XSD-schema defined in 
+[pargen_1.0.xsd.](https://github.com/nhjschulz/flashcontainer/blob/master/src/flashcontainer/pargen_1.0.xsd).
+It is highly recommended to use an XML editor with schema validation
+support to avoid or detect validations already while editing.
+Visual Studio Code is a perfect choice, given the 
+"XML Language Support" extension from Red Hat is installed.
+This extensions brings validation and "IntelliSense" to editing XML files.
 
 The file defines the following data element hierarchy. The "..." lines mean
 that the preceding element may appear multiple times:
 
-      <pd:Container ...>
+      <pd:Container>
         <pd:blocks>
           <pd:block>
             <pd:parameter> or <pd:crc>
@@ -83,8 +83,8 @@ that the preceding element may appear multiple times:
         ...
       </pd:Container>
 
-
 ### XML Root Element
+
 The XML file uses XSD schema validation and a namespace. This requires the
 following (static) XML element to be used as the root XML element at the
 beginning of the file:
@@ -94,8 +94,8 @@ beginning of the file:
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
 
-
 ### Container Element
+
 The top level configuration element is the **container**. A container
 maps its parameter blocks to absolute addresses by the **at** attribute. Address attributes inside block elements are offsets to the
 **at** attribute value.
@@ -120,7 +120,6 @@ maps its parameter blocks to absolute addresses by the **at** attribute. Address
       ....
       </pd:blocks>
     </pd:container>
-
 
 ### Block Element
 
@@ -155,9 +154,10 @@ Pargen blocks may contain a header at the beginning of the
 block memory area. This optional header contains block identification,
 version and length information. The header supports parameter validation
 to verify correctness and compatibility with the using application during
-runtime. The [safety example](./examples/safety/) in the examples
-folder shows how to use the header in combination with a CRC for
-this purpose.
+runtime. The 
+[safety example](https://github.com/nhjschulz/flashcontainer/tree/master/examples/safety/)
+in the examples folder shows how to use the header in combination with a
+CRC for this purpose.
 
 The header data is a 16 byte long data structure with the following
 layout:
@@ -224,7 +224,7 @@ have one to many parameter elements.
 
 The value element of a parameter holds the parameter value inside
 its text element using a JSON style syntax. The following subset of
-Json definitions are supported:
+JSON definitions are supported:
 
 |Value type                        | Examples    |
 |----------------------------------|--------------|
@@ -235,7 +235,7 @@ Json definitions are supported:
 
 ### Crc Element
 
-The crc element defines a an integer parameter. The difference to a
+The crc element defines an integer parameter. The difference to a
 normal integer parameter is the automatic value calculation using a
 crc algorithm. Instead of a parameter value child element, memory
 and config elements are used to define crc calculation parameters.
@@ -296,7 +296,6 @@ but derived from the type attribute of the crc element.
       <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
     </pd:crc>
 
-
 ## Issues, Ideas And Bugs
 
 If you have further ideas or you found some bugs, great! Create an
@@ -311,7 +310,7 @@ The project uses the following non standard python libraries:
 |---------|--------|--------|
 |[lxml](https://pypi.org/project/lxml/)| XML parsing and validation|BSD-3-Clause|
 |[intelhex](https://pypi.org/project/intelhex/)|intel hex file generation|BSD|
-|[json5](https://pypi.org/project/json5/)|Json read and write (with hexadecimal number support|Apache|
+|[json5](https://pypi.org/project/json5/)|JSON read and write (with hexadecimal number support)|Apache|
 |[toml](https://pypi.org/project/toml/)|Accessing toml file content|MIT|
 
 ## License
