@@ -18,7 +18,7 @@ Aurix processor boot ROM.
 
 The tricky bit for boot mode headers are their checksums. The 8 byte area
 from offset 0x0000-0x0007 is verified with a CRC32 checksum, that itself
-is repeated bit reversed. The 8 bytes of data used for the checksums
+is repeated bit inverted. The 8 bytes of data used for the checksums
 are not read sequentially, but interpreted as two 32-Bit words in
 big-endian format. Thats why the configuration XML for the CRC's contain
 an access and swap attribute inside the memory element:

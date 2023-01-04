@@ -81,7 +81,10 @@ def pargen_cli() -> int:
     about = 'A tool for generating flashable parameter container.'
     name = "pargen"
 
-    parser = argparse.ArgumentParser(prog=name, description=about)
+    parser = argparse.ArgumentParser(
+        prog=name,
+        description=about,
+        epilog=f"Visit {__repository__} for full documentation and examples.")
 
     for writer in _WRITER:
         parser.add_argument("--" + writer["key"], action='store_true', help=writer["help"])
