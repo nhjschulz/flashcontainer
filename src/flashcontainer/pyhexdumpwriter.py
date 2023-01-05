@@ -45,32 +45,32 @@ _HEADER_STRUCTURES = [
         [
             {
                 "name": "id",
-                "dataType": "u16le",
+                "dataType": "uint16le",
                 "count": 1
             },
             {
                 "name": "major",
-                "dataType": "u16le",
+                "dataType": "uint16le",
                 "count": 1
             },
             {
                 "name": "minor",
-                "dataType": "u16le",
+                "dataType": "uint16le",
                 "count": 1
             },
             {
                 "name": "dataver",
-                "dataType": "u16le",
+                "dataType": "uint16le",
                 "count": 1
             },
             {
                 "name": "reserved",
-                "dataType": "u32le",
+                "dataType": "uint32le",
                 "count": 1
             },
             {
                 "name": "length",
-                "dataType": "u32le",
+                "dataType": "uint32le",
                 "count": 1
             }
         ]
@@ -81,32 +81,32 @@ _HEADER_STRUCTURES = [
         [
             {
                 "name": "id",
-                "dataType": "u16be",
+                "dataType": "uint16be",
                 "count": 1
             },
             {
                 "name": "major",
-                "dataType": "u16be",
+                "dataType": "uint16be",
                 "count": 1
             },
             {
                 "name": "minor",
-                "dataType": "u16be",
+                "dataType": "uint16be",
                 "count": 1
             },
             {
                 "name": "dataver",
-                "dataType": "u16be",
+                "dataType": "uint16be",
                 "count": 1
             },
             {
                 "name": "reserved",
-                "dataType": "u32be",
+                "dataType": "uint32be",
                 "count": 1
             },
             {
                 "name": "length",
-                "dataType": "u32be",
+                "dataType": "uint32be",
                 "count": 1
             }
         ]
@@ -118,17 +118,17 @@ class PyHexDumpWriter(DM.Walker):
     """Create configuration file for pyHexDump (see https://github.com/BlueAndi/pyHexDump) """
 
     _TYPE_MAPPING = {
-        DM.ParamType.UINT8: ("u8", "u8"),
-        DM.ParamType.UINT16: ("u16le", "u16be"),
-        DM.ParamType.UINT32: ("u32le", "u32be"),
-        DM.ParamType.UINT64: ("u64le", "u64be"),
-        DM.ParamType.INT8: ("s8", "s8"),
-        DM.ParamType.INT16: ("s16le", "s16be"),
-        DM.ParamType.INT32: ("s32le", "s32be"),
-        DM.ParamType.INT64: ("s64le", "s64be"),
+        DM.ParamType.UINT8: ("uint8", "uint8"),
+        DM.ParamType.UINT16: ("uint16le", "uint16be"),
+        DM.ParamType.UINT32: ("uint32le", "uint32be"),
+        DM.ParamType.UINT64: ("uint64le", "uint64be"),
+        DM.ParamType.INT8: ("int8", "int8"),
+        DM.ParamType.INT16: ("int16le", "int16be"),
+        DM.ParamType.INT32: ("int32le", "int32be"),
+        DM.ParamType.INT64: ("int64le", "int64be"),
         DM.ParamType.FLOAT32: ("float32le", "float32be"),
         DM.ParamType.FLOAT64: ("float64le", "float64be"),
-        DM.ParamType.UTF8: ("u8", "u8")
+        DM.ParamType.UTF8: ("utf8", "utf8")
     }
 
     def __init__(self, model: DM.Model, options: Dict[str, any]):
