@@ -96,6 +96,11 @@ def pargen_cli() -> int:
         '--filename', '-f', nargs=1,
         help='Set basename for generated files.')
 
+    parser.add_argument(
+        "--static", "-s", action='store_true',
+        help='Create static comment output without dynamic elements like date and time.'
+    )
+
     parser.add_argument('file', nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
@@ -113,6 +118,7 @@ def pargen_cli() -> int:
         cfgfile=args.file[0],
         filename=args.filename,
         outdir=Path(args.destdir[0]),
+        static=args.static,
         writers=writers)
 
 class Error(Enum):
@@ -124,7 +130,12 @@ class Error(Enum):
     ERROR_VALIDATION_FAIL = 3
     ERROR_EXCEPTION = 4
 
-def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) -> int:
+def pargen(
+        cfgfile: str,
+        filename: str,
+        outdir: Path,
+        static: bool,
+        writers: List[DM.Walker]) -> int:
     """ Parameter generator tool entry point"""
 
     # Create output directory (if necessary)
@@ -155,7 +166,8 @@ def pargen(cfgfile: str, filename: str, outdir: Path, writers: List[DM.Walker]) 
         "DATETIME": datetime.datetime.now(),
         "MODEL": model,
         "DESTDIR": destdir,
-        "BASENAME": outfilename
+        "BASENAME": outfilename,
+        "STATICOUTPUT": static
         }
 
     if model.validate(param) is False:

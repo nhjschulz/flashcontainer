@@ -14,6 +14,7 @@ def test_pargen_errors(tmp_path):
         cfgfile=example_xml,
         filename=None,
         outdir=tmp_path,
+        static=False,
         writers=[])
     assert result == pargen.Error.ERROR_OK.value
 
@@ -23,6 +24,7 @@ def test_pargen_errors(tmp_path):
         cfgfile=pathlib.Path.joinpath(sandbox_dir, "collateral", "invalid.xml"),
         filename=None,
         outdir=tmp_path,
+        static=False,
         writers=[])
     assert result == pargen.Error.ERROR_INVALID_FORMAT.value
 
@@ -32,6 +34,7 @@ def test_pargen_errors(tmp_path):
         cfgfile=pathlib.Path.joinpath(sandbox_dir, "collateral", "invalidX.xml"),
         filename=None,
         outdir=tmp_path,
+        static=False,
         writers=[])
     assert result == pargen.Error.ERROR_FILE_NOT_FOUND.value
 
@@ -41,6 +44,7 @@ def test_pargen_errors(tmp_path):
         cfgfile=pathlib.Path.joinpath(sandbox_dir, "collateral", "fail_validation.xml"),
         filename=None,
         outdir=tmp_path,
+        static=False,
         writers=[])
     assert result == pargen.Error.ERROR_VALIDATION_FAIL.value
 
@@ -57,6 +61,7 @@ def test_pargen_output(tmp_path):
         cfgfile=pathlib.Path.joinpath(arduino_example, "param", "param.xml"),
         filename="pytest",
         outdir=tmp_path,
+        static=False,
         writers=writer_list)
     assert result == pargen.Error.ERROR_OK.value
 
