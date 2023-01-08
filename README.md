@@ -24,14 +24,14 @@ A python 3.8 or higher version is required.
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
-    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] file
+    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] [--static] file
 
     A tool for generating flashable parameter container.
-
+    
     positional arguments:
-    file                  XML parameter definition file
-
-    optional arguments:
+      file                  XML parameter definition file
+    
+    options:
       -h, --help            show this help message and exit
       --ihex                Generate intelhex file
       --csrc                Generate c/c++ header and source files
@@ -41,6 +41,10 @@ The parameter generator tool can then by called on cmdline using
                             Specify output directory for generated files
       --filename FILENAME, -f FILENAME
                             Set basename for generated files.
+      --static, -s          Create static comment output without dynamic elements like date and time.
+    
+    Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+
  The Pargen 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github explains how to use unreleased development builds
