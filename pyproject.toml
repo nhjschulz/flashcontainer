@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flashcontainer"
-version = "0.2.0"
+version = "0.2.1"
 requires-python = ">=3.8"
 description = "A tooling for flashable parameter data container generation"
 readme = "README.md"

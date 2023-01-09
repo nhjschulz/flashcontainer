@@ -4,6 +4,9 @@ ParGen is an embedded development tool for generation of parameters values that
 can be stored in flash memory and maintained independently from the application.
 It allows to alter/update parameter values without recompilations.
 
+![License](https://img.shields.io/badge/License-BSD%203--Clause-green)
+[![Python package](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml)
+
 ## Concept and Features
 
 ![Concept](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/nhjschulz/flashcontainer/master/overview.plantuml)
@@ -24,14 +27,14 @@ A python 3.8 or higher version is required.
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
-    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] file
+    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] [--static] file
 
     A tool for generating flashable parameter container.
 
     positional arguments:
-    file                  XML parameter definition file
+      file                  XML parameter definition file
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --ihex                Generate intelhex file
       --csrc                Generate c/c++ header and source files
@@ -41,6 +44,10 @@ The parameter generator tool can then by called on cmdline using
                             Specify output directory for generated files
       --filename FILENAME, -f FILENAME
                             Set basename for generated files.
+      --static, -s          Create static comment output without dynamic elements like date and time.
+
+    Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+
  The Pargen 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github explains how to use unreleased development builds
