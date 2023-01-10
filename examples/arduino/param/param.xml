@@ -8,15 +8,15 @@
                 <pd:comment>1Kb Example parameter block for displaying a flashable message with update delay</pd:comment>
                 <pd:header id="0xEE" major="1" minor="0" version="1"></pd:header>
                 <pd:data>
-                    <pd:param offset="." name="UpdateDelay_ms" type="uint16">
+                    <pd:param offset="." name="par_UpdateDelay_ms" type="uint16">
                         <pd:comment>Interval time between dumping welcome message.</pd:comment>
                         <pd:value>2000</pd:value>
                     </pd:param>
-                    <pd:param offset="." name="WelcomeMsg_str" type="utf8">
+                    <pd:param offset="." name="par_WelcomeMsg_str" type="utf8">
                         <pd:comment>Message to display in endless loop.</pd:comment>
                         <pd:value>"This message is defined as a Pargen parameter!\r\n"</pd:value>
                     </pd:param>
-                    <pd:crc offset="0x03fc" name="crc" type="uint32">
+                    <pd:crc offset="0x03fc" name="par_crc" type="uint32">
                         <pd:memory from="0x0000" to="."/>
                     </pd:crc>
                 </pd:data>

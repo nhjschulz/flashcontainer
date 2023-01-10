@@ -142,9 +142,7 @@ class CFileWriter(DM.Walker):
     def begin_parameter(self, param: DM.Parameter) -> None:
         """Patch parameter bytes into intelhex object"""
 
-        name = f"{self.ctx_block.name}_{param.name}"
-
-        self._write_both(f"/* Parameter {name} @ {hex(param.offset)}\n")
+        self._write_both(f"/* Parameter {param.name} @ {hex(param.offset)}\n")
 
         # write optional comment
         if param.comment is not None:
@@ -161,7 +159,7 @@ class CFileWriter(DM.Walker):
         self._write_both(
             f"volatile const "
             f"{DM.TYPE_DATA[param.ptype].ctype} "
-            f"{name}")
+            f"{param.name}")
 
         element_size = ByteConvert.get_type_size(param.ptype)
         if (DM.ParamType.UTF8 == param.ptype) or (element_size < len(param.value)):

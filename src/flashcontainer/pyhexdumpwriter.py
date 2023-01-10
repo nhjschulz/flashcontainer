@@ -167,7 +167,7 @@ class PyHexDumpWriter(DM.Walker):
         """Add element to data array """
 
         element = {
-            "name": f"{self.ctx_block.name}_{param.name}",
+            "name": f"{param.name}",
             "addr": f"{hex(param.offset)}",
             "dataType": self._TYPE_MAPPING[param.ptype]
                 [0 if self.ctx_block.endianess == DM.Endianness.LE else 1],
