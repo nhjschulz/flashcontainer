@@ -86,8 +86,6 @@ class GnuLdWriter(DM.Walker):
     def begin_parameter(self, param: DM.Parameter) -> None:
         """Add parameter name and address mapping"""
 
-        name = f"{self.ctx_block.name}_{param.name}"
-
         # write multiline comment before definition
         comment_lines = None
         if param.comment is not None:
@@ -100,7 +98,7 @@ class GnuLdWriter(DM.Walker):
 
                 comment_lines = None
 
-        self.ldfile.write(f"{name: <40} = {hex(param.offset)};")
+        self.ldfile.write(f"{param.name: <40} = {hex(param.offset)};")
         if comment_lines is not None:
             self.ldfile.write(f" /* {comment_lines[0]} */")
 
