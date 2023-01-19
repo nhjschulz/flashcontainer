@@ -101,6 +101,8 @@ def pargen_cli() -> int:
         help='Create static comment output without dynamic elements like date and time.'
     )
 
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+
     parser.add_argument('file', nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
