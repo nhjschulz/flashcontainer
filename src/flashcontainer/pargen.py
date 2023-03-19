@@ -46,6 +46,7 @@ from flashcontainer.xmlparser import XmlParser
 from flashcontainer.cfilewriter import CFileWriter
 from flashcontainer.gnuldwriter import GnuLdWriter
 from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
+from flashcontainer.a2lwriter import A2lWriter
 from flashcontainer.packageinfo import __version__, __email__, __repository__
 import flashcontainer.datamodel as DM
 
@@ -65,6 +66,11 @@ _WRITER = [
         "key": "gld",
         "class": GnuLdWriter,
         "help": "Generate GNU linker include file for parameter symbol generation."
+    },
+    {
+        "key": "a2l",
+        "class": A2lWriter,
+        "help": "Generate A2L parameter description file."
     },
     {
         "key": "pyhexdump",

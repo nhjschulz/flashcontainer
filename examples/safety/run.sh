@@ -1,1 +1,1 @@
-pargen --ihex --gld --csrc --pyhexdump -o gen safety.xml
+pargen --ihex --gld --csrc --pyhexdump --a2l -o gen safety.xml
