@@ -79,6 +79,12 @@ _WRITER = [
     }
 ]
 
+class FileArgumentParser(argparse.ArgumentParser):
+    """Argument parser with support for argument files."""
+
+    def convert_arg_line_to_args(self, arg_line):
+        return arg_line.split()
+
 def pargen_cli() -> int:
     """ cmd line interface for pagen"""
 
@@ -87,9 +93,10 @@ def pargen_cli() -> int:
     name = "pargen"
     about = f"{name} {__version__}: A tool for generating flashable parameter container."
 
-    parser = argparse.ArgumentParser(
+    parser = FileArgumentParser(
         prog=name,
         description=about,
+        fromfile_prefix_chars='@',
         epilog=
             f"Copyright (c) 2022-2023 {__email__}. "
             f" Visit {__repository__} for full documentation and examples."
