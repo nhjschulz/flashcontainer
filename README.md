@@ -1,6 +1,6 @@
 # Pargen - A Tool for Flashable Parameter Container Creation
 
-ParGen is an embedded development tool for generation of parameters values that
+Pargen is an embedded development tool for generating parameters values that
 can be stored in flash memory and maintained independently from the application.
 It allows to alter/update parameter values without recompilations.
 
@@ -51,7 +51,7 @@ The parameter generator tool can then by called on cmdline using
  The Pargen 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github explains how to use unreleased development builds
-or how to setup a development environment for ParGen.
+or how to setup a development environment for Pargen.
 
 ## XML Definitions File
 
@@ -62,7 +62,7 @@ definition file with the format explained below.
 
 The [examples](https://github.com/nhjschulz/flashcontainer/tree/master/examples)
 folder shows how to configure Pargen for various use cases.
-Most of it is likely self explanatory. Read to the examples.md
+Most of it is likely self explanatory. Read the examples.md
 files inside the examples folder to learn more about them. To
 understand Pargen's XML capabilities in depth, read on.
 
@@ -141,7 +141,7 @@ A container may have 1 to many block children inside a blocks element.
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
 | name      | The block name.         |   No   |       |
-| offset    | Memory start offset inside container. Value may be "." to use the next free offset inside the  container.|No||
+| offset    | Memory start offset inside container. Value may be "." to use the next free offset inside the container.|No||
 | length    | Number of bytes covered by this block|No|
 | align     | block alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 | fill      | byte value used to fill gaps.|Yes| 0x00 |
