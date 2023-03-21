@@ -84,13 +84,16 @@ def pargen_cli() -> int:
 
     logging.basicConfig(encoding='utf-8', level=logging.WARN)
 
-    about = 'A tool for generating flashable parameter container.'
     name = "pargen"
+    about = f"{name} {__version__}: A tool for generating flashable parameter container."
 
     parser = argparse.ArgumentParser(
         prog=name,
         description=about,
-        epilog=f"Visit {__repository__} for full documentation and examples.")
+        epilog=
+            f"Copyright (c) 2022-2023 {__email__}. "
+            f" Visit {__repository__} for full documentation and examples."
+    )
 
     for writer in _WRITER:
         parser.add_argument("--" + writer["key"], action='store_true', help=writer["help"])
@@ -112,9 +115,6 @@ def pargen_cli() -> int:
     parser.add_argument('file', nargs=1, help='XML parameter definition file')
 
     args = parser.parse_args()
-
-    print(f"{name} {__version__}: {about}")
-    print(f"Copyright (c) 2023 {__email__}\n")
 
     writers = []
 
@@ -156,6 +156,7 @@ def pargen(
     outfilename = Path(outfilename).stem
 
     if Path(cfgfile).is_file():
+        print(f"Processing definitions from {cfgfile}\n")
         model = XmlParser.from_file(cfgfile)
     else:
         logging.error("file not found: %s", cfgfile)

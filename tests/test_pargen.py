@@ -83,3 +83,10 @@ def test_pargen_output(tmp_path):
 
     for idx in range(0,entries):
         assert gen_lines[idx] == reference_lines[idx]
+
+    crc = 0x0
+    with open(pathlib.Path.joinpath(tmp_path, "pytest.crc"), encoding="utf-8") as file:
+        crc = int(file.readline(), 16)
+        print(crc)
+
+    assert crc == 0x2144DF1C
