@@ -104,6 +104,5 @@ class HexWriter(DM.Walker):
             )
 
         crc_calculator = Crc(crc_cfg)
-        
-        return crc_calculator.checksum(self.hexbytes)
 
+        return crc_calculator.checksum(self.hexbytes)
