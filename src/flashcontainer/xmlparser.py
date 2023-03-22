@@ -58,7 +58,7 @@ class XmlParser:
         try:
             logging.info("Loading parameter definitons from %s.", file)
             schema = ET.XMLSchema(ET.parse(schema_file))
-            xml_doc = ET.parse(file)
+            xml_doc = ET.parse(file, ET.XMLParser(remove_comments=True))
             schema.assertValid(xml_doc)
             model = XmlParser._build_model(xml_doc.getroot(), file)
 
