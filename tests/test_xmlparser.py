@@ -52,7 +52,7 @@ def test_parse_safety_example():
     sandbox_dir = pathlib.Path(__file__).resolve().parents[1]
     safety_xml = pathlib.Path.joinpath(sandbox_dir, "examples", "safety", "safety.xml")
     model = XP.XmlParser.from_file(safety_xml)
-    assert model.validate(None) == True
+    assert model.validate(None) is True
 
     assert model is not None
     assert model.container is not None
@@ -80,6 +80,7 @@ def test_parse_safety_example():
     assert params[0].offset == 0x80000010
     assert params[0].ptype == datamodel.ParamType.FLOAT32
     assert params[0].comment == "Safety critical calibration values."
+    assert params[0].value == b'\x00\x00\x80?ff\x06\xc0\xcd\xccL@\x00\x00\x90@\xcd\xcc\xac@\x00\x00\xd0@'
     assert params[0].crc_cfg is None
 
     assert params[1].name is None
@@ -94,3 +95,13 @@ def test_parse_safety_example():
     assert params[2].comment == "Entire block crc32 (IEEE802.3)"
     assert params[2].crc_cfg is not None
     assert params[2].crc_cfg == datamodel.CrcData(start=0x80000000, end=0x800001FB)
+
+def test_modify_value():
+    sandbox_dir = pathlib.Path(__file__).resolve().parents[1]
+    safety_xml = pathlib.Path.joinpath(sandbox_dir, "examples", "safety", "safety.xml")
+    model = XP.XmlParser.from_file(safety_xml, {"calibration":"[0,1,3,4,5,6,7,8,9,10]"})
+    assert model.validate(None) == True
+    print(model.container[0].blocks[0].parameter[0].value)
+    assert model.container[0].blocks[0].parameter[0].value == b'\x00\x00\x00\x00\x00\x00\x80?\x00\x00@@\x00\x00\x80@\x00\x00\xa0@\x00\x00\xc0@\x00\x00\xe0@\x00\x00\x00A\x00\x00\x10A\x00\x00 A'
+
+    

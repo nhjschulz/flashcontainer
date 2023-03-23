@@ -27,26 +27,30 @@ A python 3.8 or higher version is required.
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
-    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] [--static] file
-
-    A tool for generating flashable parameter container.
-
+    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--a2l] [--pyhexdump] [--destdir directory] [--filename basename] [--static] [--modify name=value] [--version] file
+    
+    pargen 0.4.0: A tool for generating flashable parameter container.
+    
     positional arguments:
-      file                  XML parameter definition file
-
-    options:
+      file                  name of the XML parameter definition file
+    
+    optional arguments:
       -h, --help            show this help message and exit
-      --ihex                Generate intelhex file
-      --csrc                Generate c/c++ header and source files
-      --gld                 Generate GNU linker include file for parameter symbol generation.
-      --pyhexdump           Generate pyHexDump print configuration file.
-      --destdir DESTDIR, -o DESTDIR
-                            Specify output directory for generated files
-      --filename FILENAME, -f FILENAME
-                            Set basename for generated files.
-      --static, -s          Create static comment output without dynamic elements like date and time.
-
-    Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+      --ihex                generate intelhex file
+      --csrc                generate c/c++ header and source files
+      --gld                 generate GNU linker include file for parameter symbol generation
+      --a2l                 generate A2L parameter description file
+      --pyhexdump           generate pyHexDump print configuration file
+      --destdir directory, -o directory
+                            specify output directory for generated files
+      --filename basename, -f basename
+                            set basename for generated files
+      --static, -s          create static comment output without dynamic elements like date and time
+      --modify name=value, -m name=value
+                            modify parameter value using name=value notation
+      --version             show program's version number and exit
+    
+    Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
  The Pargen 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
