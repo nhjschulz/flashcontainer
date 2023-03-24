@@ -32,6 +32,7 @@
 import logging
 import pathlib
 import os
+from typing import Dict
 
 import lxml.etree as ET
 
@@ -40,26 +41,27 @@ from flashcontainer.byteconv import ByteConvert
 from flashcontainer.checksum import CrcConfig
 
 schema_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "pargen_1.0.xsd")
-NS = '{http://nhjschulz.github.io/1.0/pargen}'
+NS = 'http://nhjschulz.github.io/1.0/pargen'
 
 
 class XmlParser:
     """XML Parser to generate a datamodel from an XML file"""
 
     @classmethod
-    def from_file(cls, file: str) -> DM.Model:
+    def from_file(cls, file: str, values: Dict[str, str] = None) -> DM.Model:
         """Parser entry point returning model instance"""
-        return cls.parse(file)
+        return cls.parse(file, values)
 
     @staticmethod
-    def parse(file: str) -> DM.Model:
+    def parse(file: str, values: Dict[str, str]) -> DM.Model:
         """ Parse given XML file into datamodel. """
         model = None
         try:
             logging.info("Loading parameter definitons from %s.", file)
             schema = ET.XMLSchema(ET.parse(schema_file))
-            xml_doc = ET.parse(file)
+            xml_doc = ET.parse(file, ET.XMLParser(remove_comments=True))
             schema.assertValid(xml_doc)
+            XmlParser._update_values(xml_doc.getroot(), values)
             model = XmlParser._build_model(xml_doc.getroot(), file)
 
         except ET.DocumentInvalid as err:
@@ -68,6 +70,25 @@ class XmlParser:
 
 
         return model
+
+    @staticmethod
+    def _update_values(root,  values: Dict[str, str]):
+        """Update parameter values based on modifier list."""
+
+        if values is not None:
+            for param_name, param_value in list(values.items()):
+                xpath = ET.XPath(
+                    f"//pd:param[@name='{param_name}']/pd:value",
+                    namespaces={'pd': NS}
+                )
+                hits = xpath(root)
+                if hits:
+                    for element in hits:
+                        element.text = param_value
+                else:
+                    logging.warning(
+                        "Unable to modify parameter '%s': name is not defined.",
+                         param_name)
 
     @staticmethod
     def _get_optional(element: ET.Element, attr: str, default: any) -> str:
@@ -137,8 +158,8 @@ class XmlParser:
             A CrcConfig from the data model
         """
 
-        mem_element = param.find(f"{NS}memory")
-        cfg_element = param.find(f"{NS}config")
+        mem_element = param.find(f"{{{NS}}}memory")
+        cfg_element = param.find(f"{{{NS}}}config")
 
         defaults = CrcConfig()  # get defaults
 
@@ -185,7 +206,7 @@ class XmlParser:
 
     @staticmethod
     def _build_parameters(block: DM.Block, element) -> None:
-        data_element = element.find(f"{NS}data")
+        data_element = element.find(f"{{{NS}}}data")
         running_addr = block.addr
         if block.header is not None:
             running_addr += len(block.get_header_bytes())
@@ -203,19 +224,19 @@ class XmlParser:
             crc_cfg = None
             val_text = None
 
-            if f"{NS}crc" == parameter_element.tag:
+            if f"{{{NS}}}crc" == parameter_element.tag:
                 crc_cfg = XmlParser._parse_crc_config(parameter_element, block, offset)
                 val_text = '0x0'  # crc bits get calculated at end of block
                 logging.info("    got CRC data: %s", crc_cfg)
             else:
-                value_element = parameter_element.find(f"{NS}value")
+                value_element = parameter_element.find(f"{{{NS}}}value")
                 val_text = value_element.text
 
             data = ByteConvert.json_to_bytes(ptype, block.endianess, val_text)
 
             parameter = DM.Parameter(offset, name, ptype, data, crc_cfg)
 
-            comment = parameter_element.find(f"{NS}comment")
+            comment = parameter_element.find(f"{{{NS}}}comment")
             if comment is not None:
                 parameter.set_comment(comment.text)
 
@@ -272,7 +293,7 @@ class XmlParser:
         """ Load block list for given container """
 
         running_addr = container.addr
-        blocks_element = xml_element.find(f"{NS}blocks")
+        blocks_element = xml_element.find(f"{{{NS}}}blocks")
 
         for element in blocks_element:
             align = XmlParser.get_alignment(element)
@@ -285,14 +306,14 @@ class XmlParser:
             fill = XmlParser.get_fill(element)
             block = DM.Block(block_addr, name, length, endianess, fill)
 
-            comment = element.find(f"{NS}comment")
+            comment = element.find(f"{{{NS}}}comment")
             if comment is not None:
                 block.set_comment(comment.text)
 
             logging.info("  Loading block definition %s", block)
 
             # optional block header
-            header_element = element.find(f"{NS}header")
+            header_element = element.find(f"{{{NS}}}header")
             if header_element is not None:
                 block_id = XmlParser._parse_int(header_element.get("id"))
                 version = DM.Version(

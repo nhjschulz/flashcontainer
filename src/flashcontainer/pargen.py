@@ -39,7 +39,7 @@ import sys
 import os
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
@@ -55,67 +55,90 @@ _WRITER = [
     {
         "key": "ihex",
         "class": HexWriter,
-        "help": "Generate intelhex file"
+        "help": "generate intelhex file"
     },
     {
         "key": "csrc",
         "class": CFileWriter,
-        "help": "Generate c/c++ header and source files"
+        "help": "generate c/c++ header and source files"
     },
     {
         "key": "gld",
         "class": GnuLdWriter,
-        "help": "Generate GNU linker include file for parameter symbol generation."
+        "help": "generate GNU linker include file for parameter symbol generation"
     },
     {
         "key": "a2l",
         "class": A2lWriter,
-        "help": "Generate A2L parameter description file."
+        "help": "generate A2L parameter description file"
     },
     {
         "key": "pyhexdump",
         "class": PyHexDumpWriter,
-        "help": "Generate pyHexDump print configuration file."
+        "help": "generate pyHexDump print configuration file"
     }
 ]
+
+class FileArgumentParser(argparse.ArgumentParser):
+    """Argument parser with support for argument files."""
+
+    def convert_arg_line_to_args(self, arg_line):
+        return arg_line.split()
 
 def pargen_cli() -> int:
     """ cmd line interface for pagen"""
 
     logging.basicConfig(encoding='utf-8', level=logging.WARN)
 
-    about = 'A tool for generating flashable parameter container.'
     name = "pargen"
+    about = f"{name} {__version__}: A tool for generating flashable parameter container."
 
-    parser = argparse.ArgumentParser(
+    parser = FileArgumentParser(
         prog=name,
         description=about,
-        epilog=f"Visit {__repository__} for full documentation and examples.")
+        fromfile_prefix_chars='@',
+        epilog=
+            f"Copyright (c) 2022-2023 {__email__}. "
+            f" Visit {__repository__} for full documentation and examples."
+    )
 
     for writer in _WRITER:
         parser.add_argument("--" + writer["key"], action='store_true', help=writer["help"])
 
     parser.add_argument(
-        '--destdir', '-o', nargs=1,
-        help='Specify output directory for generated files', default=[str(Path.cwd())])
+        '--destdir', '-o', nargs=1, metavar="directory",
+        help='specify output directory for generated files', default=[str(Path.cwd())])
     parser.add_argument(
-        '--filename', '-f', nargs=1,
-        help='Set basename for generated files.')
+        '--filename', '-f', nargs=1, metavar="basename",
+        help='set basename for generated files')
 
     parser.add_argument(
         "--static", "-s", action='store_true',
-        help='Create static comment output without dynamic elements like date and time.'
+        help='create static comment output without dynamic elements like date and time'
+    )
+
+    parser.add_argument(
+        "--modify", "-m", nargs=1,  action='append', metavar="name=value",
+        help='modify parameter value using name=value notation'
     )
 
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
-    parser.add_argument('file', nargs=1, help='XML parameter definition file')
+    parser.add_argument('file', nargs=1, help='name of the XML parameter definition file')
 
     args = parser.parse_args()
 
-    print(f"{name} {__version__}: {about}")
-    print(f"Copyright (c) 2023 {__email__}\n")
+    # parse modifiy option values into string tuple list of (name, value) pairs.
+    modify_values = {}
+    for modval_str in (args.modify or []):
+        seperator = modval_str[0].find('=')
+        if -1 == seperator:
+            logging.error("invalid modify option  %s. Expect <name>=<val>.", modval_str[0])
+            return Error.ERROR_INVALID_OPTION
 
+        modify_values[modval_str[0][:seperator]] = modval_str[0][seperator+1:]
+
+    print(modify_values)
     writers = []
 
     for writer in _WRITER:
@@ -127,7 +150,8 @@ def pargen_cli() -> int:
         filename=args.filename,
         outdir=Path(args.destdir[0]),
         static=args.static,
-        writers=writers)
+        writers=writers,
+        modifier=modify_values)
 
 class Error(Enum):
     """Pargen error codes """
@@ -137,13 +161,15 @@ class Error(Enum):
     ERROR_INVALID_FORMAT = 2
     ERROR_VALIDATION_FAIL = 3
     ERROR_EXCEPTION = 4
+    ERROR_INVALID_OPTION =5
 
 def pargen(
         cfgfile: str,
         filename: str,
         outdir: Path,
         static: bool,
-        writers: List[DM.Walker]) -> int:
+        writers: List[DM.Walker],
+        modifier: Dict[str, str] = None) -> int:
     """ Parameter generator tool entry point"""
 
     # Create output directory (if necessary)
@@ -156,7 +182,8 @@ def pargen(
     outfilename = Path(outfilename).stem
 
     if Path(cfgfile).is_file():
-        model = XmlParser.from_file(cfgfile)
+        print(f"Processing definitions from {cfgfile}\n")
+        model = XmlParser.from_file(cfgfile, modifier)
     else:
         logging.error("file not found: %s", cfgfile)
         return Error.ERROR_FILE_NOT_FOUND.value

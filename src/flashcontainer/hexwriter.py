@@ -37,16 +37,22 @@ from pathlib import Path
 from intelhex import IntelHex
 
 import flashcontainer.datamodel as DM
+from flashcontainer.checksum import Crc, CrcConfig
 
 class HexWriter(DM.Walker):
     """ Intel hex data file writer"""
 
     def __init__(self, model: DM.Model, options: Dict[str, any]):
         super().__init__(model, options)
+
+        self.hexbytes = bytearray()
         self.ihex = IntelHex()
         self.filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".hex")
+        self.crc_filename = Path.joinpath(
+            self.options.get("DESTDIR"),
+            self.options.get("BASENAME") + ".crc")
 
     def pre_run(self) -> None:
         print(f"Generating intelhex file {self.filename}.")
@@ -55,18 +61,20 @@ class HexWriter(DM.Walker):
         addr = block.addr
         if block.header is not None:
             data = block.get_header_bytes()
+            self.hexbytes.extend(data)
             for byte in data:
                 self.ihex[addr] = byte
                 addr += 1
 
     def begin_gap(self, param: DM.Parameter):
-        """Gaps are same as parameter as far as hex dumping is concerned"""
+        """Gaps are same as parameter as far as hex dumping is concerned."""
 
         self.begin_parameter(param)
 
     def begin_parameter(self, param: DM.Parameter):
         """Patch parameter bytes into intelhex object"""
 
+        self.hexbytes.extend(param.value)
         addr = param.offset
         for byte in param.value:
             self.ihex[addr] = byte
@@ -76,3 +84,25 @@ class HexWriter(DM.Walker):
         """ Save into intelhex file"""
 
         self.ihex.tofile(str(self.filename), format='hex')
+
+        # create additional crc file with CRC32 checksum of hex data
+        with open(self.crc_filename, "w", encoding="UTF-8") as crc_file:
+            crc_file.write(f"0x{self._get_crc32():X}\n")
+
+    def _get_crc32(self) -> int:
+        """Calculate CRC32 over produced hex bytes"""
+
+        crc_cfg = CrcConfig(
+                width=32,
+                poly=0x04C11DB7,
+                init=0xFFFFFFFF,
+                xor=0xFFFFFFFF,
+                revin=True,
+                revout=True,
+                access=1,
+                swap=False
+            )
+
+        crc_calculator = Crc(crc_cfg)
+
+        return crc_calculator.checksum(self.hexbytes)

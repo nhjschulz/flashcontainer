@@ -1,6 +1,6 @@
 # Pargen - A Tool for Flashable Parameter Container Creation
 
-ParGen is an embedded development tool for generation of parameters values that
+Pargen is an embedded development tool for generating parameters values that
 can be stored in flash memory and maintained independently from the application.
 It allows to alter/update parameter values without recompilations.
 
@@ -27,31 +27,35 @@ A python 3.8 or higher version is required.
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
-    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--pyhexdump] [--destdir DESTDIR] [--filename FILENAME] [--static] file
-
-    A tool for generating flashable parameter container.
-
+    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--a2l] [--pyhexdump] [--destdir directory] [--filename basename] [--static] [--modify name=value] [--version] file
+    
+    pargen 0.4.0: A tool for generating flashable parameter container.
+    
     positional arguments:
-      file                  XML parameter definition file
-
-    options:
+      file                  name of the XML parameter definition file
+    
+    optional arguments:
       -h, --help            show this help message and exit
-      --ihex                Generate intelhex file
-      --csrc                Generate c/c++ header and source files
-      --gld                 Generate GNU linker include file for parameter symbol generation.
-      --pyhexdump           Generate pyHexDump print configuration file.
-      --destdir DESTDIR, -o DESTDIR
-                            Specify output directory for generated files
-      --filename FILENAME, -f FILENAME
-                            Set basename for generated files.
-      --static, -s          Create static comment output without dynamic elements like date and time.
-
-    Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+      --ihex                generate intelhex file
+      --csrc                generate c/c++ header and source files
+      --gld                 generate GNU linker include file for parameter symbol generation
+      --a2l                 generate A2L parameter description file
+      --pyhexdump           generate pyHexDump print configuration file
+      --destdir directory, -o directory
+                            specify output directory for generated files
+      --filename basename, -f basename
+                            set basename for generated files
+      --static, -s          create static comment output without dynamic elements like date and time
+      --modify name=value, -m name=value
+                            modify parameter value using name=value notation
+      --version             show program's version number and exit
+    
+    Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
  The Pargen 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github explains how to use unreleased development builds
-or how to setup a development environment for ParGen.
+or how to setup a development environment for Pargen.
 
 ## XML Definitions File
 
@@ -62,7 +66,7 @@ definition file with the format explained below.
 
 The [examples](https://github.com/nhjschulz/flashcontainer/tree/master/examples)
 folder shows how to configure Pargen for various use cases.
-Most of it is likely self explanatory. Read to the examples.md
+Most of it is likely self explanatory. Read the examples.md
 files inside the examples folder to learn more about them. To
 understand Pargen's XML capabilities in depth, read on.
 
@@ -141,7 +145,7 @@ A container may have 1 to many block children inside a blocks element.
 |Attribute  |Description              |optional|default|
 |-----------|-------------------------|--------|-------|
 | name      | The block name.         |   No   |       |
-| offset    | Memory start offset inside container. Value may be "." to use the next free offset inside the  container.|No||
+| offset    | Memory start offset inside container. Value may be "." to use the next free offset inside the container.|No||
 | length    | Number of bytes covered by this block|No|
 | align     | block alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 | fill      | byte value used to fill gaps.|Yes| 0x00 |
