@@ -28,6 +28,6 @@ jobs:
     - name: Build package
       run: python -m build
     - uses: actions/upload-artifact@v3
-        with:
-          name: flash-container
-          path: dist/
+      with:
+        name: flash-container
+        path: dist/
