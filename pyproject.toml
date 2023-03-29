@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flashcontainer"
-version = "0.4.0"
+version = "0.5.0"
 requires-python = ">=3.8"
 description = "A tooling for flashable parameter data container generation"
 readme = "README.md"
@@ -42,6 +42,8 @@ repository = "https://github.com/nhjschulz/flashcontainer"
 
 [project.scripts]
 pargen = "flashcontainer.pargen:pargen_cli"
+tc3xx = "flashcontainer.tc3xx:tc3xx"
+
 
 [tool.pytest.ini_options]
 pythonpath = [
