@@ -150,9 +150,6 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
     def run(self, args) -> int:
         """Generate alternate boot load header structure hex file."""
 
-        result = RETVAL.OK.value
-
-        print (args)
         result = self._evaluate_arguments(args)
 
         if RETVAL.OK.value == result:

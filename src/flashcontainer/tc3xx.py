@@ -74,7 +74,12 @@ def tc3xx() -> int:
         sub_cmd.register(sub_parsers)
 
     args = parser.parse_args()
-    return args.func(args)
+
+    if 'func' in vars(args):
+        return args.func(args)
+    else:
+        parser.print_help()
+        return -1
 
 if __name__ == "__main__":
     try:
