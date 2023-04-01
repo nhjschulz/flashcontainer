@@ -197,6 +197,8 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
     def validate(self) -> int:
         """Check correctness of received input"""
 
+        result = RETVAL.OK
+
         # Validate  check address range information
         if (self.min_addr < self.input_hex_data.minaddr()) or (self.min_addr >= self.input_hex_data.maxaddr()):
             logging.error(
@@ -205,7 +207,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
                 self.input_hex_data.minaddr(),
                 self.input_hex_data.maxaddr()
             )
-            return RETVAL.INVALID_PARAMETER.value
+            result =  RETVAL.INVALID_PARAMETER.value
 
         if (self.max_addr < self.input_hex_data.minaddr()) or (self.max_addr > self.input_hex_data.maxaddr()):
             logging.error(
@@ -214,7 +216,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
                 self.input_hex_data.minaddr(),
                 self.input_hex_data.maxaddr()
             )
-            return RETVAL.INVALID_PARAMETER.value
+            result =  RETVAL.INVALID_PARAMETER.value
 
         if self.max_addr < self.min_addr:
             logging.error(
@@ -222,7 +224,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
                 self.min_addr,
                 self.max_addr
             )
-            return RETVAL.INVALID_PARAMETER.value
+            result =  RETVAL.INVALID_PARAMETER.value
 
         #validate start address
         if (self.stad_addr < self.input_hex_data.minaddr()) or (self.stad_addr >= self.input_hex_data.maxaddr()):
@@ -232,30 +234,21 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
                 self.input_hex_data.minaddr(),
                 self.input_hex_data.maxaddr()
             )
-            return RETVAL.INVALID_PARAMETER.value
+            result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.stad_addr & 0x3):
-            logging.error(
-                "user code start address 0x%08x must be WORD aligned",
-                self.stad_addr
-            )
-            return RETVAL.INVALID_PARAMETER.value
+            logging.error("user code start address 0x%08x must be WORD aligned", self.stad_addr)
+            result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.min_addr & 0x3):
-            logging.error(
-                "check start address 0x%08x must be WORD aligned",
-                self.stad_addr
-            )
-            return RETVAL.INVALID_PARAMETER.value
+            logging.error("check start address 0x%08x must be WORD aligned", self.stad_addr)
+            result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.max_addr & 0x3):
-            logging.error(
-                "check end address 0x%08x must be WORD aligned",
-                self.stad_addr
-            )
-            return RETVAL.INVALID_PARAMETER.value
+            logging.error("check end address 0x%08x must be WORD aligned", self.stad_addr)
+            result =  RETVAL.INVALID_PARAMETER.value
 
-        return RETVAL.OK.value
+        return result
 
     def calc_user_data_crc(self):
         """Build CRC value over user data."""
@@ -281,7 +274,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             "STADABM" : hex(self.stad_addr),
             "ABMHDID" : hex(self.hdr_id),
             "CHKSTART" : hex(self.min_addr),
-            "CHKEND" : hex(self.max_addr),
+            "CHKEND" : hex(self.max_addr - 4),
             "CRCRANGE" : hex(self.user_crc),
             "CRCRANGE_N" : hex((~self.user_crc) & 0xFFFFFFFF)
         }

@@ -1,9 +1,8 @@
-""" Flash container generation tailored for TC3XX processors
+""" Argparse subclass with supprt for @args files
 """
-
 # BSD 3-Clause License
 #
-# Copyright (c) 2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,51 +30,22 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import logging
-import sys
+import argparse
 
-from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
-from flashcontainer.packageinfo import __version__, __email__, __repository__
-from flashcontainer.fileargparse import FileArgumentParser
+from flashcontainer.packageinfo import  __email__, __repository__
 
-# list of tc3xx subcommand classes
-_TC3XX_CMDS = [ Tc3xxAbmhd() ]
+class FileArgumentParser(argparse.ArgumentParser):
+    """Argument parser with support for argument files."""
 
+    def __init__ (self, **kwargs):
+        self.epilog = (
+            f"Copyright (c) 2022-2023 {__email__}. "
+            f"Visit {__repository__} for full documentation and examples."
+        )
 
-def tc3xx() -> int:
-    """ cmd line interface for tc3xx"""
+        super().__init__(fromfile_prefix_chars='@', epilog=self.epilog, **kwargs)
 
-    logging.basicConfig(encoding='utf-8', level=logging.INFO)
+    def convert_arg_line_to_args(self, arg_line):
+        """Support multiple arguments on one line (default is one per line )."""
 
-    name = "tc3xx"
-    about = f"{name} {__version__}: Build hex files for TC3XX data structures."
-
-    parser = FileArgumentParser(
-        prog=name,
-        description=about,
-    )
-
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    sub_parsers = parser.add_subparsers(
-        title="supported sub commands",
-        help='additional command specific help')
-
-    # register all sub commands with the arg parser
-    for sub_cmd in _TC3XX_CMDS:
-        sub_cmd.register(sub_parsers)
-
-    args = parser.parse_args()
-
-    if 'func' not in vars(args):
-        parser.print_help()
-        return -1
-
-    return args.func(args)
-
-
-if __name__ == "__main__":
-    try:
-        sys.exit(tc3xx())
-    except Exception as exc:  # pylint: disable=broad-except
-        logging.exception(exc)
-        sys.exit(-1)
+        return arg_line.split()

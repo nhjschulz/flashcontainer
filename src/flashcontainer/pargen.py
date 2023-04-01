@@ -32,7 +32,6 @@
 #
 
 import datetime
-import argparse
 import logging
 import uuid
 import sys
@@ -48,6 +47,7 @@ from flashcontainer.gnuldwriter import GnuLdWriter
 from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
 from flashcontainer.a2lwriter import A2lWriter
 from flashcontainer.packageinfo import __version__, __email__, __repository__
+from flashcontainer.fileargparse import FileArgumentParser
 import flashcontainer.datamodel as DM
 
 # List of output writers
@@ -79,12 +79,6 @@ _WRITER = [
     }
 ]
 
-class FileArgumentParser(argparse.ArgumentParser):
-    """Argument parser with support for argument files."""
-
-    def convert_arg_line_to_args(self, arg_line):
-        return arg_line.split()
-
 def pargen_cli() -> int:
     """ cmd line interface for pagen"""
 
@@ -95,11 +89,7 @@ def pargen_cli() -> int:
 
     parser = FileArgumentParser(
         prog=name,
-        description=about,
-        fromfile_prefix_chars='@',
-        epilog=
-            f"Copyright (c) 2022-2023 {__email__}. "
-            f" Visit {__repository__} for full documentation and examples."
+        description=about
     )
 
     for writer in _WRITER:
@@ -124,11 +114,11 @@ def pargen_cli() -> int:
 
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
-    parser.add_argument('file', nargs=1, help='name of the XML parameter definition file')
+    parser.add_argument('file', nargs=1, help='name of the XML parameter definition file (or - for stdin)')
 
     args = parser.parse_args()
 
-    # parse modifiy option values into string tuple list of (name, value) pairs.
+    # parse modify option values into string tuple list of (name, value) pairs.
     modify_values = {}
     for modval_str in (args.modify or []):
         seperator = modval_str[0].find('=')
@@ -138,7 +128,6 @@ def pargen_cli() -> int:
 
         modify_values[modval_str[0][:seperator]] = modval_str[0][seperator+1:]
 
-    print(modify_values)
     writers = []
 
     for writer in _WRITER:
@@ -181,7 +170,10 @@ def pargen(
         outfilename = os.path.basename(cfgfile)
     outfilename = Path(outfilename).stem
 
-    if Path(cfgfile).is_file():
+    if "-" == cfgfile:
+        print("Processing definitions from <stdin>\n")
+        model = XmlParser.from_file(sys.stdin, modifier)
+    elif Path(cfgfile).is_file():
         print(f"Processing definitions from {cfgfile}\n")
         model = XmlParser.from_file(cfgfile, modifier)
     else:
