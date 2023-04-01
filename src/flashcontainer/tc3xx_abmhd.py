@@ -98,7 +98,8 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             description=
             """Generate TC3XX alternate boot mode header pargen definition file.\n\n"""
             """Example:\n"""
-            """    tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | pargen --ihex -f abmhd -""" )
+            """    tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | """
+            """pargen --ihex -f abmhd -""" )
 
         parser.add_argument(
             "--stad", "-s", nargs=1,

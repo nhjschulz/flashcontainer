@@ -23,6 +23,9 @@
     "python.linting.flake8Args": [
             "--max-line-length=120"
     ],
+    "python.linting.pylintArgs": [
+        "--rcfile=${workspaceFolder}/.pylintrc"
+    ],
     "cSpell.words": [
         "flashcontainer"
     ],
