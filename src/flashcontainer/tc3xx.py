@@ -45,7 +45,7 @@ _TC3XX_CMDS = [ Tc3xxAbmhd() ]
 def tc3xx() -> int:
     """ cmd line interface for tc3xx"""
 
-    logging.basicConfig(encoding='utf-8', level=logging.INFO)
+    logging.basicConfig(encoding='utf-8', level=logging.WARNING)
 
     name = "tc3xx"
     about = f"{name} {__version__}: Build hex files for TC3XX data structures."

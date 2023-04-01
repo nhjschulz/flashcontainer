@@ -1,4 +1,4 @@
-""" Alternate boot mode header generation for  TC3XX processors
+""" Alternate boot mode header generation for TC3XX processors
 """
 
 # BSD 3-Clause License
@@ -34,15 +34,17 @@
 import argparse
 import pathlib
 import os
+import sys
+import textwrap
 import logging
 from enum import Enum
 from pathlib import Path
 
 from intelhex import IntelHex
+import lxml.etree as ET
 
+from flashcontainer.packageinfo import __version__
 from flashcontainer.tc3xx_cmd import Tc3xxCmdBase
-from flashcontainer.pargen import pargen
-from flashcontainer.hexwriter import HexWriter
 from flashcontainer.checksum import Crc, CrcConfig
 
 class RETVAL(Enum):
@@ -76,7 +78,9 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
         self.input_hex_file = ""
         self.input_hex_data = IntelHex()
-        self.output_hex_file = ""
+
+        self.abmhd_addr = 0x0
+        self.output = sys.stdout
 
     @staticmethod
     def _static_run(args) -> int:
@@ -92,29 +96,29 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             help='Generate alternate boot mode header',
             formatter_class=argparse.RawTextHelpFormatter,
             description=
-            """Generate TC3XX alternate boot mode header for user data\n\n"""
+            """Generate TC3XX alternate boot mode header pargen definition file.\n\n"""
             """Example:\n"""
-            """    tc3xx --stad 0x80028000 --from 0x8002000 --to 0x8004000 -o abmhdr 0x80000100 fw.hex""" )
+            """    tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | pargen --ihex -f abmhd -""" )
 
         parser.add_argument(
             "--stad", "-s", nargs=1,
             type=lambda x: int(x,0),
             metavar="STADABM",
-            help='User code start address (default: lowest address in input hexfile)'
+            help='user code start address (default: lowest address in hexfile)'
         )
         parser.add_argument(
             "--from", "-f", nargs=1,
             type=lambda x: int(x,0),
             dest='chk_from',
             metavar="CHKSTART",
-            help='Begin of range to be checked (default: lowest address in input hexfile)'
+            help='begin of range to be checked (default: lowest address in hexfile)'
         )
         parser.add_argument(
             "--to", "-t", nargs=1,
             type=lambda x: int(x,0),
             dest='chk_to',
             metavar="CHKEND",
-            help='End of range to be checked (default: highest address in input hexfile)'
+            help='end of range to be checked (default: highest address in hexfile + 1)'
         )
 
         parser.add_argument(
@@ -122,13 +126,13 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             type=lambda x: int(x,0),
             metavar="ABMHDID",
             default=0xFA7CB359,
-            help=f'Alternate Boot Mode Header Identifier value (default=0x{Tc3xxAbmhd._abmhd_ok_id:X})'
+            help=f'alternate Boot Mode Header Identifier value (default=0x{Tc3xxAbmhd._abmhd_ok_id:X})'
         )
 
         parser.add_argument(
             "--output", "-o", nargs=1,
             metavar="filename",
-            help='Filename of resulting boot mode header hex file (default: <input>_abmhdr.hex)'
+            help='file name of generated pargen xml file (default: <stdout>)'
         )
 
         parser.add_argument(
@@ -136,28 +140,32 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             nargs=1,
             metavar='ADDRESS',
             type=lambda x: int(x,0),
-            help='Start address of alternate boot mode header.')
+            help='start address of alternate boot mode header.')
 
         parser.add_argument(
             'filename',
             metavar='HEXFILE',
             nargs=1,
-            help='name of hexfile with user code content')
+            help='name of hexfile with user data content')
 
         parser.set_defaults(func=Tc3xxAbmhd._static_run)
 
 
     def run(self, args) -> int:
-        """Generate alternate boot load header structure hex file."""
+        """abmhd command executer"""
 
         result = self._evaluate_arguments(args)
-
         if RETVAL.OK.value == result:
-            result = self.validate()
-
+            result = self._validate()
             if RETVAL.OK.value == result:
-                self.calc_user_data_crc()
-                result = self.call_pargen()
+                self._calc_user_data_crc()
+                pargen_xml = self._generate_xml()
+
+                if self.output == sys.stdout:
+                    self.output.write(pargen_xml)
+                else:
+                    with open(self.output, 'w', encoding='utf-8') as outfile:
+                        outfile.write(pargen_xml)
 
         return result
 
@@ -183,21 +191,21 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         )
 
         self.min_addr = args.chk_from[0] if args.chk_from is not None else self.input_hex_data.minaddr()
-        self.max_addr = args.chk_to[0]if args.chk_to is not None else self.input_hex_data.maxaddr()
+        self.max_addr = args.chk_to[0]if args.chk_to is not None else self.input_hex_data.maxaddr() + 1
         self.stad_addr = args.stad[0] if args.stad is not None else self.min_addr
         self.hdr_id = args.abmhdid if args.abmhdid is not None else Tc3xxAbmhd._abmhd_ok_id
 
-        if args.output is None:
-            self.output_hex_file = str(Path(self.input_hex_file).with_suffix("")) + "_abmhd"
-        else:
-            self.output_hex_file = args.output[0]
+        if args.output is not None:
+            self.output = str(Path(args.output[0]))
+
+        self.abmhd_addr = args.address[0]
 
         return RETVAL.OK.value
 
-    def validate(self) -> int:
+    def _validate(self) -> int:
         """Check correctness of received input"""
 
-        result = RETVAL.OK
+        result = RETVAL.OK.value
 
         # Validate  check address range information
         if (self.min_addr < self.input_hex_data.minaddr()) or (self.min_addr >= self.input_hex_data.maxaddr()):
@@ -250,8 +258,10 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
         return result
 
-    def calc_user_data_crc(self):
+    def _calc_user_data_crc(self):
         """Build CRC value over user data."""
+
+        logging.info("Calulating CRC from 0x%0x-0x%0x", self.min_addr, self.max_addr)
 
         user_data = bytearray()
 
@@ -265,24 +275,76 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         crc_calculator = Crc(crc_cfg)
         self.user_crc = crc_calculator.checksum(crc_calculator.prepare(user_data))
 
+    def _generate_xml(self) -> str:
+        """Generate pargen definition XML"""
 
-    def call_pargen(self) -> int:
-        """Run pargen to produce ABMHDR hex file"""
+        dest = self.output if self.output != sys.stdout else "<stdout>"
+        logging.info("Writing pargen XML definition into %s", dest)
+        xml_dom = ET.fromstring(
+            self._get_xml(),
+            ET.XMLParser(remove_blank_text=True, encoding='utf-8')
+        )
+        etree = ET.ElementTree(xml_dom)
+        ET.indent(etree, "    ")
 
-        # parameter values to patch with cmd arguments in XML
-        modifier_dict = {
-            "STADABM" : hex(self.stad_addr),
-            "ABMHDID" : hex(self.hdr_id),
-            "CHKSTART" : hex(self.min_addr),
-            "CHKEND" : hex(self.max_addr - 4),
-            "CRCRANGE" : hex(self.user_crc),
-            "CRCRANGE_N" : hex((~self.user_crc) & 0xFFFFFFFF)
-        }
+        return '<?xml version="1.0" encoding="utf-8"?>\n'+ ET.tounicode(etree, pretty_print=True)
 
-        return pargen(
-            cfgfile=Tc3xxAbmhd._abmhd_xml,
-            filename=Path(self.output_hex_file).stem,
-            outdir=Path(self.output_hex_file).parent,
-            static=True,
-            writers=[HexWriter],
-            modifier=modifier_dict)
+    def _get_xml(self) -> str:
+        """Get resulting XML record as string"""
+
+        return textwrap.dedent(f'''\
+            <?xml version="1.0" encoding="utf-8"?>
+            <!--
+                Flashcontainer configuration for Aurix TC3xx alternate boot mode header
+                Autogenerated by tc3xx {__version__} for {self.input_hex_file}
+            -->
+            <pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+                <pd:container name="TC3XX_ABMHD" at="0x{self.abmhd_addr:0X}">
+                    <pd:blocks>
+                        <pd:block offset="0x0000" name="ABMHD" length="0x20" fill="0x00" endianness="LE">
+                            <pd:comment>Aurix Alternate Bootmode Header Structure</pd:comment>
+                                <pd:data>
+                                    <pd:param offset="0x00" name="STADABM" type="uint32">
+                                        <pd:comment>User Code Start Address in ABM mode</pd:comment>
+                                        <pd:value>0x{self.stad_addr:0X}</pd:value>
+                                    </pd:param>
+                                    <pd:param offset="0x04" name="ABMHDID" type="uint32">
+                                        <pd:comment>Alternate Boot Mode Header Identifier (0xFA7CB359 = OK)</pd:comment>
+                                        <pd:value>0x{self.hdr_id:0X}</pd:value>
+                                    </pd:param>
+            
+                                    <pd:param offset="0x08" name="CHKSTART" type="uint32">
+                                        <pd:comment>Memory Range to be checked - Start Address</pd:comment>
+                                        <pd:value>0x{self.min_addr:0X}</pd:value>
+                                    </pd:param>
+                                    <pd:param offset="0x0C" name="CHKEND" type="uint32">
+                                        <pd:comment>Memory Range to be checked - End Address</pd:comment>
+                                        <pd:value>0x{self.max_addr - 0x4:0X}</pd:value>
+                                    </pd:param>
+            
+                                    <pd:param offset="0x010" name="CRCRANGE" type="uint32">
+                                        <pd:comment>Check Result for the Memory Range</pd:comment>
+                                        <pd:value>0x{self.user_crc:0X}</pd:value>
+                                    </pd:param>
+                                    <pd:param offset="0x0014" name="CRCRANGE_N" type="uint32">
+                                        <pd:comment>Inverted Check Result for the Memory Range</pd:comment>
+                                        <pd:value>0x{(~self.user_crc) & 0xffffffff:0X}</pd:value>
+                                    </pd:param>
+            
+                                    <pd:crc offset="0x18" name="CRCABMHD" type="uint32" >
+                                        <pd:memory from="0x00" to="0x17" access="32" swap="true"/>
+                                        <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
+                                    </pd:crc>
+                                    <pd:crc offset="0x1C" name="CRCABMHD_N" type="uint32">
+                                        <pd:memory from="0x00" to="0x17" access="32" swap="true"/>
+                                        <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="false" ></pd:config>
+                                    </pd:crc>
+                                </pd:data>
+                        </pd:block>
+                    </pd:blocks>
+                </pd:container>
+            </pd:pargen>
+            '''
+        ).encode()
