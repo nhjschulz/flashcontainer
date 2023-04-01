@@ -114,7 +114,9 @@ def pargen_cli() -> int:
 
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
-    parser.add_argument('file', nargs=1, help='name of the XML parameter definition file (or - for stdin)')
+    parser.add_argument(
+       'file',
+        nargs=1, help='name of the XML parameter definition file (or - for stdin)')
 
     args = parser.parse_args()
 
@@ -134,9 +136,13 @@ def pargen_cli() -> int:
         if getattr(args, writer["key"]):
             writers.append(writer["class"])
 
+    base_name = None
+    if args.filename is not None:
+        base_name = args.filename[0]
+
     return pargen(
         cfgfile=args.file[0],
-        filename=args.filename,
+        filename=base_name,
         outdir=Path(args.destdir[0]),
         static=args.static,
         writers=writers,
@@ -165,11 +171,9 @@ def pargen(
     destdir = Path.resolve(outdir)
     destdir.mkdir(parents=True, exist_ok=True)
 
-    outfilename = filename
-    if outfilename is None:
-        outfilename = os.path.basename(cfgfile)
-    outfilename = Path(outfilename).stem
-
+    base_name = Path(os.path.basename(cfgfile)).stem
+    if filename is not None:
+        base_name = Path(filename).stem
     if "-" == cfgfile:
         print("Processing definitions from <stdin>\n")
         model = XmlParser.from_file(sys.stdin, modifier)
@@ -193,7 +197,7 @@ def pargen(
         "DATETIME": datetime.datetime.now(),
         "MODEL": model,
         "DESTDIR": destdir,
-        "BASENAME": outfilename,
+        "BASENAME": base_name,
         "STATICOUTPUT": static
         }
 
