@@ -42,7 +42,7 @@ from flashcontainer.fileargparse import FileArgumentParser
 _TC3XX_CMDS = [ Tc3xxAbmhd() ]
 
 
-def tc3xx() -> int:
+def tc3xx(argv) -> int:
     """ cmd line interface for tc3xx"""
 
     logging.basicConfig(encoding='utf-8', level=logging.WARNING)
@@ -64,7 +64,7 @@ def tc3xx() -> int:
     for sub_cmd in _TC3XX_CMDS:
         sub_cmd.register(sub_parsers)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if 'func' not in vars(args):
         parser.print_help()
@@ -72,10 +72,14 @@ def tc3xx() -> int:
 
     return args.func(args)
 
+def tc3xx_cli() -> int:
+    """CLI wrapper for tc3xx """
+
+    return tc3xx(sys.argv[1:])
 
 if __name__ == "__main__":
     try:
-        sys.exit(tc3xx())
+        sys.exit(tc3xx_cli())
     except Exception as exc:  # pylint: disable=broad-except
         logging.exception(exc)
         sys.exit(-1)

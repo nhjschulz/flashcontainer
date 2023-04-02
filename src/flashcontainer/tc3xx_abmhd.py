@@ -218,7 +218,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             )
             result =  RETVAL.INVALID_PARAMETER.value
 
-        if (self.max_addr < self.input_hex_data.minaddr()) or (self.max_addr > self.input_hex_data.maxaddr()):
+        if (self.max_addr < self.input_hex_data.minaddr()) or (self.max_addr > (self.input_hex_data.maxaddr() + 1)):
             logging.error(
                 "check end address 0x%08x out of user data range 0x%08x - 0x%08x",
                 self.min_addr,
@@ -236,7 +236,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             result =  RETVAL.INVALID_PARAMETER.value
 
         #validate start address
-        if (self.stad_addr < self.input_hex_data.minaddr()) or (self.stad_addr >= self.input_hex_data.maxaddr()):
+        if (self.stad_addr < self.input_hex_data.minaddr()) or (self.stad_addr > (self.input_hex_data.maxaddr())):
             logging.error(
                 "user code start address 0x%08x out of user data range 0x%08x - 0x%08x",
                 self.stad_addr,
@@ -262,7 +262,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
     def _calc_user_data_crc(self):
         """Build CRC value over user data."""
 
-        logging.info("Calulating CRC from 0x%0x-0x%0x", self.min_addr, self.max_addr)
+        logging.info("Calculating CRC from 0x%0x-0x%0x", self.min_addr, self.max_addr)
 
         user_data = bytearray()
 
@@ -302,7 +302,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             <pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
-                <pd:container name="TC3XX_ABMHD" at="0x{self.abmhd_addr:0X}">
+                <pd:container name="{Path(self.input_hex_file).stem}_ABMHD" at="0x{self.abmhd_addr:0X}">
                     <pd:blocks>
                         <pd:block offset="0x0000" name="ABMHD" length="0x20" fill="0x00" endianness="LE">
                             <pd:comment>Aurix Alternate Bootmode Header Structure</pd:comment>

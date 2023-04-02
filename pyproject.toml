@@ -42,7 +42,7 @@ repository = "https://github.com/nhjschulz/flashcontainer"
 
 [project.scripts]
 pargen = "flashcontainer.pargen:pargen_cli"
-tc3xx = "flashcontainer.tc3xx:tc3xx"
+tc3xx = "flashcontainer.tc3xx:tc3xx_cli"
 
 
 [tool.pytest.ini_options]
