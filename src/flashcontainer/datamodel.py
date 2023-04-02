@@ -516,11 +516,11 @@ class Validator(Walker):
         self.result = False
 
 
-# A tuple holding additional information for datamodel types
+# A tuple holding additional information for data model types
 #
 # fmt: format character used in struct.pack/unpack
-# size: # if bytes used by one elemnent of this type
-# witdh: preferned print width
+# size: # if bytes used by one element of this type
+# width: preferred print width
 # ctype: C-Language type
 TypeData = namedtuple('TypeData', ['fmt', 'size', 'width', 'signed', 'ctype'])
 

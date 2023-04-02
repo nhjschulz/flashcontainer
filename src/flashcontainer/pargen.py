@@ -156,7 +156,7 @@ class Error(Enum):
     ERROR_INVALID_FORMAT = 2
     ERROR_VALIDATION_FAIL = 3
     ERROR_EXCEPTION = 4
-    ERROR_INVALID_OPTION =5
+    ERROR_INVALID_OPTION = 5
 
 def pargen(
         cfgfile: str,
