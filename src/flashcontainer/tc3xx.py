@@ -48,7 +48,7 @@ def tc3xx(argv) -> int:
     logging.basicConfig(encoding='utf-8', level=logging.WARNING)
 
     name = "tc3xx"
-    about = f"{name} {__version__}: Build pargen definitions for TC3xx data structures."
+    about = f"{name} {__version__}: Build Pargen definitions for TC3xx data structures."
 
     parser = FileArgumentParser(
         prog=name,

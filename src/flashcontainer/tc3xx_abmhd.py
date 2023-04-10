@@ -96,7 +96,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             help='Generate alternate boot mode header',
             formatter_class=argparse.RawTextHelpFormatter,
             description=
-            """Generate TC3XX alternate boot mode header pargen definition file.\n\n"""
+            """Generate TC3XX alternate boot mode header Pargen definition file.\n\n"""
             """Example:\n"""
             """    tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | """
             """pargen --ihex -f abmhd -""" )
@@ -133,7 +133,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         parser.add_argument(
             "--output", "-o", nargs=1,
             metavar="filename",
-            help='file name of generated pargen xml file (default: <stdout>)'
+            help='file name of generated Pargen xml file (default: <stdout>)'
         )
 
         parser.add_argument(
@@ -141,7 +141,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             nargs=1,
             metavar='ADDRESS',
             type=lambda x: int(x,0),
-            help='start address of alternate boot mode header.')
+            help='flash address of alternate boot mode header.')
 
         parser.add_argument(
             'filename',
@@ -277,10 +277,10 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         self.user_crc = crc_calculator.checksum(crc_calculator.prepare(user_data))
 
     def _generate_xml(self) -> str:
-        """Generate pargen definition XML"""
+        """Generate Pargen definition XML"""
 
         dest = self.output if self.output != sys.stdout else "<stdout>"
-        logging.info("Writing pargen XML definition into %s", dest)
+        logging.info("Writing Pargen XML definition into %s", dest)
         xml_dom = ET.fromstring(
             self._get_xml(),
             ET.XMLParser(remove_blank_text=True, encoding='utf-8')
