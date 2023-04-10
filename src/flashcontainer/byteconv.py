@@ -36,12 +36,12 @@ import json5
 import flashcontainer.datamodel as DM
 
 class ByteConvert:
-    """Byte to Text convertiona
+    """Byte to Text conversions
     """
 
     @staticmethod
     def get_type_size(ptype: DM.ParamType) -> int:
-        """Get bytesize of type"""
+        """Get byte size of type"""
 
         return DM.TYPE_DATA[ptype].size
 

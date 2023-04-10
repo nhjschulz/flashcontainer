@@ -54,10 +54,10 @@ class XmlParser:
 
     @staticmethod
     def parse(file: str, values: Dict[str, str]) -> DM.Model:
-        """ Parse given XML file into datamodel. """
+        """ Parse given XML file into data model. """
         model = None
         try:
-            logging.info("Loading parameter definitons from %s.", file)
+            logging.info("Loading parameter definitions from %s.", file)
             schema = ET.XMLSchema(ET.parse(schema_file))
             xml_doc = ET.parse(file, ET.XMLParser(remove_comments=True))
             schema.assertValid(xml_doc)
@@ -267,9 +267,9 @@ class XmlParser:
 
         Args:
             base_addr(int): Start address of parent element
-            running_addr(int): Next unused adderss in parent element
+            running_addr(int): Next unused address in parent element
             offset_str(str): address information from XML
-            alignment(int): optional address alignement to 1,2,4,8... boundary
+            alignment(int): optional address alignment to 1,2,4,8... boundary
 
         Returns:
             Aligned address if integer is passed or aligned next free address for '.'

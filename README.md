@@ -1,11 +1,18 @@
-# Pargen - A Tool for Flashable Parameter Container Creation
-
-Pargen is an embedded development tool for generating parameters values that
-can be stored in flash memory and maintained independently from the application.
-It allows to alter/update parameter values without recompilations.
+# Tools for Creating Flashable Parameter Container
 
 ![License](https://img.shields.io/badge/License-BSD%203--Clause-green)
 [![Python package](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml)
+
+## Pargen - Parameter File Generator
+
+The main tool in flashcontainer is called Pargen. Pargen is generating data files
+for parameter values or other data structures that can to be stored in flash memory.
+It allows to change the data without recompilation by reading definitions from an
+XML file.
+
+Flashcontainter also includes tailored front ends for Pargen to simplify special
+use cases. See the [TC3xx tool](#generating-tc3xx-boot-mode-header-structures)
+description chapter for generating Infineon Aurix TC3xx boot mode headers structures.
 
 ## Concept and Features
 
@@ -52,10 +59,10 @@ The parameter generator tool can then by called on cmdline using
     
     Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
- The Pargen 
+ The flashcontainer 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github explains how to use unreleased development builds
-or how to setup a development environment for Pargen.
+or how to setup a development environment.
 
 ## XML Definitions File
 
@@ -149,7 +156,7 @@ A container may have 1 to many block children inside a blocks element.
 | length    | Number of bytes covered by this block|No|
 | align     | block alignment to the next 1,2,4,8 bytes boundary|Yes|1|
 | fill      | byte value used to fill gaps.|Yes| 0x00 |
-| endianness| LE or BE: Little or or big endian byte order |Yes|LE|
+| endianness| LE or BE: Little or big endian byte order |Yes|LE|
 
 #### Block Child Elements
 
@@ -306,6 +313,51 @@ but derived from the type attribute of the crc element.
       <pd:memory from="0x0000" to="0x0007" access="32" swap="true"/>
       <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
     </pd:crc>
+
+
+## Generating TC3xx Boot Mode Header Structures
+
+The tc3xx tool is used to generate Pargen definition XML files for boot mode header
+structures. A Boot mode header structure is a data block in flash memory, which is
+defined by Infineon TC3xx processors. It gets processed by startup software to 
+select which image to boot into.
+
+General usage of the tc3xx command:
+
+    tc3xx  [-h] [--version] {tool name} ...
+
+
+### TC3xx ABMHD - Alternate Boot Mode Header Generator
+
+Tc3xx supports the *abmhd* tool to a generate an alternate boot mode header structure for firmware hex files. 
+The *tc3xx abmhd* tool is controlled by options and produces a Pargen definition file. The definitions file is 
+written to stdout id no output file option is given. This allows to "pipe" the definitions directly into Pargen.
+
+*tc3xx abmhd* usage:
+
+    usage: tc3xx abmhd [-h] [--stad STADABM] [--from CHKSTART] [--to CHKEND] [--abmhdid ABMHDID] [--output filename] ADDRESS HEXFILE    
+
+    Generate TC3XX alternate boot mode header Pargen definition file.   
+
+    Example:
+        tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | pargen --ihex -f abmhd -   
+
+    positional arguments:
+      ADDRESS               flash address of alternate boot mode header.
+      HEXFILE               name of hexfile with user data content    
+
+    options:
+      -h, --help            show this help message and exit
+      --stad STADABM, -s STADABM
+                            user code start address (default: lowest address in hexfile)
+      --from CHKSTART, -f CHKSTART
+                            begin of range to be checked (default: lowest address in hexfile)
+      --to CHKEND, -t CHKEND
+                            end of range to be checked (default: highest address in hexfile + 1)
+      --abmhdid ABMHDID, -i ABMHDID
+                            alternate Boot Mode Header Identifier value (default=0xFA7CB359)
+      --output filename, -o filename
+                            file name of generated Pargen xml file (default: <stdout>)
 
 ## Issues, Ideas And Bugs
 
