@@ -36,6 +36,7 @@ import struct
 import logging
 from collections import namedtuple
 from operator import attrgetter
+from dataclasses import dataclass
 
 from flashcontainer.checksum import Crc, CrcConfig
 
@@ -55,24 +56,23 @@ class CrcData(NamedTuple):
         return f"0x{self.start:X}-0x{self.end:X}  {self.crc_cfg}"
 
 
-class Version:  # pylint: disable=too-few-public-methods
+@dataclass
+class Version:
     """Version number data type"""
 
-    def __init__(self, major, minor, version):
-        self.major = major
-        self.minor = minor
-        self.version = version
+    major: int
+    minor: int
+    version: int
 
     def __str__(self):
         return f"{self.major}.{self.minor}.{self.version}"
 
-
-class BlockHeader:  # pylint: disable=too-few-public-methods
+@dataclass
+class BlockHeader:
     """Parameter block header container """
 
-    def __init__(self, block_id, version):
-        self.block_id = block_id
-        self.version = version
+    block_id: int
+    version: int
 
 
 class Endianness(Enum):
@@ -519,7 +519,7 @@ class Validator(Walker):
 # A tuple holding additional information for data model types
 #
 # fmt: format character used in struct.pack/unpack
-# size: # if bytes used by one element of this type
+# size: # of bytes used by one element of this type
 # width: preferred print width
 # ctype: C-Language type
 TypeData = namedtuple('TypeData', ['fmt', 'size', 'width', 'signed', 'ctype'])
