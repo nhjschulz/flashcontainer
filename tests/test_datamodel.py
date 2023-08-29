@@ -72,6 +72,7 @@ def test_model_str():
     assert DM.Model("hello").__str__() == "Model(hello [])"
     assert DM.Container("hello", 0xabcd).__str__() == "hello @ 0xabcd"
     assert DM.Block(0xFF, "block", 10, DM.Endianness.LE, 0xAA).__str__() == "Block(block @ 0xff)"
-    assert DM.CrcData().__str__() == "0x0-0x0  polynomial:0x4C11DB7, 32 Bit, init:0xFFFFFFFF, reverse in:True, reverse out:True, final xor:True, access:1, swap:False"
+    assert DM.CrcData().__str__() == "0x0-0x0  polynomial:0x4C11DB7, 32 Bit, init:0xFFFFFFFF, " \
+                                    "reverse in:True, reverse out:True, final xor:True, access:8, swap:False"
     assert DM.Version(2,3,5).__str__() == "2.3.5"
     assert DM.Parameter(0x2, "_2", DM.ParamType.UINT8, b'\x22', None).__str__() == "_2 @ 0x2 = 22 len=1(0x1) /* None */"
