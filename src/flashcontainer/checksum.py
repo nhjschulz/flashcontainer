@@ -47,7 +47,7 @@ class CrcConfig(NamedTuple):
         revin(bool): Reflect each single input byte if True
         revout(bool): Reflect the final CRC value if True
         xor(bool): Xor the final result with the value 0xff before returning the solution
-        access(int): Access size when swapping (1,2,4 or 8)
+        access(int): Access size when swapping (8, 16, 32 or 64)
         swap(bool): Swap bytes with access size
     """
     poly: int = 0x04C11DB7
@@ -56,7 +56,7 @@ class CrcConfig(NamedTuple):
     revin: bool = True
     revout: bool = True
     xor: bool = True
-    access: int = 1
+    access: int = 8
     swap: bool = False
 
     def __str__(self):
@@ -134,7 +134,6 @@ class Crc:
 
         Args:
             bytes (bytearray): input byte array, must be multiple of access size long
-            access (int): access width 1,2,4 or 8
 
         Returns:
             reordered bytearray
