@@ -32,7 +32,7 @@
 
 import struct
 import json5
-
+from lxml.etree import DocumentInvalid
 import flashcontainer.datamodel as DM
 
 class ByteConvert:
@@ -69,12 +69,71 @@ class ByteConvert:
             result.extend(b'\x00')
 
         else:
-            raise Exception(f"unsupported json value type {variant}") # pylint: disable=broad-except
+            raise DocumentInvalid(f"unsupported json value type {variant}")
 
         return result
 
     @staticmethod
-    def bytes_to_c_init(ptype: DM.ParamType,  endianess: DM.Endianness, data: bytearray) -> str:
+    def fill_struct_from_json(strct: DM.Datastruct, input_str: str,
+                               endianess: DM.Endianness, blockfill: int) -> bytearray:
+        """Parse values for the structs field from JSON input"""
+
+        # check for invalid input
+        input_dict = json5.loads(input_str)
+        if not isinstance(input_dict, dict):
+            raise DocumentInvalid(f"Invalid input for struct:\n{input_str}")
+        if not set(strct.get_field_names()) == set(input_dict.keys()):
+            raise DocumentInvalid(f"struct {strct.name} field names and input keys are not equal")
+
+        data = bytearray()
+        for component in strct.fields:
+            if isinstance(component, DM.Padding):
+                if strct.filloption == "parent":
+                    data.extend(bytearray((blockfill for _ in range(component.size))))
+                else:
+                    data.extend(bytearray((strct.filloption for _ in range(component.size))))
+                continue
+            fmt = "<" if endianess == DM.Endianness.LE else ">"
+            fmt += DM.TYPE_DATA[component.type].fmt
+            if isinstance(component, DM.Field):
+                data.extend(bytearray(struct.pack(fmt, input_dict[component.name])))
+            elif isinstance(component, DM.ArrayField):
+                # check input validity for array
+                ain = input_dict[component.name]
+                if not isinstance(ain, list):
+                    raise DocumentInvalid(f"Invalid input for struct:\n{input_str}")
+                if len(ain) != component.count:
+                    raise DocumentInvalid(f"ArrayField {component.name} of size {component.count}\
+                                           supplied with {len(ain)} values.")
+                for input_val in ain:
+                    data.extend(bytearray(struct.pack(fmt, input_val)))
+            else:  # crc
+                calculator = DM.Crc(component.cfg)
+                buffer = calculator.prepare(data.copy())
+                crc_input = buffer[component.start: component.end + 1]
+                checksum = calculator.checksum(crc_input)
+
+                fmt = f"<{DM.TYPE_DATA[component.type].fmt}" if endianess == DM.Endianness.LE \
+                    else f">{DM.TYPE_DATA[component.type].fmt}"
+
+                byte_checksum = struct.pack(fmt, checksum)
+                data.extend(byte_checksum)
+
+        return data
+
+    @staticmethod
+    def value_to_c(value: int, type_data: DM.TypeData) -> str:
+        """Convert single value to valid C"""
+        if isinstance(value, float):
+            return f"{value:>{type_data.width}.8f}"
+        if isinstance(value, bytes):
+            return f"0x{value.hex().upper()}"
+        if type_data.signed:
+            return f"{value:>{type_data.width}}"
+        return f"0x{value:0{2*type_data.size}X}"
+
+    @staticmethod
+    def bytes_to_c_init(ptype: DM.ParamType, endianess: DM.Endianness, data: bytearray) -> str:
         """Convert raw data to C-Language initializer"""
 
         result = ""
@@ -91,15 +150,7 @@ class ByteConvert:
         for i in range(0, entries):
             val = values[i]
 
-            if isinstance(val, float):
-                result += f"{val:>{type_data.width}.8f}"
-            elif isinstance(val, bytes):
-                result += f"0x{val.hex().upper()}"
-            else:
-                if type_data.signed:
-                    result += f"{val:>{type_data.width}}"
-                else:
-                    result += f"0x{val:0{2*type_data.size}X}"
+            result += ByteConvert.value_to_c(val, type_data)
 
             if i < (entries-1):
                 result += ', '
@@ -109,4 +160,41 @@ class ByteConvert:
         if 1 < entries:
             result += "\n}"
 
+        return result
+
+    @staticmethod
+    def struct_to_c_init(param: DM.Parameter, endianess: DM.Endianness) -> str:
+        """Get the data for the fields (reverse of fill_strct_from_json()) and parse as a C var init"""
+        strct = param.datastruct
+        data_idx = 0
+        result = "{"
+
+        for field in strct.fields:
+            result += "\n    "
+            data = param.value[data_idx: data_idx + field.get_size()]
+            data_idx += field.get_size()
+
+            if isinstance(field, (DM.Padding, DM.ArrayField)):
+                type_data = DM.TYPE_DATA[field.type] if isinstance(field, DM.ArrayField) else\
+                      DM.TYPE_DATA[DM.ParamType.UINT8]
+                fmt = "<" if endianess == DM.Endianness.LE else ">"
+                if isinstance(field, DM.Padding):
+                    fmt += type_data.fmt * field.get_size()
+                else:
+                    fmt += type_data.fmt * field.count
+                values = struct.unpack(fmt, data)
+                result += "{"
+                for i, val in enumerate(values):
+                    result += ByteConvert.value_to_c(val, type_data)
+                    if i < len(values)-1:
+                        result += ', '
+                result += "},"
+
+            if isinstance(field, (DM.Field, DM.CrcField)):
+                fmt = "<" if endianess == DM.Endianness.LE else ">"
+                fmt += DM.TYPE_DATA[field.type].fmt
+                value = struct.unpack(fmt, data)[0]
+                result += ByteConvert.value_to_c(value, DM.TYPE_DATA[field.type]) + ","
+
+        result += "\n}"
         return result

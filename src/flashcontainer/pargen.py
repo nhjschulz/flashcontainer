@@ -114,11 +114,17 @@ def pargen_cli() -> int:
 
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help="increase logging level")
+
     parser.add_argument(
        'file',
         nargs=1, help='name of the XML parameter definition file (or - for stdin)')
 
     args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.INFO)
 
     # parse modify option values into string tuple list of (name, value) pairs.
     modify_values = {}

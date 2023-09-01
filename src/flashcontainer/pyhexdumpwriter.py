@@ -135,6 +135,7 @@ class PyHexDumpWriter(DM.Walker):
         super().__init__(model, options)
         self.dmpfile = None
         self.elements = []
+        self.definded_structs = []
 
     def pre_run(self) -> None:
         filename = Path.joinpath(
@@ -150,9 +151,7 @@ class PyHexDumpWriter(DM.Walker):
 
         if block.header is not None:
 
-            subtype = "be"
-            if self.ctx_block.endianess == DM.Endianness.LE:
-                subtype = "le"
+            subtype = "le" if self.ctx_block.endianess == DM.Endianness.LE else "be"
 
             element = {
                 "name": f"{self.ctx_block.name}_blkhdr",
@@ -165,16 +164,51 @@ class PyHexDumpWriter(DM.Walker):
 
     def begin_parameter(self, param: DM.Parameter) -> None:
         """Add element to data array """
-
-        element = {
-            "name": f"{param.name}",
-            "addr": f"{hex(param.offset)}",
-            "dataType": self._TYPE_MAPPING[param.ptype]
-                [0 if self.ctx_block.endianess == DM.Endianness.LE else 1],
-            "count": len(param.value) // ByteConvert.get_type_size(param.ptype)
-        }
+        if param.ptype != DM.ParamType.COMPLEX:
+            element = {
+                "name": f"{param.name}",
+                "addr": f"{hex(param.offset)}",
+                "dataType": self._TYPE_MAPPING[param.ptype]
+                    [0 if self.ctx_block.endianess == DM.Endianness.LE else 1],
+                "count": len(param.value) // ByteConvert.get_type_size(param.ptype)
+            }
+        else:
+            element = {
+                "name": f"{param.name}",
+                "addr": f"{hex(param.offset)}",
+                "dataType": f"pargen_{param.datastruct.name}_" + \
+                    f"{'le' if self.ctx_block.endianess == DM.Endianness.LE else 'be'}_t",
+                "count": 1
+            }
 
         self.elements.append(element)
+
+    def begin_struct(self, strct: DM.Datastruct) -> None:
+        """Add BE and LE versions of the struct to the defined structures"""
+        structure_dicts = ({ "name": f"pargen_{strct.name}_le_t", "elements": []},
+                            { "name": f"pargen_{strct.name}_be_t", "elements": []})
+
+        for i, _ in enumerate(("le", "be")):
+            offset = 0
+            offset_needed = False
+            for field in strct.fields:
+                if isinstance(field, (DM.Field, DM.ArrayField, DM.CrcField)):
+                    element = {
+                        "name": f"{field.name}",
+                        "dataType": self._TYPE_MAPPING[field.type][i],
+                        "count": field.count if isinstance(field, DM.ArrayField) else 1
+                    }
+                    if offset_needed:
+                        element.update({"offset": offset})
+                        offset_needed = False
+                    offset += field.get_size()
+                    structure_dicts[i]["elements"].append(element)
+                else:
+                    # padding requires no entry but correct offset for next element
+                    offset += field.get_size()
+                    offset_needed = True
+
+        self.definded_structs.extend(structure_dicts)
 
     def post_run(self):
         """Close output file"""
@@ -191,7 +225,7 @@ class PyHexDumpWriter(DM.Walker):
 
         record = {
             "_comment_": comment,
-            "structures": _HEADER_STRUCTURES,
+            "structures": _HEADER_STRUCTURES + self.definded_structs,
             "elements": self.elements
             }
 
