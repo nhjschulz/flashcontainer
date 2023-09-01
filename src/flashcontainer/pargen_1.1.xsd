@@ -1,0 +1,316 @@
+<!--
+BSD 3-Clause License
+
+Copyright (c) 2022, Haju Schulz (haju.schulz@online.de)
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ -->
+
+ <!-- XSD grammar for pargen XML input -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://nhjschulz.github.io/1.1/pargen"
+    xmlns="http://nhjschulz.github.io/1.1/pargen"
+    xmlns:pargen="http://nhjschulz.github.io/1.1/pargen"
+    elementFormDefault="qualified">
+
+    <xs:element name="pargen">
+        <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+                <xs:element name="struct" type="pargen:struct" minOccurs="0" maxOccurs="unbounded"></xs:element>
+                <xs:element name="container" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="blocks">
+                                <xs:complexType>
+                                    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+                                        <xs:element name="block" type="pargen:block"></xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="at" type="pargen:uint64" use="required" />
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="struct">
+        <xs:sequence>
+            <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
+            <xs:element name="fields" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
+                        <xs:element name="field" type="pargen:field"/>
+                        <xs:element name="arrayfield" type="pargen:arrayfield"/>
+                        <xs:element name="padding" type="pargen:padding"/>
+                        <xs:element name="crc" type="pargen:crcfield"/>
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="pargen:identifier" use="required" />
+        <xs:attribute name="fill" type="pargen:filloption" use="optional" default="parent"/>
+    </xs:complexType>
+
+    <xs:complexType name="field">
+        <xs:sequence>
+            <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="pargen:identifier" use="required" />
+        <xs:attribute name="type" type="pargen:type" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="arrayfield">
+        <xs:complexContent>
+            <xs:extension base="pargen:field">
+                <xs:attribute name="size" type="pargen:uint64" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="padding">
+        <xs:attribute name="size" type="pargen:uint64"></xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="crcfield">
+        <xs:sequence>
+            <xs:element name="memory" type="pargen:memory" minOccurs="1" maxOccurs="1"></xs:element>
+            <xs:element name="config" type="pargen:crccfg" minOccurs="0" maxOccurs="1"></xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="pargen:identifier" use="required" />
+        <xs:attribute name="type" type="pargen:type" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="block">
+        <xs:sequence>
+            <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
+            <xs:element name="header" type="pargen:header" minOccurs="0" maxOccurs="1"></xs:element>
+            <xs:element name="data" type="pargen:data"></xs:element>
+        </xs:sequence>
+        <xs:attribute name="offset" type="pargen:address" use="required" />
+        <xs:attribute name="name" type="pargen:identifier" use="required" />
+        <xs:attribute name="length" type="pargen:uint32" use="required" />
+        <xs:attribute name="endianness" type="pargen:endianness" use="optional" default="LE" />
+        <xs:attribute name="align" type="pargen:align" use="optional" default="1" />
+        <xs:attribute name="fill" type="pargen:uint8" use="optional" default="0x00" />
+    </xs:complexType>
+
+    <xs:complexType name="header">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="id" type="pargen:uint16" use="required" />
+                <xs:attribute name="major" type="pargen:uint16" use="required" />
+                <xs:attribute name="minor" type="pargen:uint16" use="required" />
+                <xs:attribute name="version" type="pargen:uint16" use="required" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="data">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="param" type="pargen:param"></xs:element>
+            <xs:element name="crc" type="pargen:crc"></xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="param_base">
+        <xs:sequence>
+            <xs:element name="comment" type="pargen:textonly" minOccurs="0" maxOccurs="1"></xs:element>
+        </xs:sequence>
+        <xs:attribute name="offset" type="pargen:address" use="required" />
+        <xs:attribute name="name" type="pargen:identifier" use="required" />
+        <xs:attribute name="type" type="pargen:type" use="required" />
+        <xs:attribute name="struct" type="pargen:identifier" use="optional" default="" />
+        <xs:attribute name="align" type="pargen:align" use="optional" default="1" />
+    </xs:complexType>
+
+    <xs:complexType name="param">
+        <xs:complexContent>
+            <xs:extension base="pargen:param_base">
+                <xs:sequence>
+                    <xs:element name="value" type="pargen:textonly" minOccurs="1" maxOccurs="1"></xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="crc">
+        <xs:complexContent>
+            <xs:extension base="pargen:param_base">
+                <xs:sequence>
+                    <xs:element name="memory" type="pargen:memory" minOccurs="1" maxOccurs="1"></xs:element>
+                    <xs:element name="config" type="pargen:crccfg" minOccurs="0" maxOccurs="1"></xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="crccfg">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="polynomial" type="uint32" use="optional" default="0x04C11DB7" />
+                <xs:attribute name="init" type="uint32" use="optional" default="0xFFFFFFFF" />
+                <xs:attribute name="rev_in" type="xs:boolean" use="optional" default="true" />
+                <xs:attribute name="rev_out" type="xs:boolean" use="optional" default="true" />
+                <xs:attribute name="final_xor" type="xs:boolean" use="optional" default="true" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="memory">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="from" type="pargen:address" default="0x0000" />
+                <xs:attribute name="to" type="pargen:address" default="." />
+                <xs:attribute name="access" type="pargen:access" use="optional" default="8" />
+                <xs:attribute name="swap" type="xs:boolean" use="optional" default="false" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="utf8">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="length" type="uint32" use="required" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="uint8">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,2}|0|[1-2][0-9]{0,2}" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="filloption">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,2}|0|[1-2][0-9]{0,2}|parent"></xs:pattern>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="uint16">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,4}|0|[1-9][0-9]{0,5}" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="uint32">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,8}|0|[1-9][0-9]{0,9}" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="uint64">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,16}|0|[1-9][0-9]{0,20}" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="address">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="0x[0-9a-fA-F]{1,16}|0|[1-9][0-9]{1,20}|\." />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="idstr32">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="32"></xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="identifier">
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="uint32" />
+            <xs:enumeration value="uint8" />
+            <xs:enumeration value="uint16" />
+            <xs:enumeration value="uint64" />
+            <xs:enumeration value="int8" />
+            <xs:enumeration value="int16" />
+            <xs:enumeration value="int32" />
+            <xs:enumeration value="int64" />
+            <xs:enumeration value="float32" />
+            <xs:enumeration value="float64" />
+            <xs:enumeration value="utf8" />
+            <xs:enumeration value="complex" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="endianness">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="LE" />
+            <xs:enumeration value="BE" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="boolean">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="True" />
+            <xs:enumeration value="False" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="align">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="4" />
+            <xs:enumeration value="8" />
+            <xs:enumeration value="16" />
+            <xs:enumeration value="32" />
+            <xs:enumeration value="64" />
+            <xs:enumeration value="128" />
+            <xs:enumeration value="256" />
+            <xs:enumeration value="512" />
+            <xs:enumeration value="1024" />
+            <xs:enumeration value="2048" />
+            <xs:enumeration value="4096" />
+            <xs:enumeration value="8192" />
+            <xs:enumeration value="16384" />
+       </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="access">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="8" />
+            <xs:enumeration value="16" />
+            <xs:enumeration value="32" />
+            <xs:enumeration value="64" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="textonly">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

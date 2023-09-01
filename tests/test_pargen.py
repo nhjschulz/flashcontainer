@@ -1,5 +1,6 @@
 import pytest
 import pathlib
+import json5
 
 from flashcontainer import pargen
 
@@ -8,7 +9,7 @@ def test_pargen_errors(tmp_path):
 
     sandbox_dir = pathlib.Path(__file__).resolve().parent
     example_xml = pathlib.Path.joinpath(sandbox_dir, "example", "example.xml")
-    
+
     # run without writer should succeed
     result = pargen.pargen(
         cfgfile=example_xml,
@@ -18,7 +19,7 @@ def test_pargen_errors(tmp_path):
         writers=[])
     assert result == pargen.Error.ERROR_OK.value
 
-    # invalid model 
+    # invalid model
 
     result = pargen.pargen(
         cfgfile=pathlib.Path.joinpath(sandbox_dir, "collateral", "invalid.xml"),
@@ -28,7 +29,7 @@ def test_pargen_errors(tmp_path):
         writers=[])
     assert result == pargen.Error.ERROR_INVALID_FORMAT.value
 
-    # invalid filename 
+    # invalid filename
 
     result = pargen.pargen(
         cfgfile=pathlib.Path.joinpath(sandbox_dir, "collateral", "invalidX.xml"),
@@ -38,7 +39,7 @@ def test_pargen_errors(tmp_path):
         writers=[])
     assert result == pargen.Error.ERROR_FILE_NOT_FOUND.value
 
-    # fail validation 
+    # fail validation
 
     result = pargen.pargen(
         cfgfile=pathlib.Path.joinpath(sandbox_dir, "collateral", "fail_validation.xml"),
@@ -68,13 +69,13 @@ def test_pargen_output(tmp_path):
     # diff content (lines with ":")
     gen_lines = []
     with open(pathlib.Path.joinpath(tmp_path, "pytest.hex"), encoding="utf-8") as file:
-        for line in file: 
+        for line in file:
             if line[0] == ":":
                 gen_lines.append(line)
 
     reference_lines = []
     with open(pathlib.Path.joinpath(arduino_example, "param", "param.hex"), encoding="utf-8") as file:
-        for line in file: 
+        for line in file:
             if line[0] == ":":
                 reference_lines.append(line)
 
@@ -90,3 +91,24 @@ def test_pargen_output(tmp_path):
         print(crc)
 
     assert crc == 0x2144DF1C
+
+
+def test_pyhexdump_output(tmp_path):
+    """Run pargen on struct example"""
+    sandbox_dir = pathlib.Path(__file__).resolve().parent
+
+    result = pargen.pargen(
+        cfgfile=pathlib.Path.joinpath(sandbox_dir, "example", "structexample.xml"),
+        filename="pytest",
+        outdir=tmp_path,
+        static=False,
+        writers=[pargen.PyHexDumpWriter])
+    assert result == pargen.Error.ERROR_OK.value
+
+    with open(pathlib.Path.joinpath(tmp_path, "pytest.pyhexdump"), encoding="utf8") as gfp:
+        generated = json5.load(gfp)
+    with open(pathlib.Path.joinpath(sandbox_dir, "collateral", "pyhex_ref.json"), encoding="utf8")as rfp:
+        reference = json5.load(rfp)
+
+    assert generated['structures'] == reference['structures']
+    assert generated['elements'] == reference['elements']

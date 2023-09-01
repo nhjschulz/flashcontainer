@@ -31,12 +31,14 @@
 #
 
 from enum import Enum
-from typing import Dict, NamedTuple
+from typing import Dict, NamedTuple, Optional, List
 import struct
 import logging
 from collections import namedtuple
 from operator import attrgetter
 from dataclasses import dataclass
+from itertools import chain
+from abc import ABC, abstractmethod
 
 from flashcontainer.checksum import Crc, CrcConfig
 
@@ -82,10 +84,10 @@ class Endianness(Enum):
     BE = 2    # big endian (like Motorola 68k)
 
 
-class Block: # pylint: disable=too-many-instance-attributes
+class Block:
     """Block data container """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         addr: int, name: str,
         length: int, endianess: Endianness, fill: int):
@@ -234,8 +236,8 @@ class Block: # pylint: disable=too-many-instance-attributes
         return f"Block({self.name} @ {hex(self.addr)})"
 
 
-class ParamType(Enum):
-    """Supported data types"""
+class BasicType(Enum):
+    """Supported basic data types"""
     UINT32 = 1
     UINT8 = 2
     UINT16 = 3
@@ -247,21 +249,27 @@ class ParamType(Enum):
     FLOAT32 = 9
     FLOAT64 = 10
     UTF8 = 11
-    GAPFILL = 12
 
+class SpecialType(Enum):
+    """Additional types for padding and structs"""
+    GAPFILL = 12
+    COMPLEX = 13
+
+ParamType = Enum('ParamType', [(i.name, i.value) for i in chain(BasicType, SpecialType)])
 
 class Parameter:
     """Parameter definition data container"""
 
     def __init__(self, # pylint: disable=too-many-arguments
             offset: int, name: str, ptype: ParamType,
-            value: bytearray, crc: CrcData = None):
+            value: bytearray, crc: CrcData = None, datastruct: "Datastruct" = None):
         self.offset = offset
         self.name = name
         self.ptype = ptype
         self.value = value
         self.comment = None
         self.crc_cfg = crc
+        self.datastruct = datastruct
 
     @classmethod
     def as_gap(cls, address: int, length: int, pattern: int):
@@ -283,8 +291,11 @@ class Parameter:
         self.comment = comment
 
     def __str__(self):
-        return f"{self.name} @ {hex(self.offset)} = {self.value.hex()} "\
-            f"len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */"
+        if self.datastruct is None:
+            return f"{self.name} @ {hex(self.offset)} = {self.value.hex()} "\
+                f"len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */"
+        return f"{self.name} @ {hex(self.offset)} of type {self.datastruct} "\
+            f"/* {self.comment } */"
 
 
 class Container:
@@ -310,11 +321,21 @@ class Model:
     def __init__(self, name):
         self.name = name
         self.container = []
+        self.datastructs = []
 
     def add_container(self, container):
         """Append container to model"""
 
         self.container.append(container)
+
+    def add_struct(self, strct):
+        """Append data struct to model"""
+        self.datastructs.append(strct)
+
+    def get_struct_by_name(self, name: str) -> Optional["Datastruct"]:
+        """Resturns the struct with the given name if one is present"""
+        candidates = [s for s in self.datastructs if s.name == name]
+        return candidates[0] if candidates else None
 
     def __str__(self):
         return f"Model({self.name} {self.container})"
@@ -329,6 +350,108 @@ class Model:
             print("")
 
         return validator.result
+
+
+@dataclass
+class StructElement(ABC):
+    """Base class for the components in a struct"""
+
+    @abstractmethod
+    def get_size(self) -> int:
+        """Returns the size of the element in the struct"""
+
+
+@dataclass
+class Field(StructElement):
+    """Field in a struct"""
+    name: str
+    type: BasicType
+    comment: str = None
+
+    def __post_init__(self):
+        self.type = ParamType(self.type.value)
+
+    def get_size(self) -> int:
+        """Returns the size of the basic type and therefore the field"""
+        return TYPE_DATA[self.type].size
+
+
+@dataclass
+class ArrayField(StructElement):
+    """Field that holds multiple values of the same type"""
+    name: str
+    type: BasicType
+    count: int
+    comment: str = None
+
+    def __post_init__(self):
+        self.type = ParamType(self.type.value)
+
+    def get_size(self) -> int:
+        return TYPE_DATA[self.type].size * self.count
+
+
+@dataclass
+class Padding(StructElement):
+    """Padding element to create gaps between Fields"""
+    size: int
+
+    def get_size(self) -> int:
+        return self.size
+
+
+@dataclass
+class CrcField(StructElement):
+    """Crc element to represent CRC in a struct"""
+    name: str
+    type: BasicType
+    cfg: CrcConfig
+    start: int
+    end: int
+
+    def __post_init__(self):
+        self.type = ParamType(self.type.value)
+
+    def get_size(self) -> int:
+        return TYPE_DATA[self.type].size
+
+
+class Datastruct:
+    """ Class to hold struct type information """
+
+    def __init__(self, name: str, filloption: str) -> None:
+        self.name = name
+        self.fields = []
+        if filloption not in ("parent"):
+            try:
+                self.filloption = int(filloption) & 0xFF
+            except ValueError:
+                self.filloption = int(filloption, 16) & 0xFF
+        else:
+            self.filloption = filloption
+        self.comment = None
+
+    def set_comment(self, comment: str) -> None:
+        """Set optional comment"""
+        self.comment = comment
+
+    def add_field(self, field: StructElement) -> None:
+        """Add field to the data struct"""
+        self.fields.append(field)
+
+    def get_size(self) -> int:
+        """Returns the size of all struct components combined"""
+        return sum((f.get_size() for f in self.fields))
+
+    def get_field_names(self, include_crcs: bool = False) -> List[str]:
+        """Returns a list of all named fields names in the struct"""
+        if include_crcs:
+            return [f.name for f in self.fields if isinstance(f, (Field, ArrayField, CrcField))]
+        return [f.name for f in self.fields if isinstance(f, (Field, ArrayField))]
+
+    def __str__(self) -> str:
+        """Return a string representation of the struct"""
+        return f"{self.name} ({self.get_size()} bytes)"
 
 
 class Walker:
@@ -368,21 +491,43 @@ class Walker:
         """Run actions when leaving block """
 
     def begin_parameter(self, param: Parameter) -> None:
-        """ Run begin actions for parameter"""
+        """Run begin actions for parameter"""
 
     def end_parameter(self, param: Parameter) -> None:
-        """ Run end actions for parameter"""
+        """Run end actions for parameter"""
 
     def begin_gap(self, param: Parameter) -> None:
-        """ Run begin actions for gaps"""
+        """Run begin actions for gaps"""
 
     def end_gap(self, param: Parameter) -> None:
-        """ Run end actions for gaps"""
+        """Run end actions for gaps"""
+
+    def begin_struct(self, strct: Datastruct) -> None:
+        """Run begin action for structs"""
+
+    def end_struct(self, strct: Datastruct) -> None:
+        """Run end action for structs"""
+
+    def begin_field(self, field: Field) -> None:
+        """Run begin action for fields"""
+
+    def end_field(self, field: Field) -> None:
+        """Run end action for fields"""
 
     def run(self):
         """Walk the data model."""
 
         self.pre_run()
+
+        for strct in self.model.datastructs:
+            logging.debug("begin_struct(%s)", strct)
+            self.begin_struct(strct)
+
+            for field in strct.fields:
+                self.begin_field(field)
+                self.end_field(field)
+
+            self.end_struct(strct)
 
         for container in self.model.container:
             self.ctx_container = container
@@ -428,31 +573,46 @@ class Validator(Walker):
         super().__init__(model, options)
         self.result = True
         self.last_param = None
-        self.blocklist = {}
-        self.paramlist = {}
+        self.blockdict = {}
+        self.paramdict = {}
+        self.structdict = {}
+        self.fielddict = {}
+
 
     def begin_container(self, container: Container) -> None:
-        self.blocklist = {}
+        self.blockdict = {}
+
+    def begin_struct(self, strct: Datastruct) -> None:
+        if strct.name in self.structdict:
+            self.error(f"struct {strct.name} defined more than once in the model")
+        self.structdict.update({strct.name: strct})
+        self.fielddict = {}
+
+    def begin_field(self, field: StructElement) -> None:
+        if isinstance(field, (Field, ArrayField, CrcField)):
+            if field.name in self.fielddict:
+                self.error(f"field {field.name} defined more than once in the same struct")
+            self.fielddict[field.name] = field
 
     def begin_block(self, block: Block):
         self.last_param = None
-        self.paramlist = {}
+        self.paramdict = {}
 
-        if block.name in self.blocklist:
+        if block.name in self.blockdict:
             self.error(
                 f"block with name {block.name} already exists "
-                f"@ 0x{self.blocklist[block.name].addr:08X}")
+                f"@ 0x{self.blockdict[block.name].addr:08X}")
         else:
-            self.blocklist[block.name] = block
+            self.blockdict[block.name] = block
 
     def begin_parameter(self, param: Parameter):
 
-        if param.name in self.paramlist:
+        if param.name in self.paramdict:
             self.error(
                 f"parameter with name {param.name} already exists "
-                f"@ 0x{self.paramlist[param.name].offset:08X}")
+                f"@ 0x{self.paramdict[param.name].offset:08X}")
         else:
-            self.paramlist[param.name] = param
+            self.paramdict[param.name] = param
 
         block_end = self.ctx_block.addr + self.ctx_block.length
 
@@ -524,6 +684,7 @@ class Validator(Walker):
 # ctype: C-Language type
 TypeData = namedtuple('TypeData', ['fmt', 'size', 'width', 'signed', 'ctype'])
 
+
 TYPE_DATA = {
     ParamType.UINT32:  TypeData("L", 4, 10, False, "uint32_t"),
     ParamType.UINT8:   TypeData("B", 1, 4, False, "uint8_t"),
@@ -535,5 +696,5 @@ TYPE_DATA = {
     ParamType.INT64:   TypeData("q", 8, 16, True, "int64_t"),
     ParamType.FLOAT32: TypeData("f", 4, 12, True, "float"),
     ParamType.FLOAT64: TypeData("d", 8, 16, True, "double"),
-    ParamType.UTF8:    TypeData("1c", 1, 4, False, "char")
+    ParamType.UTF8:    TypeData("1c", 1, 4, False, "char"),
 }

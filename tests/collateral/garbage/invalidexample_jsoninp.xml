@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.1/pargen"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    xsi:schemaLocation="http://nhjschulz.github.io/1.1/pargen http://nhjschulz.github.io/xsd/pargen_1.1.xsd" >
+
     <pd:container name="CodeFlash" at="0x80000000">
         <pd:blocks>
             <pd:block offset="0x00000000" name="paraBlkQm" length="0x100" endianness="LE" fill="0x55">
@@ -23,7 +24,7 @@
                     <pd:crc offset="0xfc" name="crc" type="uint32">
                         <pd:comment>block crc32 (IEEE802.3)</pd:comment>
                         <pd:memory from="0x0000" to="."/>
-                        <pd:config  polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true"></pd:config>
+                        <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true"></pd:config>
                     </pd:crc>
                 </pd:data>
             </pd:block>
@@ -39,7 +40,7 @@
                         <pd:value>"Hello world!"</pd:value>
                     </pd:param>
                     <pd:param offset="." name="val" type="uint16" align="2">
-                        <pd:value>0x1604</pd:value>
+                        <pd:value>{"Hey": 0x1604}</pd:value>
                     </pd:param>
                     <pd:param offset="." name="birthday" type="float32">
                         <pd:value>0.160469</pd:value>

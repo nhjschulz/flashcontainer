@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    <pd:container name="EEPROM" at="0x81000000">
+        <pd:blocks>
+            <pd:block offset="0x0000" name="par" length="0x400" fill="0xAA">
+                <pd:comment>1Kb Example parameter block for displaying a flashable message with update delay</pd:comment>
+                <pd:header id="0xEE" major="1" minor="0" version="1"></pd:header>
+                <pd:data>
+                    <pd:param offset="." name="par_UpdateDelay_ms" type="uint16">
+                        <pd:comment>Interval time between dumping welcome message.</pd:comment>
+                        <pd:value>2000</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="par_WelcomeMsg_str" type="utf8">
+                        <pd:comment>Message to display in endless loop.</pd:comment>
+                        <pd:value>"This message is defined as a Pargen parameter!\r\n"</pd:value>
+                    </pd:param>
+                    <pd:crc offset="0x03fc" name="par_crc" type="uint32">
+                        <pd:memory from="0x0000" to="."/>
+                    </pd:crc>
+                </pd:data>
+            </pd:block>
+        </pd:blocks>
+    </pd:container>
+</pd:pargen>

@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+<pd:pargen xmlns:pd="http://nhjschulz.github.io/1.1/pargen"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+    xsi:schemaLocation="http://nhjschulz.github.io/1.1/pargen http://nhjschulz.github.io/xsd/pargen_1.1.xsd" >
+    <pd:struct name="SimpleS" fill="parent">
+        <pd:comment>This struct is super simple</pd:comment>
+        <pd:fields>
+            <pd:field name="int1" type="uint8" />
+            <pd:field name="int2" type="uint8" />
+        </pd:fields>
+    </pd:struct>
+    <pd:struct name="ComplexS" fill="0xAA">
+        <pd:comment>This struct will feature padding and arrays</pd:comment>
+        <pd:fields>
+            <pd:field name="int1" type="uint8" />
+            <pd:padding size="4"/>
+            <pd:field name="int2" type="uint64">
+                <pd:comment>I will need so much space</pd:comment>
+            </pd:field>
+            <pd:padding size="2" />
+            <pd:arrayfield name="intarray" type="uint16" size="4"/>
+        </pd:fields>
+    </pd:struct>
     <pd:container name="CodeFlash" at="0x80000000">
         <pd:blocks>
             <pd:block offset="0x00000000" name="paraBlkQm" length="0x100" endianness="LE" fill="0x55">
@@ -23,7 +42,7 @@
                     <pd:crc offset="0xfc" name="crc" type="uint32">
                         <pd:comment>block crc32 (IEEE802.3)</pd:comment>
                         <pd:memory from="0x0000" to="."/>
-                        <pd:config  polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true"></pd:config>
+                        <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true"></pd:config>
                     </pd:crc>
                 </pd:data>
             </pd:block>
@@ -51,6 +70,19 @@
                          <pd:comment>block crc32 (IEEE802.3)</pd:comment>
                          <pd:memory from="0x0000" to="."/>
                     </pd:crc>
+                </pd:data>
+            </pd:block>
+
+            <pd:block offset="0x400" name="structTestBlock" length="0x200" endianness="LE" align="256" fill="0xFF">
+                <pd:comment>This block contains parameters that use structs</pd:comment>
+                <pd:header id="0x0E00" major="1" minor="0" version="0"/>
+                <pd:data>
+                    <pd:param offset="." name="simpy" type="complex" struct="SimpleS">
+                        <pd:value>{ "int1": 3, "int2": 5}</pd:value>
+                    </pd:param>
+                    <pd:param offset="." name="biggy" type="complex" struct="ComplexS">
+                        <pd:value>{"int1": 1, "int2": 9999999, "intarray": 5}</pd:value>
+                    </pd:param>
                 </pd:data>
             </pd:block>
         </pd:blocks>

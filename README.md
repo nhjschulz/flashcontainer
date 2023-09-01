@@ -34,7 +34,7 @@ A python 3.8 or higher version is required.
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
-    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--a2l] [--pyhexdump] [--destdir directory] [--filename basename] [--static] [--modify name=value] [--version] file
+    usage: pargen [-h] [--ihex] [--csrc] [--gld] [--a2l] [--pyhexdump] [--destdir directory] [--filename basename] [--static] [--modify name=value] [--version] [-v] file
     
     pargen 0.4.0: A tool for generating flashable parameter container.
     
@@ -56,6 +56,7 @@ The parameter generator tool can then by called on cmdline using
       --modify name=value, -m name=value
                             modify parameter value using name=value notation
       --version             show program's version number and exit
+      -v, --verbose         increase logging level
     
     Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
@@ -80,7 +81,7 @@ understand Pargen's XML capabilities in depth, read on.
 ### XML Configuration File Anatomy
 
 The XML follows an XSD-schema defined in 
-[pargen_1.0.xsd](https://github.com/nhjschulz/flashcontainer/blob/master/src/flashcontainer/pargen_1.0.xsd).
+[pargen_1.1.xsd](https://github.com/nhjschulz/flashcontainer/blob/master/src/flashcontainer/pargen_1.1.xsd).
 It is highly recommended to use an XML editor with schema validation
 support to avoid or detect validations already while editing.
 Visual Studio Code is a perfect choice, given the 
@@ -90,16 +91,23 @@ This extensions brings validation and "IntelliSense" to editing XML files.
 The file defines the following data element hierarchy. The "..." lines mean
 that the preceding element may appear multiple times:
 
-      <pd:Container>
-        <pd:blocks>
-          <pd:block>
-            <pd:parameter> or <pd:crc>
-            ...
-          </pd:block>
+      <pd:struct>
+          <pd:fields>
+              <pd:field> or <pd:arrayfield> or <pd:crcfield> or <pd:padding>
+              ...
+          </pd:fields>
+      </pd:struct>
+      ...
+      <pd:container>
+          <pd:blocks>
+              <pd:block>
+                  <pd:parameter> or <pd:crc>
+                  ...
+              </pd:block>
+              ...
+          </pd:blocks>
           ...
-        <pd:blocks>
-        ...
-      </pd:Container>
+      </pd:container>
 
 ### XML Root Element
 
@@ -108,9 +116,9 @@ following (static) XML element to be used as the root XML element at the
 beginning of the file:
 
     ?xml version="1.0" encoding="utf-8"?>
-    <pd:pargen xmlns:pd="http://nhjschulz.github.io/1.0/pargen"
+    <pd:pargen xmlns:pd="http://nhjschulz.github.io/1.1/pargen"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://nhjschulz.github.io/1.0/pargen http://nhjschulz.github.io/xsd/pargen_1.0.xsd" >
+        xsi:schemaLocation="http://nhjschulz.github.io/1.1/pargen http://nhjschulz.github.io/xsd/pargen_1.1.xsd" >
 
 ### Container Element
 
@@ -221,8 +229,9 @@ have one to many parameter elements.
 |-----------|-------------------------|--------|-------|
 | offset    | Memory start offset inside block. Value may be "." to use the next free offset inside the block.|No||
 | name      | The parameter name.         |   No   |       |
-| type      |Parameter type, one of [u]int{bits} with bits one of 8,16,32,64 or float32,float64 or utf8|No|
+| type      |Parameter type, one of [u]int{bits} with bits one of 8,16,32,64 or float32,float64 or utf8 or complex|No|
 | align     | Parameter offset alignment to the next 1,2,4,8 bytes boundary|Yes|1|
+| struct    | Struct type of the parameter, if type is complex      |   Yes  |    ""   |
 
 
 #### Parameter Child Elements
@@ -250,6 +259,15 @@ JSON definitions are supported:
 | Floating point variables  | 3.141, 1E-005 |
 | Strings in double quotes  | "Hello world!" |
 | One-dimensional arrays    | [1, 2, 3, 4, 5, 6] |
+
+For complex parameters (that have the type of a defined struct), JSON input is parsed as key: value pairs to populate the structs fields.
+Input is required for every Field or Array Field in the struct, Padding and CRCs need no input in the value element.
+This means the set of keys in the input JSON has to match the set of Field names and Array Field names of the struct, or pargen will detect the input as invalid.
+
+|Value type                        | Examples    |
+|----------------------------------|--------------|
+| JSON key value pairs | {"f1": 1, "f2": 9999999, "arrayf": [1, 4, 16, 64]} |
+
 
 ### Crc Element
 
@@ -314,6 +332,52 @@ but derived from the type attribute of the crc element.
       <pd:config polynomial="0x04C11DB7" init="0xFFFFFFFF" rev_in="true" rev_out="true" final_xor="true" ></pd:config>
     </pd:crc>
 
+### The Struct Element
+
+A **struct** is a way to group multiple simple types into a combined data structure. By referencing a structs name in a block parameter,
+the parameters type will be interpreted as the struct. A struct features multiple attributes that define how the struct and the data of the encompassed fields.
+
+|Attribute         |Description                   |optional| default |
+|------------------|------------------------------|--------|---------|
+| name             | The structs name.            |   No   |         |
+| fill             | Byte value used for padding  |   Yes  |  parent |
+
+
+The fill value will be used as padding, with the additional options of "parent".
+Choosing **parent** will use the fill value of a parameters encompassing block.
+
+### The Field Element
+
+A field is the basic building block of a struct and serves as a placeholder for a value of a basic type in instances of the struct.
+Unlike parameter elements in a block, a field does not hold offset or alignment information, instead alignment is handled by padding tags.
+The basic type of the field defines its size and content interpretation.
+
+|Attribute         |Description                   |optional| default |
+|------------------|------------------------------|--------|---------|
+| name             | The fields name.             |   No   |         |
+| type             | Basic type of the field      |   No   |         |
+
+### The CRC Field Element
+
+The CRC Field Element functions similarly to a CRC Element, except it does not feature offset and alignment attributes.
+
+
+### The Array Field Element
+
+Array Fields are similar to fields, but feature a size attribute that determines the resulting arrays size
+
+|Attribute         |Description                   |optional| default |
+|------------------|------------------------------|--------|---------|
+| name             | The fields name.             |   No   |         |
+| type             | Basic type of the field      |   No   |         |
+| size             | Size of the array            |   No   |         |
+
+### The Padding Element
+
+The padding element is used to introduce gaps / offsets between a structs fields. It features a size attribute that determines the padding size.
+|Attribute         |Description                   |optional| default |
+|------------------|------------------------------|--------|---------|
+| size             | Size of the array (in bytes) |   No   |         |
 
 ## Generating TC3xx Boot Mode Header Structures
 

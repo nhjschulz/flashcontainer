@@ -76,3 +76,12 @@ def test_model_str():
                                     "reverse in:True, reverse out:True, final xor:True, access:8, swap:False"
     assert DM.Version(2,3,5).__str__() == "2.3.5"
     assert DM.Parameter(0x2, "_2", DM.ParamType.UINT8, b'\x22', None).__str__() == "_2 @ 0x2 = 22 len=1(0x1) /* None */"
+
+    teststrct = DM.Datastruct("testname", "parent")
+    assert str(DM.Parameter(0x2, "structpar", DM.ParamType.COMPLEX, b'\xFF', datastruct=teststrct)) == \
+          "structpar @ 0x2 of type testname (0 bytes) /* None */"
+    assert str(teststrct) == "testname (0 bytes)"
+    teststrct.add_field(DM.Field("fieldy", DM.BasicType.INT16))
+    teststrct.add_field(DM.Padding(4))
+    teststrct.add_field(DM.ArrayField("longus", DM.BasicType.INT16, 2))
+    assert str(teststrct) == "testname (10 bytes)"
