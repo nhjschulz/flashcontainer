@@ -69,7 +69,7 @@ class ByteConvert:
             result.extend(b'\x00')
 
         else:
-            raise Exception(f"unsupported json value type {variant}") # pylint: disable=broad-except
+            raise TypeError(f"unsupported json value type {variant}")
 
         return result
 

@@ -221,7 +221,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         if (self.max_addr < self.input_hex_data.minaddr()) or (self.max_addr > (self.input_hex_data.maxaddr() + 1)):
             logging.error(
                 "check end address 0x%08x out of user data range 0x%08x - 0x%08x",
-                self.min_addr,
+                self.max_addr,
                 self.input_hex_data.minaddr(),
                 self.input_hex_data.maxaddr()
             )
@@ -250,11 +250,11 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.min_addr & 0x3):
-            logging.error("check start address 0x%08x must be WORD aligned", self.stad_addr)
+            logging.error("check start address 0x%08x must be WORD aligned", self.min_addr)
             result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.max_addr & 0x3):
-            logging.error("check end address 0x%08x must be WORD aligned", self.stad_addr)
+            logging.error("check end address 0x%08x must be WORD aligned", self.max_addr)
             result =  RETVAL.INVALID_PARAMETER.value
 
         return result
@@ -290,8 +290,8 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
         return '<?xml version="1.0" encoding="utf-8"?>\n'+ ET.tounicode(etree, pretty_print=True)
 
-    def _get_xml(self) -> str:
-        """Get resulting XML record as string"""
+    def _get_xml(self) -> bytes:
+        """Get resulting XML record as bytes"""
 
         return textwrap.dedent(f'''\
             <?xml version="1.0" encoding="utf-8"?>

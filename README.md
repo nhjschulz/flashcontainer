@@ -180,7 +180,7 @@ CRC for this purpose.
 The header data is a 16 byte long data structure with the following
 layout:
 
-    struct sruct_pargen_header_type
+    struct struct_pargen_header_type
     {
         uint16_t id;        /* from id header attribute */
         uint16_t major;     /* from major header attribute */

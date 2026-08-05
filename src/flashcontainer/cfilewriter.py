@@ -84,7 +84,7 @@ class CFileWriter(DM.Walker):
             "extern \"C\" {\n"
             "#endif\n\n"
             "#include <stdint.h>\n"
-            "typedef struct sruct_pargen_header_type\n"
+            "typedef struct struct_pargen_header_type\n"
             "{\n"
             "    uint16_t id;\n"
             "    uint16_t major;\n"

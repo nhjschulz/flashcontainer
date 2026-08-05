@@ -72,7 +72,7 @@ class BlockHeader:
     """Parameter block header container """
 
     block_id: int
-    version: int
+    version: Version
 
 
 class Endianness(Enum):
@@ -175,7 +175,7 @@ class Block: # pylint: disable=too-many-instance-attributes
     def get_bytes(self) -> bytearray:
         """Get the block data as byte stream
 
-            Note: Contant is only accurate if block contains
+            Note: Content is only accurate if block contains
                   no gaps.
 
             Returns:
@@ -511,7 +511,7 @@ class Validator(Walker):
             if self.ctx_block is not None:
                 pfx += f"{self.ctx_block.name}:"
 
-        logging.error(pfx + msg)
+        logging.error(f"{pfx}{msg}")
 
         self.result = False
 

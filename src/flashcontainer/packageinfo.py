@@ -53,7 +53,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-def init_from_metadata() -> None:
+def init_from_metadata() -> tuple:
     """Initialize dunders from importlib.metadata
 
     Requires that the pacakge was installed.
@@ -69,7 +69,7 @@ def init_from_metadata() -> None:
 
 
 
-def init_from_toml() -> None:
+def init_from_toml() -> tuple:
     """Initialize dunders from pypackage.toml file
 
     Tried if package wasn't installed

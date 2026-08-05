@@ -96,7 +96,7 @@ class HexWriter(DM.Walker):
                 width=32,
                 poly=0x04C11DB7,
                 init=0xFFFFFFFF,
-                xor=0xFFFFFFFF,
+                xor=True,
                 revin=True,
                 revout=True,
                 access=1,
