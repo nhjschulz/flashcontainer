@@ -31,7 +31,7 @@
 #
 
 
-from typing import Dict
+from typing import Dict, Any
 from pathlib import Path
 
 from intelhex import IntelHex
@@ -42,11 +42,11 @@ from flashcontainer.checksum import Crc, CrcConfig
 class HexWriter(DM.Walker):
     """ Intel hex data file writer"""
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]):
         super().__init__(model, options)
 
-        self.hexbytes = bytearray()
-        self.ihex = IntelHex()
+        self.hexbytes: bytearray = bytearray()
+        self.ihex: IntelHex = IntelHex()
         self.filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".hex")
@@ -66,12 +66,12 @@ class HexWriter(DM.Walker):
                 self.ihex[addr] = byte
                 addr += 1
 
-    def begin_gap(self, param: DM.Parameter):
+    def begin_gap(self, param: DM.Parameter) -> None:
         """Gaps are same as parameter as far as hex dumping is concerned."""
 
         self.begin_parameter(param)
 
-    def begin_parameter(self, param: DM.Parameter):
+    def begin_parameter(self, param: DM.Parameter) -> None:
         """Patch parameter bytes into intelhex object"""
 
         self.hexbytes.extend(param.value)
@@ -80,7 +80,7 @@ class HexWriter(DM.Walker):
             self.ihex[addr] = byte
             addr += 1
 
-    def post_run(self):
+    def post_run(self) -> None:
         """ Save into intelhex file"""
 
         self.ihex.tofile(str(self.filename), format='hex')

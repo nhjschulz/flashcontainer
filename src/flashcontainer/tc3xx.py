@@ -33,6 +33,7 @@
 
 import logging
 import sys
+from typing import List, Optional
 
 from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
 from flashcontainer.packageinfo import __version__, __email__, __repository__
@@ -42,10 +43,10 @@ from flashcontainer.fileargparse import FileArgumentParser
 _TC3XX_CMDS = [ Tc3xxAbmhd() ]
 
 
-def tc3xx(argv) -> int:
+def tc3xx(argv: Optional[List[str]] = None) -> int:
     """ cmd line interface for tc3xx"""
 
-    logging.basicConfig(encoding='utf-8', level=logging.WARNING)
+    logging.basicConfig(level=logging.WARNING)
 
     name = "tc3xx"
     about = f"{name} {__version__}: Build Pargen definitions for TC3xx data structures."

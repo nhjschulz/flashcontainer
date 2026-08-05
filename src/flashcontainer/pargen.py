@@ -38,7 +38,7 @@ import sys
 import os
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional, Any, Type
 
 from flashcontainer.hexwriter import HexWriter
 from flashcontainer.xmlparser import XmlParser
@@ -82,7 +82,7 @@ _WRITER = [
 def pargen_cli() -> int:
     """ cmd line interface for pagen"""
 
-    logging.basicConfig(encoding='utf-8', level=logging.WARN)
+    logging.basicConfig(level=logging.WARN)
 
     name = "pargen"
     about = f"{name} {__version__}: A tool for generating flashable parameter container."
@@ -160,10 +160,10 @@ class Error(Enum):
 
 def pargen(
         cfgfile: str,
-        filename: str,
+        filename: Optional[str],
         outdir: Path,
         static: bool,
-        writers: List[DM.Walker],
+        writers: List[Type[DM.Walker]],
         modifier: Dict[str, str] = None) -> int:
     """ Parameter generator tool entry point"""
 

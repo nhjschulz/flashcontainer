@@ -29,7 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from typing import Dict
+from typing import Dict, Any, Optional, TextIO, List
 from pathlib import Path
 
 import json5
@@ -131,10 +131,10 @@ class PyHexDumpWriter(DM.Walker):
         DM.ParamType.UTF8: ("utf8", "utf8")
     }
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]):
         super().__init__(model, options)
-        self.dmpfile = None
-        self.elements = []
+        self.dmpfile: Optional[TextIO] = None
+        self.elements: List[Dict[str, Any]] = []
 
     def pre_run(self) -> None:
         filename = Path.joinpath(
@@ -176,7 +176,7 @@ class PyHexDumpWriter(DM.Walker):
 
         self.elements.append(element)
 
-    def post_run(self):
+    def post_run(self) -> None:
         """Close output file"""
 
         comment = [

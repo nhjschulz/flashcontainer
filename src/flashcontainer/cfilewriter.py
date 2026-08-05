@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from typing import Dict
+from typing import Dict, Any, TextIO
 from pathlib import Path
 
 import flashcontainer.datamodel as DM
@@ -40,7 +40,7 @@ class CFileWriter(DM.Walker):
     """C-Language source and header writer
     """
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]):
         super().__init__(model, options)
 
         cfilename = Path.joinpath(
@@ -50,8 +50,8 @@ class CFileWriter(DM.Walker):
         hfilename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".h")
-        self.cfile = cfilename.open(mode="w")
-        self.hfile = hfilename.open(mode="w")
+        self.cfile: TextIO = cfilename.open(mode="w")
+        self.hfile: TextIO = hfilename.open(mode="w")
 
     def _write_both(self, txt: str) -> None:
         """ Write same into h and c file"""
@@ -59,7 +59,7 @@ class CFileWriter(DM.Walker):
         self.hfile.write(txt)
         self.cfile.write(txt)
 
-    def pre_run(self):
+    def pre_run(self) -> None:
         print(
             f"Generating C-files "
             f'{Path.joinpath(self.options.get("DESTDIR"), self.options.get("BASENAME"))}.[ch].')
@@ -97,7 +97,7 @@ class CFileWriter(DM.Walker):
 
         self.cfile.write(f'#include "{self.options.get("BASENAME")+".h"}"\n\n')
 
-    def post_run(self):
+    def post_run(self) -> None:
         self.hfile.write(
             "#ifdef __cplusplus\n"
             "}\n"

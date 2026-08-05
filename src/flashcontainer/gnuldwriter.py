@@ -31,7 +31,7 @@
 #
 
 
-from typing import Dict
+from typing import Dict, Any, Optional, List, TextIO
 from pathlib import Path
 
 import flashcontainer.datamodel as DM
@@ -40,9 +40,9 @@ import flashcontainer.datamodel as DM
 class GnuLdWriter(DM.Walker):
     """GNU Linker script include file writer"""
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]):
         super().__init__(model, options)
-        self.ldfile = None
+        self.ldfile: Optional[TextIO] = None
 
     def pre_run(self) -> None:
         filename = Path.joinpath(
@@ -87,7 +87,7 @@ class GnuLdWriter(DM.Walker):
         """Add parameter name and address mapping"""
 
         # write multiline comment before definition
-        comment_lines = None
+        comment_lines: Optional[List[str]] = None
         if param.comment is not None:
             comment_lines = param.comment.splitlines()
             if len(comment_lines) > 1:
@@ -104,7 +104,7 @@ class GnuLdWriter(DM.Walker):
 
         self.ldfile.write("\n")
 
-    def post_run(self):
+    def post_run(self) -> None:
         """Close output file"""
 
         self.ldfile.close()

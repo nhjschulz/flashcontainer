@@ -31,7 +31,7 @@
 #
 
 
-from typing import Dict
+from typing import Dict, Any, Optional, TextIO
 from pathlib import Path
 
 import flashcontainer.datamodel as DM
@@ -59,9 +59,9 @@ class A2lWriter(DM.Walker):
         DM.Endianness.BE: "MSB_FIRST"
     }
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]):
         super().__init__(model, options)
-        self.a2l_file = None
+        self.a2l_file: Optional[TextIO] = None
 
     def pre_run(self) -> None:
         filename = Path.joinpath(
@@ -196,7 +196,7 @@ class A2lWriter(DM.Walker):
 
         self.a2l_file.write("    /end MEASUREMENT\n")
 
-    def post_run(self):
+    def post_run(self) -> None:
         """Close output file"""
 
         self.a2l_file.write("\n/end PROJECT\n")

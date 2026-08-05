@@ -31,7 +31,9 @@
 #
 
 from enum import Enum
-from typing import Dict, NamedTuple
+from typing import Dict, List, NamedTuple, Optional, Any
+from __future__ import annotations
+
 import struct
 import logging
 from collections import namedtuple
@@ -52,7 +54,7 @@ class CrcData(NamedTuple):
     start: int = 0
     end: int = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"0x{self.start:X}-0x{self.end:X}  {self.crc_cfg}"
 
 
@@ -64,7 +66,7 @@ class Version:
     minor: int
     version: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.major}.{self.minor}.{self.version}"
 
 @dataclass
@@ -98,21 +100,21 @@ class Block: # pylint: disable=too-many-instance-attributes
                 endianess(Endianess): the byte ordering of the block
                 fill(int:) the fill value for gaps
         """
-        self.addr = addr
-        self.name = name
-        self.length = length
-        self.header = None
-        self.endianess = endianess
-        self.fill = fill & 0xFF
-        self.parameter = []
-        self.comment = None
+        self.addr: int = addr
+        self.name: str = name
+        self.length: int = length
+        self.header: Optional[BlockHeader] = None
+        self.endianess: Endianness = endianess
+        self.fill: int = fill & 0xFF
+        self.parameter: List[Parameter] = []
+        self.comment: Optional[str] = None
 
-    def set_header(self, header):
+    def set_header(self, header: BlockHeader) -> None:
         """ Add optional header data
         """
         self.header = header
 
-    def add_parameter(self, parameter):
+    def add_parameter(self, parameter: Parameter) -> None:
         """ Add new parmeter to block.
         """
         self.parameter.append(parameter)
@@ -230,7 +232,7 @@ class Block: # pylint: disable=too-many-instance-attributes
             slice_end = slice_start + len(crcparam.value)
             blk_bytes[slice_start:slice_end] = crcparam.value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Block({self.name} @ {hex(self.addr)})"
 
 
@@ -255,16 +257,16 @@ class Parameter:
 
     def __init__(self, # pylint: disable=too-many-arguments
             offset: int, name: str, ptype: ParamType,
-            value: bytearray, crc: CrcData = None):
-        self.offset = offset
-        self.name = name
-        self.ptype = ptype
-        self.value = value
-        self.comment = None
-        self.crc_cfg = crc
+            value: bytearray, crc: Optional[CrcData] = None):
+        self.offset: int = offset
+        self.name: str = name
+        self.ptype: ParamType = ptype
+        self.value: bytearray = value
+        self.comment: Optional[str] = None
+        self.crc_cfg: Optional[CrcData] = crc
 
     @classmethod
-    def as_gap(cls, address: int, length: int, pattern: int):
+    def as_gap(cls, address: int, length: int, pattern: int) -> "Parameter":
         """Create parameter as a gap fill range with given pattern.
 
         Args:
@@ -282,7 +284,7 @@ class Parameter:
         """Set optional comment"""
         self.comment = comment
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} @ {hex(self.offset)} = {self.value.hex()} "\
             f"len={len(self.value)}({hex(len(self.value))}) /* {self.comment } */"
 
@@ -290,36 +292,36 @@ class Parameter:
 class Container:
     """Data container for a parameter block container"""
 
-    def __init__(self, name, addr):
-        self.name = name
-        self.addr = addr
-        self.blocks = []
+    def __init__(self, name: str, addr: int):
+        self.name: str = name
+        self.addr: int = addr
+        self.blocks: List[Block] = []
 
-    def add_block(self, block):
+    def add_block(self, block: Block) -> None:
         """Add a block to the container"""
 
         self.blocks.append(block)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} @ {hex(self.addr)}"
 
 
 class Model:
     """Top level model data container"""
 
-    def __init__(self, name):
-        self.name = name
-        self.container = []
+    def __init__(self, name: str):
+        self.name: str = name
+        self.container: List[Container] = []
 
-    def add_container(self, container):
+    def add_container(self, container: Container) -> None:
         """Append container to model"""
 
         self.container.append(container)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Model({self.name} {self.container})"
 
-    def validate(self, options: Dict[str, any]) -> bool:
+    def validate(self, options: Dict[str, Any]) -> bool:
         """Validate model"""
 
         validator = Validator(self, options)
@@ -340,19 +342,19 @@ class Walker:
     real processing.
     """
 
-    def __init__(self, model: Model, options: Dict[str, any]):
-        self.options = options
-        self.model = model
+    def __init__(self, model: Model, options: Dict[str, Any]):
+        self.options: Dict[str, Any] = options
+        self.model: Model = model
 
         # current walking context
-        self.ctx_container = None
-        self.ctx_block = None
-        self.ctx_parameter = None
+        self.ctx_container: Optional[Container] = None
+        self.ctx_block: Optional[Block] = None
+        self.ctx_parameter: Optional[Parameter] = None
 
-    def pre_run(self):
+    def pre_run(self) -> None:
         """Run actions before the model walk"""
 
-    def post_run(self):
+    def post_run(self) -> None:
         """Run actions after the model walk"""
 
     def begin_container(self, container: Container) -> None:
@@ -379,7 +381,7 @@ class Walker:
     def end_gap(self, param: Parameter) -> None:
         """ Run end actions for gaps"""
 
-    def run(self):
+    def run(self) -> None:
         """Walk the data model."""
 
         self.pre_run()
@@ -424,17 +426,17 @@ class Walker:
 
 class Validator(Walker):
     """Perform checks on the model to detect errors like overlapping parameter."""
-    def __init__(self, model: Model, options: Dict[str, any]):
+    def __init__(self, model: Model, options: Dict[str, Any]):
         super().__init__(model, options)
-        self.result = True
-        self.last_param = None
-        self.blocklist = {}
-        self.paramlist = {}
+        self.result: bool = True
+        self.last_param: Optional[Parameter] = None
+        self.blocklist: Dict[str, Block] = {}
+        self.paramlist: Dict[str, Parameter] = {}
 
     def begin_container(self, container: Container) -> None:
         self.blocklist = {}
 
-    def begin_block(self, block: Block):
+    def begin_block(self, block: Block) -> None:
         self.last_param = None
         self.paramlist = {}
 
@@ -445,7 +447,7 @@ class Validator(Walker):
         else:
             self.blocklist[block.name] = block
 
-    def begin_parameter(self, param: Parameter):
+    def begin_parameter(self, param: Parameter) -> None:
 
         if param.name in self.paramlist:
             self.error(
