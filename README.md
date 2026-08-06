@@ -29,7 +29,7 @@ The package is available on Pypi and can be installed using
 
     pip install flashcontainer
 
-A python 3.8 or higher version is required.
+A python 3.10 or higher version is required.
 
 The parameter generator tool can then by called on cmdline using
 

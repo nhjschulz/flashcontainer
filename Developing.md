@@ -8,7 +8,7 @@ following chapters assume the steps are executed from within it.
 It is expected that the necessary plug-ins for python development
 are already installed into Visual Studio Code.
 
-The project requires Python 3.8 or later.
+The project requires Python 3.10 or later.
 
 ## Loading the Project into Visual Studio Code
 
