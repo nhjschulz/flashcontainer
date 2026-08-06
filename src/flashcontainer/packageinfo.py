@@ -44,7 +44,14 @@ __repository__ = "???"
 __license__ = "???"
 
 def resource_path(relative_path: str) -> str:
-    """ Get the absolute path to the resource, works for dev and for PyInstaller """
+    """Get the absolute path to a resource, for both dev and PyInstaller builds.
+
+    Args:
+        relative_path: Path relative to the resource base directory.
+
+    Returns:
+        The absolute path to the resource.
+    """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         # pylint: disable=protected-access
@@ -56,9 +63,13 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(base_path, relative_path)
 
 def init_from_metadata() -> Tuple[str, str, str, str, str]:
-    """Initialize dunders from importlib.metadata
+    """Read package metadata via importlib.metadata.
 
-    Requires that the pacakge was installed.
+    Note:
+        Requires that the package was installed.
+
+    Returns:
+        Tuple of (version, author, email, repository, license).
     """
 
     my_metadata = meta.metadata('flashcontainer')
@@ -72,9 +83,13 @@ def init_from_metadata() -> Tuple[str, str, str, str, str]:
 
 
 def init_from_toml() -> Tuple[str, str, str, str, str]:
-    """Initialize dunders from pypackage.toml file
+    """Read package metadata from pyproject.toml.
 
-    Tried if package wasn't installed
+    Note:
+        Used as a fallback when the package wasn't installed.
+
+    Returns:
+        Tuple of (version, author, email, repository, license).
     """
 
     toml_file = resource_path("pyproject.toml")

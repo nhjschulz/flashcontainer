@@ -36,7 +36,7 @@ from typing import Any
 
 
 class Singleton(type):
-    """Python Singleton Metaclass"""
+    """Python singleton metaclass."""
 
     _instances: dict = {}
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
@@ -45,13 +45,24 @@ class Singleton(type):
         return cls._instances[cls]
 
 class Tc3xxCmdBase(metaclass=Singleton):
-    "Base Class used to implement sub commands for TC3XX CLI"
+    """Base class used to implement sub commands for the TC3XX CLI."""
 
     def __init__(self) -> None:
         pass
 
     def register(self, sub_parsers: argparse._SubParsersAction) -> None:
-        """Register this class with the argument parser for sub commands."""
+        """Register this class with the argument parser for sub commands.
+
+        Args:
+            sub_parsers: Sub parsers action to add this command's parser to.
+        """
 
     def run(self, args: argparse.Namespace) -> int:
-        """Execute the command"""
+        """Execute the command.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code.
+        """

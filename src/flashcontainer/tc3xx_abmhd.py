@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 
 class RETVAL(Enum):
-    """abmhd CLI error codes """
+    """abmhd CLI error codes."""
 
     OK = 0
     FILE_NOT_FOUND = 1
@@ -61,7 +61,7 @@ class RETVAL(Enum):
 
 
 class Tc3xxAbmhd(Tc3xxCmdBase):
-    """Implementation of abmhd command"""
+    """Implementation of the abmhd sub command."""
 
     # XML definition template for alternate boot mode header
     _abmhd_xml = os.path.join(
@@ -71,7 +71,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
     _abmhd_ok_id =  0xFA7CB359
 
     def __init__(self) -> None:
-        """Init this module and register abmhd command with the Tc3xx CLI"""
+        """Initialize command state to its default values."""
 
         self.min_addr  = 0x0
         self.max_addr  = 0x0
@@ -87,12 +87,23 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
     @staticmethod
     def _static_run(args: argparse.Namespace) -> int:
-        """Non class wrapper to call run method from argparser."""
+        """Free function wrapper to call run() from the argparser callback.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         return Tc3xxAbmhd().run(args)
 
     def register(self, sub_parsers: argparse._SubParsersAction) -> None:
-        """Register abmhd command arguments with the Tc3xx CLI"""
+        """Register abmhd command arguments with the Tc3xx CLI.
+
+        Args:
+            sub_parsers: Sub parsers action to add the abmhd parser to.
+        """
 
         parser = sub_parsers.add_parser(
             'abmhd',
@@ -156,7 +167,14 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
 
     def run(self, args: argparse.Namespace) -> int:
-        """abmhd command executer"""
+        """Execute the abmhd command.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         result = self._evaluate_arguments(args)
         if RETVAL.OK.value == result:
@@ -174,7 +192,14 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         return result
 
     def _evaluate_arguments(self, args: argparse.Namespace) -> int:
-        """Convert argument values to class context variables."""
+        """Convert argument values to class context variables.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         # check input hexfile argument
         self.input_hex_file = args.filename[0]
@@ -207,7 +232,11 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         return RETVAL.OK.value
 
     def _validate(self) -> int:
-        """Check correctness of received input"""
+        """Check correctness of the received input.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         result = RETVAL.OK.value
 
@@ -280,7 +309,11 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         self.user_crc = crc_calculator.checksum(crc_calculator.prepare(user_data))
 
     def _generate_xml(self) -> str:
-        """Generate Pargen definition XML"""
+        """Generate the Pargen definition XML.
+
+        Returns:
+            The pretty-printed Pargen XML document as a string.
+        """
 
         dest = self.output if self.output != sys.stdout else "<stdout>"
         logger.info("Writing Pargen XML definition into %s", dest)
@@ -294,7 +327,11 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         return '<?xml version="1.0" encoding="utf-8"?>\n'+ ET.tounicode(etree, pretty_print=True)
 
     def _get_xml(self) -> bytes:
-        """Get resulting XML record as bytes"""
+        """Get the resulting XML record as bytes.
+
+        Returns:
+            UTF-8 encoded Pargen XML document.
+        """
 
         return textwrap.dedent(f'''\
             <?xml version="1.0" encoding="utf-8"?>

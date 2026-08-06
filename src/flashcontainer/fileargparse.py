@@ -40,6 +40,11 @@ class FileArgumentParser(argparse.ArgumentParser):
     """Argument parser with support for argument files."""
 
     def __init__ (self, **kwargs: Any) -> None:
+        """Construct the parser.
+
+        Args:
+            **kwargs: Keyword arguments forwarded to argparse.ArgumentParser.
+        """
         self.epilog = (
             f"Copyright (c) 2022-2023 {__email__}. "
             f"Visit {__repository__} for full documentation and examples."
@@ -48,6 +53,13 @@ class FileArgumentParser(argparse.ArgumentParser):
         super().__init__(fromfile_prefix_chars='@', epilog=self.epilog, **kwargs)
 
     def convert_arg_line_to_args(self, arg_line: str) -> List[str]:
-        """Support multiple arguments on one line (default is one per line )."""
+        """Support multiple arguments on one line (default is one per line).
+
+        Args:
+            arg_line: A line read from an argument file.
+
+        Returns:
+            The whitespace-separated arguments found on the line.
+        """
 
         return arg_line.split()

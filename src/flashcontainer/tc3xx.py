@@ -46,7 +46,15 @@ _TC3XX_CMDS = [ Tc3xxAbmhd() ]
 
 
 def tc3xx(argv: Optional[List[str]] = None) -> int:
-    """ cmd line interface for tc3xx"""
+    """Command line interface for tc3xx.
+
+    Args:
+        argv: Command line arguments to parse, defaults to sys.argv[1:].
+
+    Returns:
+        Process exit code from the selected sub command, or -1 if no sub
+        command was given.
+    """
 
     logging.basicConfig(level=logging.WARNING)
 
@@ -76,7 +84,11 @@ def tc3xx(argv: Optional[List[str]] = None) -> int:
     return args.func(args)
 
 def tc3xx_cli() -> int:
-    """CLI wrapper for tc3xx """
+    """CLI wrapper for tc3xx, using sys.argv as input.
+
+    Returns:
+        Process exit code, see tc3xx().
+    """
 
     return tc3xx(sys.argv[1:])
 

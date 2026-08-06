@@ -39,7 +39,7 @@ from flashcontainer.byteconv import ByteConvert
 
 
 class A2lWriter(DM.Walker):
-    """A2l file writer"""
+    """A2L file writer."""
 
     _TYPE_MAPPING = {
         DM.ParamType.UINT8: ("UBYTE", 0, 0xFF),
@@ -65,6 +65,8 @@ class A2lWriter(DM.Walker):
         self.a2l_file: Optional[TextIO] = None
 
     def pre_run(self) -> None:
+        """Open the output file and write the A2L file header."""
+
         filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".a2l")
@@ -92,12 +94,27 @@ class A2lWriter(DM.Walker):
         self.a2l_file.write("  /end HEADER \n\n")
 
     def begin_container(self, container: DM.Container) -> None:
+        """Write the MODULE begin marker.
+
+        Args:
+            container: Container being entered.
+        """
         self.a2l_file.write(f"  /begin MODULE {container.name} \"\"\n")
 
     def end_container(self, container: DM.Container) -> None:
+        """Write the MODULE end marker.
+
+        Args:
+            container: Container being left.
+        """
         self.a2l_file.write("\n  /end MODULE\n")
 
     def begin_block(self, block: DM.Block) -> None:
+        """Write header type definitions if the block has a header.
+
+        Args:
+            block: Block being entered.
+        """
         if block.header is not None:
             self.a2l_file.write(
                 "\n"
@@ -162,7 +179,11 @@ class A2lWriter(DM.Walker):
 
 
     def begin_parameter(self, param: DM.Parameter) -> None:
-        """Write parameter as measurement"""
+        """Write a parameter as an A2L MEASUREMENT.
+
+        Args:
+            param: Parameter being visited.
+        """
 
         self.a2l_file.write(f"\n    /begin MEASUREMENT {param.name}\n")
 
@@ -198,7 +219,7 @@ class A2lWriter(DM.Walker):
         self.a2l_file.write("    /end MEASUREMENT\n")
 
     def post_run(self) -> None:
-        """Close output file"""
+        """Write the file footer and close the output file."""
 
         self.a2l_file.write("\n/end PROJECT\n")
         self.a2l_file.close()

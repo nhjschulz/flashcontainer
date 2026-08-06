@@ -45,11 +45,12 @@ from flashcontainer.checksum import Crc, CrcConfig
 logger = logging.getLogger(__name__)
 
 class CrcData(NamedTuple):
-    """Configuration data for arbitrary CRCs
+    """Configuration data for a single CRC parameter.
 
-        crc_cfg: Crc configuration data
-        start(int): Address to start computation from.
-        end(int): End address to stop computation at.
+    Attributes:
+        crc_cfg: CRC algorithm configuration.
+        start: Address to start computation from.
+        end: End address to stop computation at.
     """
     crc_cfg: CrcConfig = CrcConfig()
     start: int = 0
@@ -61,7 +62,7 @@ class CrcData(NamedTuple):
 
 @dataclass
 class Version:
-    """Version number data type"""
+    """Version number data type."""
 
     major: int
     minor: int
@@ -72,34 +73,34 @@ class Version:
 
 @dataclass
 class BlockHeader:
-    """Parameter block header container """
+    """Parameter block header container."""
 
     block_id: int
     version: Version
 
 
 class Endianness(Enum):
-    """Byte ordering """
+    """Byte ordering."""
 
     LE = 1    # little endian (like x86)
     BE = 2    # big endian (like Motorola 68k)
 
 
 class Block: # pylint: disable=too-many-instance-attributes
-    """Block data container """
+    """Block data container."""
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
         addr: int, name: str,
         length: int, endianess: Endianness, fill: int) -> None:
-        """ Construct a block.
+        """Construct a block.
 
-            Args:
-                addr(int): address of the block
-                name(str): the name of the block
-                length(int): the length of the block
-                endianess(Endianess): the byte ordering of the block
-                fill(int:) the fill value for gaps
+        Args:
+            addr: Address of the block.
+            name: The name of the block.
+            length: The length of the block.
+            endianess: The byte ordering of the block.
+            fill: The fill value for gaps.
         """
         self.addr: int = addr
         self.name: str = name
@@ -111,22 +112,36 @@ class Block: # pylint: disable=too-many-instance-attributes
         self.comment: Optional[str] = None
 
     def set_header(self, header: BlockHeader) -> None:
-        """ Add optional header data
+        """Add optional header data.
+
+        Args:
+            header: Header data to attach to this block.
         """
         self.header = header
 
     def add_parameter(self, parameter: Parameter) -> None:
-        """ Add new parmeter to block.
+        """Add a new parameter to the block.
+
+        Args:
+            parameter: Parameter to append.
         """
         self.parameter.append(parameter)
 
     def set_comment(self, comment: str) -> None:
-        """Set optional comment"""
+        """Set an optional comment.
+
+        Args:
+            comment: Comment text.
+        """
 
         self.comment = comment
 
     def get_header_bytes(self) -> bytes:
-        """Get header as bytestream."""
+        """Get the block header as a byte stream.
+
+        Returns:
+            Packed header bytes.
+        """
 
         fmt = "<" if self.endianess == Endianness.LE else ">"
         fmt += "HHHHII"
@@ -141,11 +156,11 @@ class Block: # pylint: disable=too-many-instance-attributes
             self.length)
 
     def _insert_gap(self, addr: int, length: int) -> None:
-        """Insert a gap at address of with len bytes.
+        """Insert a gap parameter at the given address.
 
         Args:
-            addr(int): start address of gap
-            len(int): length of gap
+            addr: Start address of the gap.
+            length: Length of the gap in bytes.
         """
 
         gap = Parameter.as_gap(addr, length, self.fill)
@@ -176,13 +191,13 @@ class Block: # pylint: disable=too-many-instance-attributes
         self.parameter = sorted(self.parameter, key=attrgetter('offset'))
 
     def get_bytes(self) -> bytearray:
-        """Get the block data as byte stream
+        """Get the block data as a byte stream.
 
-            Note: Content is only accurate if block contains
-                  no gaps.
+        Note:
+            Content is only accurate if the block contains no gaps.
 
-            Returns:
-                bytearray representing the block memory
+        Returns:
+            Bytearray representing the block memory.
         """
 
         # build block raw data
@@ -196,10 +211,10 @@ class Block: # pylint: disable=too-many-instance-attributes
         return blk_bytes
 
     def update_crcs(self) -> None:
-        """Compute crc parameters inside the block.
+        """Compute CRC parameters inside the block.
 
-        Must be called after all parameters and
-        fill gaps got added.
+        Note:
+            Must be called after all parameters and fill gaps have been added.
         """
 
         blk_bytes = self.get_bytes()
@@ -238,7 +253,7 @@ class Block: # pylint: disable=too-many-instance-attributes
 
 
 class ParamType(Enum):
-    """Supported data types"""
+    """Supported parameter data types."""
     UINT32 = 1
     UINT8 = 2
     UINT16 = 3
@@ -254,11 +269,20 @@ class ParamType(Enum):
 
 
 class Parameter:
-    """Parameter definition data container"""
+    """Parameter definition data container."""
 
     def __init__(self, # pylint: disable=too-many-arguments
             offset: int, name: Optional[str], ptype: ParamType,
             value: bytearray, crc: Optional[CrcData] = None) -> None:
+        """Construct a parameter.
+
+        Args:
+            offset: Address of the parameter within its block.
+            name: Parameter name, or None for gap fill parameters.
+            ptype: Data type of the parameter.
+            value: Raw byte value of the parameter.
+            crc: CRC configuration if this is a CRC parameter.
+        """
         self.offset: int = offset
         self.name: Optional[str] = name
         self.ptype: ParamType = ptype
@@ -268,21 +292,25 @@ class Parameter:
 
     @classmethod
     def as_gap(cls, address: int, length: int, pattern: int) -> Parameter:
-        """Create parameter as a gap fill range with given pattern.
+        """Create a parameter representing a gap fill range.
 
         Args:
-            address (int): gap start offset
-            length (int): Number of bytes in gap area
-            pattern (int): Fill pattern for gap (only lowest 8bits used)
+            address: Gap start offset.
+            length: Number of bytes in the gap area.
+            pattern: Fill pattern for the gap (only the lowest 8 bits are used).
 
         Returns:
-            Parameter object representing the gap
+            Parameter object representing the gap.
         """
         val = bytearray([pattern & 0xFF] * length)
         return Parameter(address, None, ParamType.GAPFILL, val)
 
     def set_comment(self, comment: str) -> None:
-        """Set optional comment"""
+        """Set an optional comment.
+
+        Args:
+            comment: Comment text.
+        """
         self.comment = comment
 
     def __str__(self) -> str:
@@ -291,15 +319,25 @@ class Parameter:
 
 
 class Container:
-    """Data container for a parameter block container"""
+    """Data container holding a list of parameter blocks."""
 
     def __init__(self, name: str, addr: int) -> None:
+        """Construct a container.
+
+        Args:
+            name: The name of the container.
+            addr: Base address of the container.
+        """
         self.name: str = name
         self.addr: int = addr
         self.blocks: List[Block] = []
 
     def add_block(self, block: Block) -> None:
-        """Add a block to the container"""
+        """Add a block to the container.
+
+        Args:
+            block: Block to append.
+        """
 
         self.blocks.append(block)
 
@@ -308,14 +346,24 @@ class Container:
 
 
 class Model:
-    """Top level model data container"""
+    """Top level model data container."""
 
     def __init__(self, name: Union[str, TextIO]) -> None:
+        """Construct a model.
+
+        Args:
+            name: Name of the model, typically the source file or stream
+                it was parsed from.
+        """
         self.name: Union[str, TextIO] = name
         self.container: List[Container] = []
 
     def add_container(self, container: Container) -> None:
-        """Append container to model"""
+        """Append a container to the model.
+
+        Args:
+            container: Container to append.
+        """
 
         self.container.append(container)
 
@@ -323,7 +371,14 @@ class Model:
         return f"Model({self.name} {self.container})"
 
     def validate(self, options: Dict[str, Any]) -> bool:
-        """Validate model"""
+        """Validate the model.
+
+        Args:
+            options: Writer/validator context options.
+
+        Returns:
+            True if the model is valid, False otherwise.
+        """
 
         validator = Validator(self, options)
         validator.run()
@@ -332,15 +387,20 @@ class Model:
 
 
 class Walker:
-    """A data model walker class
+    """A data model walker class.
 
-    The run() method iterates the hierarchy of elements and
-    calls begin/end methods for each element type. This methods
-    are expected to be overwritten in derived classed for
-    real processing.
+    The run() method iterates the hierarchy of elements and calls begin/end
+    methods for each element type. These methods are expected to be
+    overwritten in derived classes for real processing.
     """
 
     def __init__(self, model: Model, options: Dict[str, Any]) -> None:
+        """Construct a walker.
+
+        Args:
+            model: Data model to walk.
+            options: Writer context options, made available to hooks.
+        """
         self.options: Dict[str, Any] = options
         self.model: Model = model
 
@@ -350,34 +410,66 @@ class Walker:
         self.ctx_parameter: Optional[Parameter] = None
 
     def pre_run(self) -> None:
-        """Run actions before the model walk"""
+        """Run actions before the model walk."""
 
     def post_run(self) -> None:
-        """Run actions after the model walk"""
+        """Run actions after the model walk."""
 
     def begin_container(self, container: Container) -> None:
-        """Run actions when entering container """
+        """Run actions when entering a container.
+
+        Args:
+            container: Container being entered.
+        """
 
     def end_container(self, container: Container) -> None:
-        """Run actions when leaving container """
+        """Run actions when leaving a container.
+
+        Args:
+            container: Container being left.
+        """
 
     def begin_block(self, block: Block) -> None:
-        """Run actions when entering block """
+        """Run actions when entering a block.
+
+        Args:
+            block: Block being entered.
+        """
 
     def end_block(self, block: Block) -> None:
-        """Run actions when leaving block """
+        """Run actions when leaving a block.
+
+        Args:
+            block: Block being left.
+        """
 
     def begin_parameter(self, param: Parameter) -> None:
-        """ Run begin actions for parameter"""
+        """Run begin actions for a parameter.
+
+        Args:
+            param: Parameter being visited.
+        """
 
     def end_parameter(self, param: Parameter) -> None:
-        """ Run end actions for parameter"""
+        """Run end actions for a parameter.
+
+        Args:
+            param: Parameter being visited.
+        """
 
     def begin_gap(self, param: Parameter) -> None:
-        """ Run begin actions for gaps"""
+        """Run begin actions for a gap.
+
+        Args:
+            param: Gap parameter being visited.
+        """
 
     def end_gap(self, param: Parameter) -> None:
-        """ Run end actions for gaps"""
+        """Run end actions for a gap.
+
+        Args:
+            param: Gap parameter being visited.
+        """
 
     def run(self) -> None:
         """Walk the data model."""
@@ -423,8 +515,15 @@ class Walker:
 
 
 class Validator(Walker):
-    """Perform checks on the model to detect errors like overlapping parameter."""
+    """Perform checks on the model to detect errors like overlapping parameters."""
+
     def __init__(self, model: Model, options: Dict[str, Any]) -> None:
+        """Construct a validator.
+
+        Args:
+            model: Data model to validate.
+            options: Writer context options, passed through to Walker.
+        """
         super().__init__(model, options)
         self.result: bool = True
         self.last_param: Optional[Parameter] = None
@@ -497,11 +596,10 @@ class Validator(Walker):
             prev = block
 
     def error(self, msg: str) -> None:
-        """
-        Issue error message.
+        """Issue an error message.
 
         Args:
-            msg(str): error message to print
+            msg: Error message to print.
         """
         pfx = ""
 

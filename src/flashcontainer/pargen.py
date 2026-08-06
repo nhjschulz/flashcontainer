@@ -82,7 +82,13 @@ _WRITER = [
 ]
 
 def pargen_cli() -> int:
-    """ cmd line interface for pagen"""
+    """Command line interface for pargen.
+
+    Parses sys.argv, then delegates to pargen().
+
+    Returns:
+        Process exit code, see Error.
+    """
 
     logging.basicConfig(level=logging.WARNING)
 
@@ -151,7 +157,7 @@ def pargen_cli() -> int:
         modifier=modify_values)
 
 class Error(Enum):
-    """Pargen error codes """
+    """Pargen error codes."""
 
     ERROR_OK = 0
     ERROR_FILE_NOT_FOUND = 1
@@ -167,7 +173,19 @@ def pargen(
         static: bool,
         writers: List[Type[DM.Walker]],
         modifier: Optional[Dict[str, str]] = None) -> int:
-    """ Parameter generator tool entry point"""
+    """Parameter generator tool entry point.
+
+    Args:
+        cfgfile: Path to the XML parameter definition file, or "-" for stdin.
+        filename: Optional basename override for generated output files.
+        outdir: Output directory for generated files.
+        static: If True, omit dynamic elements like date and time from output.
+        writers: Writer classes to run against the parsed model.
+        modifier: Optional map of parameter name to override value.
+
+    Returns:
+        Process exit code, see Error.
+    """
 
     # Create output directory (if necessary)
     destdir = Path.resolve(outdir)

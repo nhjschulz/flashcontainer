@@ -38,18 +38,19 @@ import crc
 
 
 class CrcConfig(NamedTuple):
-    """Configuration data for arbitrary CRCs
+    """Configuration data for arbitrary CRCs.
 
-        poly(int): Generator polynomial to use in the CRC calculation.
-                   The bits in this integer are the coefficients in the polynomial.
-        bit_width(int): Number of bits for the CRC calculation. They have to match with
-                        the generator polynomial
-        init(int): Seed value for the CRC calculation
-        revin(bool): Reflect each single input byte if True
-        revout(bool): Reflect the final CRC value if True
-        xor(bool): Xor the final result with the value 0xff before returning the solution
-        access(int): Access size when swapping (8, 16, 32 or 64)
-        swap(bool): Swap bytes with access size
+    Attributes:
+        poly: Generator polynomial to use in the CRC calculation. The bits in
+            this integer are the coefficients in the polynomial.
+        width: Number of bits for the CRC calculation. Must match the
+            generator polynomial.
+        init: Seed value for the CRC calculation.
+        revin: Reflect each single input byte if True.
+        revout: Reflect the final CRC value if True.
+        xor: Xor the final result with the value 0xff before returning it.
+        access: Access size when swapping (8, 16, 32 or 64).
+        swap: Swap bytes according to access size if True.
     """
     poly: int = 0x04C11DB7
     width: int = 32
@@ -70,13 +71,13 @@ class CrcConfig(NamedTuple):
 
 
 class Crc:
-    """ Checksum processing
-    """
+    """Checksum processing."""
+
     def __init__(self, cfg: CrcConfig) -> None:
-        """Create Crc instance
+        """Create a Crc instance.
 
         Args:
-            cfg (CrcConfig): Configuration of the CRC algorithm
+            cfg: Configuration of the CRC algorithm.
         """
         self.cfg = cfg
         self.calculator = crc.Calculator(
@@ -92,19 +93,20 @@ class Crc:
         return f"{self.cfg}"
 
     def checksum(self, data: bytearray) -> int:
-        """Calculate CRC checksum over given bytes
+        """Calculate the CRC checksum over given bytes.
 
-            Args:
-                bytes (bytearray): Input bytes
+        Args:
+            data: Input bytes to check-sum.
 
-            Returns:
-                checksum
+        Returns:
+            The computed CRC checksum.
         """
 
         return self.calculator.checksum(data)
 
     @staticmethod
     def _swap_access_16bit(data: bytearray) -> bytearray:
+        """Byte-swap data in 16 bit chunks."""
 
         result = bytearray()
         for i in range(0, len(data), 2):
@@ -114,6 +116,7 @@ class Crc:
 
     @staticmethod
     def _swap_access_32bit(data: bytearray) -> bytearray:
+        """Byte-swap data in 32 bit chunks."""
 
         result = bytearray()
         for i in range(0, len(data), 4):
@@ -123,6 +126,7 @@ class Crc:
 
     @staticmethod
     def _swap_access_64bit(data: bytearray) -> bytearray:
+        """Byte-swap data in 64 bit chunks."""
 
         result = bytearray()
         for i in range(0, len(data), 8):
@@ -131,13 +135,13 @@ class Crc:
         return result
 
     def prepare(self, data: bytearray) -> bytearray:
-        """Convert byte stream to match access method from configuration
+        """Convert a byte stream to match the access method from configuration.
 
         Args:
-            bytes (bytearray): input byte array, must be multiple of access size long
+            data: Input byte array; must be a multiple of the access size long.
 
         Returns:
-            reordered bytearray
+            The reordered bytearray.
         """
 
         if self.cfg.swap is True:

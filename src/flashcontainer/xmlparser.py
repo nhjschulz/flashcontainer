@@ -47,18 +47,34 @@ logger = logging.getLogger(__name__)
 
 
 class XmlParser:
-    """XML Parser to generate a datamodel from an XML file"""
+    """XML parser to generate a data model from an XML file."""
 
     @classmethod
     def from_file(
         cls, file: Union[str, TextIO], values: Optional[Dict[str, str]] = None
     ) -> Optional[DM.Model]:
-        """Parser entry point returning model instance"""
+        """Parser entry point returning a model instance.
+
+        Args:
+            file: Path to the XML file, or an open file-like object.
+            values: Optional map of parameter name to override value.
+
+        Returns:
+            The parsed data model, or None if parsing failed.
+        """
         return cls.parse(file, values)
 
     @staticmethod
     def parse(file: Union[str, TextIO], values: Optional[Dict[str, str]]) -> Optional[DM.Model]:
-        """ Parse given XML file into data model. """
+        """Parse the given XML file into a data model.
+
+        Args:
+            file: Path to the XML file, or an open file-like object.
+            values: Optional map of parameter name to override value.
+
+        Returns:
+            The parsed data model, or None if XML schema validation failed.
+        """
         model = None
         try:
             logger.info("Loading parameter definitions from %s.", file)
@@ -77,7 +93,12 @@ class XmlParser:
 
     @staticmethod
     def _update_values(root: ET.Element, values: Optional[Dict[str, str]]) -> None:
-        """Update parameter values based on modifier list."""
+        """Update parameter values in the XML tree based on a modifier list.
+
+        Args:
+            root: Root element of the XML document to update in place.
+            values: Optional map of parameter name to override value.
+        """
 
         if values is not None:
             for param_name, param_value in list(values.items()):
@@ -97,7 +118,16 @@ class XmlParser:
 
     @staticmethod
     def _get_optional(element: ET.Element, attr: str, default: Any) -> str:
-        """Get optional attribute value."""
+        """Get an optional attribute value, falling back to a default.
+
+        Args:
+            element: XML element to read the attribute from, may be None.
+            attr: Name of the attribute to read.
+            default: Value to return if element or the attribute is missing.
+
+        Returns:
+            The attribute value, or the string representation of default.
+        """
 
         if element is None:
             return str(default)
@@ -110,7 +140,15 @@ class XmlParser:
 
     @staticmethod
     def _parse_bool(val_str: str) -> bool:
-        """ Parse input as boolean """
+        """Parse input as a boolean.
+
+        Args:
+            val_str: Input string, e.g. "true" or "1" for True.
+
+        Returns:
+            True if val_str represents a true value, False otherwise
+            (including when val_str is None).
+        """
 
         result = False
         if val_str is not None:
@@ -122,7 +160,14 @@ class XmlParser:
 
     @staticmethod
     def _parse_int(val_str: str) -> int:
-        """ Parse int as decimal or hex."""
+        """Parse an integer as decimal or hex.
+
+        Args:
+            val_str: Input string, e.g. "42" or "0x2A".
+
+        Returns:
+            The parsed integer value.
+        """
 
         try:
             return int(val_str, base=10)
@@ -131,21 +176,42 @@ class XmlParser:
 
     @staticmethod
     def get_alignment(element: ET.Element) -> int:
-        """Parse alignment argument."""
+        """Parse the alignment attribute of an XML element.
+
+        Args:
+            element: XML element that may carry an "align" attribute.
+
+        Returns:
+            The alignment value, or 1 if not specified.
+        """
 
         val_str = element.get("align")
         return 1 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
     def get_endianess(element: ET.Element) -> DM.Endianness:
-        """Parse alignment argument."""
+        """Parse the endianness attribute of an XML element.
+
+        Args:
+            element: XML element that may carry an "endianness" attribute.
+
+        Returns:
+            The parsed Endianness, defaulting to little endian.
+        """
 
         val_str = XmlParser._get_optional(element, "endianness", "LE")
         return DM.Endianness.LE if val_str == "LE" else DM.Endianness.BE
 
     @staticmethod
     def get_fill(element: ET.Element) -> int:
-        """Parse fill argument."""
+        """Parse the fill attribute of an XML element.
+
+        Args:
+            element: XML element that may carry a "fill" attribute.
+
+        Returns:
+            The fill byte value, or 0x00 if not specified.
+        """
 
         val_str = element.get("fill")
         return 0x00 if (val_str is None) else XmlParser._parse_int(val_str)
@@ -155,12 +221,12 @@ class XmlParser:
         """Parse a crc element.
 
         Args:
-            param (ET.Element): The XML parameter element to read
-            block (DM.Block): current block
-            offset (int): offset of this parameter in block (used to resolve ".")
+            param: The XML crc parameter element to read.
+            block: Block the crc parameter belongs to.
+            offset: Offset of this parameter in the block (used to resolve ".").
 
         Returns:
-            A CrcConfig from the data model
+            CRC configuration data parsed from param.
         """
 
         mem_element = param.find(f"{{{NS}}}memory")
@@ -211,6 +277,13 @@ class XmlParser:
 
     @staticmethod
     def _build_parameters(block: DM.Block, element: ET.Element) -> None:
+        """Parse and add all parameters of a block element to the block.
+
+        Args:
+            block: Block to add the parsed parameters to.
+            element: XML block element containing the parameter data.
+        """
+
         data_element = element.find(f"{{{NS}}}data")
         running_addr = block.addr
         if block.header is not None:
@@ -251,6 +324,16 @@ class XmlParser:
 
     @staticmethod
     def _build_model(root: ET.Element, filename: Union[str, TextIO]) -> DM.Model:
+        """Build a data model from the root element of an XML document.
+
+        Args:
+            root: Root element of the parsed XML document.
+            filename: Source of the XML document, used as the model name.
+
+        Returns:
+            The resulting data model.
+        """
+
         model = DM.Model(filename)
 
         # iterate over container list
@@ -268,16 +351,18 @@ class XmlParser:
 
     @staticmethod
     def calc_addr(base_addr: int, running_addr: int, offset_str: str, alignment: int) -> int:
-        """Calculate address from address input or '.'
+        """Calculate an address from an address string or '.'.
 
         Args:
-            base_addr(int): Start address of parent element
-            running_addr(int): Next unused address in parent element
-            offset_str(str): address information from XML
-            alignment(int): optional address alignment to 1,2,4,8... boundary
+            base_addr: Start address of the parent element.
+            running_addr: Next unused address in the parent element.
+            offset_str: Address information from XML, or "." for the next
+                free address.
+            alignment: Address alignment to a 1, 2, 4, 8... byte boundary.
 
         Returns:
-            Aligned address if integer is passed or aligned next free address for '.'
+            The aligned address if an integer was passed, or the aligned
+            next free address for '.'.
         """
 
         if "." == offset_str:
@@ -295,7 +380,12 @@ class XmlParser:
 
     @staticmethod
     def _build_blocks(container: DM.Container, xml_element: ET.Element) -> None:
-        """ Load block list for given container """
+        """Load the block list for a given container.
+
+        Args:
+            container: Container to add the parsed blocks to.
+            xml_element: XML container element holding the block definitions.
+        """
 
         running_addr = container.addr
         blocks_element = xml_element.find(f"{{{NS}}}blocks")

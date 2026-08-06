@@ -115,7 +115,10 @@ _HEADER_STRUCTURES = [
 
 
 class PyHexDumpWriter(DM.Walker):
-    """Create configuration file for pyHexDump (see https://github.com/BlueAndi/pyHexDump) """
+    """Create a configuration file for pyHexDump.
+
+    See https://github.com/BlueAndi/pyHexDump for the pyHexDump tool itself.
+    """
 
     _TYPE_MAPPING = {
         DM.ParamType.UINT8: ("uint8", "uint8"),
@@ -132,11 +135,19 @@ class PyHexDumpWriter(DM.Walker):
     }
 
     def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
+        """Construct the writer.
+
+        Args:
+            model: Data model to write.
+            options: Writer context options (destination dir, basename, etc.).
+        """
         super().__init__(model, options)
         self.dmpfile: Optional[TextIO] = None
         self.elements: List[Dict[str, Any]] = []
 
     def pre_run(self) -> None:
+        """Open the output file."""
+
         filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".pyhexdump")
@@ -146,7 +157,11 @@ class PyHexDumpWriter(DM.Walker):
         self.dmpfile = filename.open(mode='w')
 
     def begin_block(self, block: DM.Block) -> None:
-        """Add header if present"""
+        """Add a header element if the block has a header.
+
+        Args:
+            block: Block being entered.
+        """
 
         if block.header is not None:
 
@@ -164,7 +179,11 @@ class PyHexDumpWriter(DM.Walker):
             self.elements.append(element)
 
     def begin_parameter(self, param: DM.Parameter) -> None:
-        """Add element to data array """
+        """Add an element to the data array.
+
+        Args:
+            param: Parameter being visited.
+        """
 
         element = {
             "name": f"{param.name}",
@@ -177,7 +196,7 @@ class PyHexDumpWriter(DM.Walker):
         self.elements.append(element)
 
     def post_run(self) -> None:
-        """Close output file"""
+        """Write the JSON configuration and close the output file."""
 
         comment = [
             "Configuration file for pyHexDump, see https://github.com/BlueAndi/pyHexDump",
