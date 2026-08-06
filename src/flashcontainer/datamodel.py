@@ -30,18 +30,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from enum import Enum
-from typing import Dict, List, NamedTuple, Optional, Any
 from __future__ import annotations
 
-import struct
 import logging
+import struct
 from collections import namedtuple
-from operator import attrgetter
 from dataclasses import dataclass
+from enum import Enum
+from operator import attrgetter
+from typing import Any, Dict, List, NamedTuple, Optional, TextIO, Union
 
 from flashcontainer.checksum import Crc, CrcConfig
 
+logger = logging.getLogger(__name__)
 
 class CrcData(NamedTuple):
     """Configuration data for arbitrary CRCs
@@ -90,7 +91,7 @@ class Block: # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
         addr: int, name: str,
-        length: int, endianess: Endianness, fill: int):
+        length: int, endianess: Endianness, fill: int) -> None:
         """ Construct a block.
 
             Args:
@@ -124,7 +125,7 @@ class Block: # pylint: disable=too-many-instance-attributes
 
         self.comment = comment
 
-    def get_header_bytes(self) -> bytearray:
+    def get_header_bytes(self) -> bytes:
         """Get header as bytestream."""
 
         fmt = "<" if self.endianess == Endianness.LE else ">"
@@ -148,7 +149,7 @@ class Block: # pylint: disable=too-many-instance-attributes
         """
 
         gap = Parameter.as_gap(addr, length, self.fill)
-        logging.info("    Gap %s", gap)
+        logger.info("    Gap %s", gap)
         self.add_parameter(gap)
 
     def fill_gaps(self) -> None:
@@ -225,7 +226,7 @@ class Block: # pylint: disable=too-many-instance-attributes
             else:
                 fmt = f">{TYPE_DATA[crcparam.ptype].fmt}"
 
-            crcparam.value = struct.pack(fmt, checksum)
+            crcparam.value = bytearray(struct.pack(fmt, checksum))
 
             # patch crc into block memory to be considered in successive crcs
             slice_start = crcparam.offset - self.addr
@@ -256,17 +257,17 @@ class Parameter:
     """Parameter definition data container"""
 
     def __init__(self, # pylint: disable=too-many-arguments
-            offset: int, name: str, ptype: ParamType,
-            value: bytearray, crc: Optional[CrcData] = None):
+            offset: int, name: Optional[str], ptype: ParamType,
+            value: bytearray, crc: Optional[CrcData] = None) -> None:
         self.offset: int = offset
-        self.name: str = name
+        self.name: Optional[str] = name
         self.ptype: ParamType = ptype
         self.value: bytearray = value
         self.comment: Optional[str] = None
         self.crc_cfg: Optional[CrcData] = crc
 
     @classmethod
-    def as_gap(cls, address: int, length: int, pattern: int) -> "Parameter":
+    def as_gap(cls, address: int, length: int, pattern: int) -> Parameter:
         """Create parameter as a gap fill range with given pattern.
 
         Args:
@@ -292,7 +293,7 @@ class Parameter:
 class Container:
     """Data container for a parameter block container"""
 
-    def __init__(self, name: str, addr: int):
+    def __init__(self, name: str, addr: int) -> None:
         self.name: str = name
         self.addr: int = addr
         self.blocks: List[Block] = []
@@ -309,8 +310,8 @@ class Container:
 class Model:
     """Top level model data container"""
 
-    def __init__(self, name: str):
-        self.name: str = name
+    def __init__(self, name: Union[str, TextIO]) -> None:
+        self.name: Union[str, TextIO] = name
         self.container: List[Container] = []
 
     def add_container(self, container: Container) -> None:
@@ -327,9 +328,6 @@ class Model:
         validator = Validator(self, options)
         validator.run()
 
-        if validator.result is False:
-            print("")
-
         return validator.result
 
 
@@ -342,7 +340,7 @@ class Walker:
     real processing.
     """
 
-    def __init__(self, model: Model, options: Dict[str, Any]):
+    def __init__(self, model: Model, options: Dict[str, Any]) -> None:
         self.options: Dict[str, Any] = options
         self.model: Model = model
 
@@ -388,12 +386,12 @@ class Walker:
 
         for container in self.model.container:
             self.ctx_container = container
-            logging.debug("begin_container(%s)", container)
+            logger.debug("begin_container(%s)", container)
             self.begin_container(container)
 
             for block in container.blocks:
                 self.ctx_block = block
-                logging.debug("begin_block(%s)", block)
+                logger.debug("begin_block(%s)", block)
 
                 self.begin_block(block)
 
@@ -401,37 +399,37 @@ class Walker:
                     self.ctx_parameter = parameter
 
                     if ParamType.GAPFILL == parameter.ptype:
-                        logging.debug("begin_gap(%s)", parameter)
+                        logger.debug("begin_gap(%s)", parameter)
                         self.begin_gap(parameter)
                         self.end_gap(parameter)
-                        logging.debug("end_gap(%s)", parameter)
+                        logger.debug("end_gap(%s)", parameter)
 
                     else:
-                        logging.debug("begin_parameter(%s)", parameter)
+                        logger.debug("begin_parameter(%s)", parameter)
                         self.begin_parameter(parameter)
                         self.end_parameter(parameter)
-                        logging.debug("end_parameter(%s)", parameter)
+                        logger.debug("end_parameter(%s)", parameter)
                         self.ctx_parameter = None
 
                 self.end_block(block)
                 self.ctx_block = None
-                logging.debug("end_block(%s)", block)
+                logger.debug("end_block(%s)", block)
 
             self.end_container(container)
             self.ctx_container = None
 
-            logging.debug("end_container(%s)", container)
+            logger.debug("end_container(%s)", container)
         self.post_run()
 
 
 class Validator(Walker):
     """Perform checks on the model to detect errors like overlapping parameter."""
-    def __init__(self, model: Model, options: Dict[str, Any]):
+    def __init__(self, model: Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
         self.result: bool = True
         self.last_param: Optional[Parameter] = None
         self.blocklist: Dict[str, Block] = {}
-        self.paramlist: Dict[str, Parameter] = {}
+        self.paramlist: Dict[Optional[str], Parameter] = {}
 
     def begin_container(self, container: Container) -> None:
         self.blocklist = {}
@@ -513,7 +511,7 @@ class Validator(Walker):
             if self.ctx_block is not None:
                 pfx += f"{self.ctx_block.name}:"
 
-        logging.error(f"{pfx}{msg}")
+        logger.error(f"{pfx}{msg}")
 
         self.result = False
 

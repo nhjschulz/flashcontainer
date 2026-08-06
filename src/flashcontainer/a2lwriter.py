@@ -31,11 +31,12 @@
 #
 
 
-from typing import Dict, Any, Optional, TextIO
 from pathlib import Path
+from typing import Any, Dict, Optional, TextIO
 
 import flashcontainer.datamodel as DM
 from flashcontainer.byteconv import ByteConvert
+
 
 class A2lWriter(DM.Walker):
     """A2l file writer"""
@@ -59,7 +60,7 @@ class A2lWriter(DM.Walker):
         DM.Endianness.BE: "MSB_FIRST"
     }
 
-    def __init__(self, model: DM.Model, options: Dict[str, Any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
         self.a2l_file: Optional[TextIO] = None
 

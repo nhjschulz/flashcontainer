@@ -31,23 +31,27 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import argparse
+from typing import Any
+
+
 class Singleton(type):
     """Python Singleton Metaclass"""
 
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
+    _instances: dict = {}
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 class Tc3xxCmdBase(metaclass=Singleton):
     "Base Class used to implement sub commands for TC3XX CLI"
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def register(self, sub_parsers):
+    def register(self, sub_parsers: argparse._SubParsersAction) -> None:
         """Register this class with the argument parser for sub commands."""
 
-    def run(self, args) -> int:
+    def run(self, args: argparse.Namespace) -> int:
         """Execute the command"""

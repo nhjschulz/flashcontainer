@@ -30,17 +30,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from typing import Dict, Any, TextIO
 from pathlib import Path
+from typing import Any, Dict, TextIO
 
 import flashcontainer.datamodel as DM
 from flashcontainer.byteconv import ByteConvert
+
 
 class CFileWriter(DM.Walker):
     """C-Language source and header writer
     """
 
-    def __init__(self, model: DM.Model, options: Dict[str, Any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
 
         cfilename = Path.joinpath(

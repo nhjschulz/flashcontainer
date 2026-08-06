@@ -31,18 +31,19 @@
 #
 
 
-from typing import Dict, Any
 from pathlib import Path
+from typing import Any, Dict
 
 from intelhex import IntelHex
 
 import flashcontainer.datamodel as DM
 from flashcontainer.checksum import Crc, CrcConfig
 
+
 class HexWriter(DM.Walker):
     """ Intel hex data file writer"""
 
-    def __init__(self, model: DM.Model, options: Dict[str, Any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
 
         self.hexbytes: bytearray = bytearray()

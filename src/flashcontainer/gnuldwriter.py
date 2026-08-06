@@ -31,8 +31,8 @@
 #
 
 
-from typing import Dict, Any, Optional, List, TextIO
 from pathlib import Path
+from typing import Any, Dict, List, Optional, TextIO
 
 import flashcontainer.datamodel as DM
 
@@ -40,7 +40,7 @@ import flashcontainer.datamodel as DM
 class GnuLdWriter(DM.Walker):
     """GNU Linker script include file writer"""
 
-    def __init__(self, model: DM.Model, options: Dict[str, Any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
         self.ldfile: Optional[TextIO] = None
 

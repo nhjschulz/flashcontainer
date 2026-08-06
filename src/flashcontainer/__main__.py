@@ -34,7 +34,7 @@ import sys
 from flashcontainer.pargen import pargen_cli
 
 
-def main():
+def main() -> None:
     """Entry point if called as "python -m flashcontainer ..."
     """
     sys.exit(pargen_cli())

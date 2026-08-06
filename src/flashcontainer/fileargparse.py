@@ -31,13 +31,15 @@
 #
 
 import argparse
+from typing import Any, List
 
-from flashcontainer.packageinfo import  __email__, __repository__
+from flashcontainer.packageinfo import __email__, __repository__
+
 
 class FileArgumentParser(argparse.ArgumentParser):
     """Argument parser with support for argument files."""
 
-    def __init__ (self, **kwargs):
+    def __init__ (self, **kwargs: Any) -> None:
         self.epilog = (
             f"Copyright (c) 2022-2023 {__email__}. "
             f"Visit {__repository__} for full documentation and examples."
@@ -45,7 +47,7 @@ class FileArgumentParser(argparse.ArgumentParser):
 
         super().__init__(fromfile_prefix_chars='@', epilog=self.epilog, **kwargs)
 
-    def convert_arg_line_to_args(self, arg_line):
+    def convert_arg_line_to_args(self, arg_line: str) -> List[str]:
         """Support multiple arguments on one line (default is one per line )."""
 
         return arg_line.split()

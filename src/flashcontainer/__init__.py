@@ -29,4 +29,4 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from .packageinfo import __version__, __author__, __email__, __repository__, __license__
+from .packageinfo import __author__, __email__, __license__, __repository__, __version__

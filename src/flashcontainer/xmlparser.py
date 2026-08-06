@@ -30,9 +30,9 @@
 #
 
 import logging
-import pathlib
 import os
-from typing import Dict
+import pathlib
+from typing import Any, Dict, Optional, TextIO, Union
 
 import lxml.etree as ET
 
@@ -43,21 +43,25 @@ from flashcontainer.checksum import CrcConfig
 schema_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "pargen_1.0.xsd")
 NS = 'http://nhjschulz.github.io/1.0/pargen'
 
+logger = logging.getLogger(__name__)
+
 
 class XmlParser:
     """XML Parser to generate a datamodel from an XML file"""
 
     @classmethod
-    def from_file(cls, file: str, values: Dict[str, str] = None) -> DM.Model:
+    def from_file(
+        cls, file: Union[str, TextIO], values: Optional[Dict[str, str]] = None
+    ) -> Optional[DM.Model]:
         """Parser entry point returning model instance"""
         return cls.parse(file, values)
 
     @staticmethod
-    def parse(file: str, values: Dict[str, str]) -> DM.Model:
+    def parse(file: Union[str, TextIO], values: Optional[Dict[str, str]]) -> Optional[DM.Model]:
         """ Parse given XML file into data model. """
         model = None
         try:
-            logging.info("Loading parameter definitions from %s.", file)
+            logger.info("Loading parameter definitions from %s.", file)
             schema = ET.XMLSchema(ET.parse(schema_file))
             xml_doc = ET.parse(file, ET.XMLParser(remove_comments=True))
             schema.assertValid(xml_doc)
@@ -65,14 +69,14 @@ class XmlParser:
             model = XmlParser._build_model(xml_doc.getroot(), file)
 
         except ET.DocumentInvalid as err:
-            logging.critical("xml validation failed:\n%s", str(err.error_log)) # pylint: disable=no-member
+            logger.critical("xml validation failed:\n%s", str(err.error_log)) # pylint: disable=no-member
             return None
 
 
         return model
 
     @staticmethod
-    def _update_values(root,  values: Dict[str, str]):
+    def _update_values(root: ET.Element, values: Optional[Dict[str, str]]) -> None:
         """Update parameter values based on modifier list."""
 
         if values is not None:
@@ -86,12 +90,13 @@ class XmlParser:
                     for element in hits:
                         element.text = param_value
                 else:
-                    logging.warning(
+                    logger.warning(
                         "Unable to modify parameter '%s': name is not defined.",
-                         param_name)
+                        param_name,
+                    )
 
     @staticmethod
-    def _get_optional(element: ET.Element, attr: str, default: any) -> str:
+    def _get_optional(element: ET.Element, attr: str, default: Any) -> str:
         """Get optional attribute value."""
 
         if element is None:
@@ -146,7 +151,7 @@ class XmlParser:
         return 0x00 if (val_str is None) else XmlParser._parse_int(val_str)
 
     @staticmethod
-    def _parse_crc_config(param: ET.Element, block: DM.Block, offset: int) -> DM.CrcConfig:
+    def _parse_crc_config(param: ET.Element, block: DM.Block, offset: int) -> DM.CrcData:
         """Parse a crc element.
 
         Args:
@@ -205,7 +210,7 @@ class XmlParser:
             end=end)
 
     @staticmethod
-    def _build_parameters(block: DM.Block, element) -> None:
+    def _build_parameters(block: DM.Block, element: ET.Element) -> None:
         data_element = element.find(f"{{{NS}}}data")
         running_addr = block.addr
         if block.header is not None:
@@ -227,7 +232,7 @@ class XmlParser:
             if f"{{{NS}}}crc" == parameter_element.tag:
                 crc_cfg = XmlParser._parse_crc_config(parameter_element, block, offset)
                 val_text = '0x0'  # crc bits get calculated at end of block
-                logging.info("    got CRC data: %s", crc_cfg)
+                logger.info("    got CRC data: %s", crc_cfg)
             else:
                 value_element = parameter_element.find(f"{{{NS}}}value")
                 val_text = value_element.text
@@ -241,11 +246,11 @@ class XmlParser:
                 parameter.set_comment(comment.text)
 
             block.add_parameter(parameter)
-            logging.info("    Adding %s", parameter)
+            logger.info("    Adding %s", parameter)
             running_addr = offset + len(data)
 
     @staticmethod
-    def _build_model(root: ET.Element, filename: str) -> DM.Model:
+    def _build_model(root: ET.Element, filename: Union[str, TextIO]) -> DM.Model:
         model = DM.Model(filename)
 
         # iterate over container list
@@ -254,7 +259,7 @@ class XmlParser:
             name = element.get("name")
 
             container = DM.Container(name, address)
-            logging.info("Loading container definition for %s", name)
+            logger.info("Loading container definition for %s", name)
             XmlParser._build_blocks(container, element)
 
             model.add_container(container)
@@ -310,7 +315,7 @@ class XmlParser:
             if comment is not None:
                 block.set_comment(comment.text)
 
-            logging.info("  Loading block definition %s", block)
+            logger.info("  Loading block definition %s", block)
 
             # optional block header
             header_element = element.find(f"{{{NS}}}header")

@@ -31,9 +31,11 @@
 #
 
 import struct
+
 import json5
 
 import flashcontainer.datamodel as DM
+
 
 class ByteConvert:
     """Byte to Text conversions
@@ -88,7 +90,7 @@ class ByteConvert:
         if 1 < entries:
             result += "\n{\n    "
 
-        for i in range(0, entries):
+        for i in range(entries):
             val = values[i]
 
             if isinstance(val, float):

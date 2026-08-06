@@ -33,6 +33,8 @@
 import importlib.metadata as meta
 import os
 import sys
+from typing import Tuple
+
 import toml
 
 __version__ = "???"
@@ -41,7 +43,7 @@ __email__ = "???"
 __repository__ = "???"
 __license__ = "???"
 
-def resource_path(relative_path):
+def resource_path(relative_path: str) -> str:
     """ Get the absolute path to the resource, works for dev and for PyInstaller """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
@@ -53,7 +55,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-def init_from_metadata() -> tuple:
+def init_from_metadata() -> Tuple[str, str, str, str, str]:
     """Initialize dunders from importlib.metadata
 
     Requires that the pacakge was installed.
@@ -69,7 +71,7 @@ def init_from_metadata() -> tuple:
 
 
 
-def init_from_toml() -> tuple:
+def init_from_toml() -> Tuple[str, str, str, str, str]:
     """Initialize dunders from pypackage.toml file
 
     Tried if package wasn't installed

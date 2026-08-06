@@ -36,6 +36,7 @@ from typing import NamedTuple
 
 import crc
 
+
 class CrcConfig(NamedTuple):
     """Configuration data for arbitrary CRCs
 
@@ -59,7 +60,7 @@ class CrcConfig(NamedTuple):
     access: int = 8
     swap: bool = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return \
             f"polynomial:0x{self.poly:X}, {self.width} Bit, "\
             f"init:0x{self.init:X}, "\
@@ -71,7 +72,7 @@ class CrcConfig(NamedTuple):
 class Crc:
     """ Checksum processing
     """
-    def __init__(self, cfg: CrcConfig):
+    def __init__(self, cfg: CrcConfig) -> None:
         """Create Crc instance
 
         Args:
@@ -87,7 +88,7 @@ class Crc:
             )
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.cfg}"
 
     def checksum(self, data: bytearray) -> int:

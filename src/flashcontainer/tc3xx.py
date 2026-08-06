@@ -35,9 +35,11 @@ import logging
 import sys
 from typing import List, Optional
 
-from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
-from flashcontainer.packageinfo import __version__, __email__, __repository__
 from flashcontainer.fileargparse import FileArgumentParser
+from flashcontainer.packageinfo import __version__
+from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
+
+logger = logging.getLogger(__name__)
 
 # list of tc3xx subcommand classes
 _TC3XX_CMDS = [ Tc3xxAbmhd() ]
@@ -81,6 +83,6 @@ def tc3xx_cli() -> int:
 if __name__ == "__main__":
     try:
         sys.exit(tc3xx_cli())
-    except Exception as exc:  # pylint: disable=broad-except
-        logging.exception(exc)
+    except Exception:  # pylint: disable=broad-except
+        logger.exception("Unexpected error occurred")
         sys.exit(-1)

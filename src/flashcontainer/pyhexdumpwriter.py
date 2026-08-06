@@ -29,8 +29,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from typing import Dict, Any, Optional, TextIO, List
 from pathlib import Path
+from typing import Any, Dict, List, Optional, TextIO
 
 import json5
 
@@ -131,7 +131,7 @@ class PyHexDumpWriter(DM.Walker):
         DM.ParamType.UTF8: ("utf8", "utf8")
     }
 
-    def __init__(self, model: DM.Model, options: Dict[str, Any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
         self.dmpfile: Optional[TextIO] = None
         self.elements: List[Dict[str, Any]] = []
