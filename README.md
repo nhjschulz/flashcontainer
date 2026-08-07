@@ -57,7 +57,7 @@ The parameter generator tool can then by called on cmdline using
                             modify parameter value using name=value notation
       --version             show program's version number and exit
     
-    Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+    Copyright (c) 2022-2026 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
  The flashcontainer 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
