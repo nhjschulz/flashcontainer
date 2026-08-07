@@ -33,6 +33,7 @@
 import importlib.metadata as meta
 import os
 import sys
+from email.utils import parseaddr
 from typing import Tuple
 
 import toml
@@ -73,10 +74,13 @@ def init_from_metadata() -> Tuple[str, str, str, str, str]:
     """
 
     my_metadata = meta.metadata('flashcontainer')
+    author_email = my_metadata['Author-email']
+    author_name, _ = parseaddr(author_email)
+
     return \
         my_metadata['Version'],\
-        my_metadata['Author'],\
-        my_metadata['Author-email'],\
+        author_name,\
+        author_email,\
         my_metadata['Project-URL'].replace("repository, ", ""),\
         my_metadata['License']
 

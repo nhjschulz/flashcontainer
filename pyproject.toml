@@ -37,6 +37,12 @@ test = [
   "pytest > 5.0.0",
   "pytest-cov[all]"
 ]
+dev = [
+  "black",
+  "isort",
+  "pylint",
+  "tox"
+]
 
 [project.urls]
 repository = "https://github.com/nhjschulz/flashcontainer"

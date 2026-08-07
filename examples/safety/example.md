@@ -57,7 +57,13 @@ parameter. The default values for calculation are:
 
 The resulting hex file can be printed/validated using
 [pyHexDump](https://github.com/BlueAndi/pyHexDump), a highly
-configurable binary data dumper. The tool reads the hex file data
+configurable binary data dumper. pyHexDump is not published on PyPI (the
+`pyhexdump` name there belongs to an unrelated project), so install it
+directly from its git repository:
+
+    pip install git+https://github.com/BlueAndi/pyHexDump
+
+The tool reads the hex file data
 and formats the contained parameter data using the pyhexdump configuration
 file from pargen:
 
