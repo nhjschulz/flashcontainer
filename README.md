@@ -29,7 +29,7 @@ The package is available on Pypi and can be installed using
 
     pip install flashcontainer
 
-A python 3.8 or higher version is required.
+A python 3.10 or higher version is required.
 
 The parameter generator tool can then by called on cmdline using
 
@@ -57,7 +57,7 @@ The parameter generator tool can then by called on cmdline using
                             modify parameter value using name=value notation
       --version             show program's version number and exit
     
-    Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+    Copyright (c) 2022-2026 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
  The flashcontainer 
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
@@ -180,7 +180,7 @@ CRC for this purpose.
 The header data is a 16 byte long data structure with the following
 layout:
 
-    struct sruct_pargen_header_type
+    struct struct_pargen_header_type
     {
         uint16_t id;        /* from id header attribute */
         uint16_t major;     /* from major header attribute */

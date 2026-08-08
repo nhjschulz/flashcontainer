@@ -2,7 +2,7 @@
 """
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,23 +31,43 @@
 #
 
 import struct
+
 import json5
 
 import flashcontainer.datamodel as DM
 
+
 class ByteConvert:
-    """Byte to Text conversions
-    """
+    """Byte to text conversions."""
 
     @staticmethod
     def get_type_size(ptype: DM.ParamType) -> int:
-        """Get byte size of type"""
+        """Get byte size of a parameter type.
+
+        Args:
+            ptype: The parameter type to look up.
+
+        Returns:
+            Number of bytes occupied by one element of ptype.
+        """
 
         return DM.TYPE_DATA[ptype].size
 
     @staticmethod
     def json_to_bytes(ptype: DM.ParamType,  endianess: DM.Endianness, value_str: str) -> bytearray:
-        """Convert from json string into raw bytes """
+        """Convert a JSON value string into raw bytes.
+
+        Args:
+            ptype: Target parameter type used to pick the pack format.
+            endianess: Byte ordering to use when packing.
+            value_str: JSON encoded value (int, float, str or array of these).
+
+        Returns:
+            The packed byte representation of value_str.
+
+        Raises:
+            TypeError: If value_str decodes to an unsupported JSON value type.
+        """
 
         result = bytearray()
         from_json = json5.loads(value_str)
@@ -69,13 +89,23 @@ class ByteConvert:
             result.extend(b'\x00')
 
         else:
-            raise Exception(f"unsupported json value type {variant}") # pylint: disable=broad-except
+            raise TypeError(f"unsupported json value type {variant}")
 
         return result
 
     @staticmethod
     def bytes_to_c_init(ptype: DM.ParamType,  endianess: DM.Endianness, data: bytearray) -> str:
-        """Convert raw data to C-Language initializer"""
+        """Convert raw data to a C language initializer.
+
+        Args:
+            ptype: Parameter type used to pick the unpack format.
+            endianess: Byte ordering to use when unpacking.
+            data: Raw bytes to convert.
+
+        Returns:
+            C initializer expression, e.g. a scalar literal or a
+            brace-enclosed, comma-separated list for arrays.
+        """
 
         result = ""
         type_data = DM.TYPE_DATA[ptype]
@@ -88,7 +118,7 @@ class ByteConvert:
         if 1 < entries:
             result += "\n{\n    "
 
-        for i in range(0, entries):
+        for i in range(entries):
             val = values[i]
 
             if isinstance(val, float):

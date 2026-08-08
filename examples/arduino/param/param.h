@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-typedef struct sruct_pargen_header_type
+typedef struct struct_pargen_header_type
 {
     uint16_t id;
     uint16_t major;

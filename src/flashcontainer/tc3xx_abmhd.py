@@ -32,23 +32,26 @@
 #
 
 import argparse
-import pathlib
+import logging
 import os
+import pathlib
 import sys
 import textwrap
-import logging
 from enum import Enum
 from pathlib import Path
 
-from intelhex import IntelHex
 import lxml.etree as ET
+from intelhex import IntelHex
 
+from flashcontainer.checksum import Crc, CrcConfig
 from flashcontainer.packageinfo import __version__
 from flashcontainer.tc3xx_cmd import Tc3xxCmdBase
-from flashcontainer.checksum import Crc, CrcConfig
+
+logger = logging.getLogger(__name__)
+
 
 class RETVAL(Enum):
-    """abmhd CLI error codes """
+    """abmhd CLI error codes."""
 
     OK = 0
     FILE_NOT_FOUND = 1
@@ -58,7 +61,7 @@ class RETVAL(Enum):
 
 
 class Tc3xxAbmhd(Tc3xxCmdBase):
-    """Implementation of abmhd command"""
+    """Implementation of the abmhd sub command."""
 
     # XML definition template for alternate boot mode header
     _abmhd_xml = os.path.join(
@@ -68,7 +71,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
     _abmhd_ok_id =  0xFA7CB359
 
     def __init__(self) -> None:
-        """Init this module and register abmhd command with the Tc3xx CLI"""
+        """Initialize command state to its default values."""
 
         self.min_addr  = 0x0
         self.max_addr  = 0x0
@@ -83,13 +86,24 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         self.output = sys.stdout
 
     @staticmethod
-    def _static_run(args) -> int:
-        """Non class wrapper to call run method from argparser."""
+    def _static_run(args: argparse.Namespace) -> int:
+        """Free function wrapper to call run() from the argparser callback.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         return Tc3xxAbmhd().run(args)
 
-    def register(self, sub_parsers) -> None:
-        """Register abmhd command arguments with the Tc3xx CLI"""
+    def register(self, sub_parsers: argparse._SubParsersAction) -> None:
+        """Register abmhd command arguments with the Tc3xx CLI.
+
+        Args:
+            sub_parsers: Sub parsers action to add the abmhd parser to.
+        """
 
         parser = sub_parsers.add_parser(
             'abmhd',
@@ -152,8 +166,15 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         parser.set_defaults(func=Tc3xxAbmhd._static_run)
 
 
-    def run(self, args) -> int:
-        """abmhd command executer"""
+    def run(self, args: argparse.Namespace) -> int:
+        """Execute the abmhd command.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         result = self._evaluate_arguments(args)
         if RETVAL.OK.value == result:
@@ -170,22 +191,29 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
         return result
 
-    def _evaluate_arguments(self, args) -> int:
-        """Convert argument values to class context variables."""
+    def _evaluate_arguments(self, args: argparse.Namespace) -> int:
+        """Convert argument values to class context variables.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         # check input hexfile argument
         self.input_hex_file = args.filename[0]
         if not Path(self.input_hex_file).is_file():
-            logging.error("file not found: %s", self.input_hex_file)
+            logger.error("file not found: %s", self.input_hex_file)
             return RETVAL.FILE_NOT_FOUND.value
 
-        logging.info("Loading user data from %s", self.input_hex_file)
+        logger.info("Loading user data from %s", self.input_hex_file)
         try:
             self.input_hex_data.loadhex(self.input_hex_file)
-        except Exception as exc:  # pylint: disable=broad-except
-            logging.exception(exc, stack_info=False, exc_info=False)
+        except Exception:  # pylint: disable=broad-except
+            logger.exception("Failed to load hex file: %s", self.input_hex_file, stack_info=False, exc_info=False)
             return RETVAL.INVALID_FORMAT.value
-        logging.info (
+        logger.info (
             "User Data Range: 0x%08X - 0x%08X",
             self.input_hex_data.minaddr(),
             self.input_hex_data.maxaddr()
@@ -204,13 +232,17 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         return RETVAL.OK.value
 
     def _validate(self) -> int:
-        """Check correctness of received input"""
+        """Check correctness of the received input.
+
+        Returns:
+            Process exit code, see RETVAL.
+        """
 
         result = RETVAL.OK.value
 
         # Validate  check address range information
         if (self.min_addr < self.input_hex_data.minaddr()) or (self.min_addr >= self.input_hex_data.maxaddr()):
-            logging.error(
+            logger.error(
                 "check start address 0x%08x out of user data range 0x%08x - 0x%08x",
                 self.min_addr,
                 self.input_hex_data.minaddr(),
@@ -219,16 +251,16 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             result =  RETVAL.INVALID_PARAMETER.value
 
         if (self.max_addr < self.input_hex_data.minaddr()) or (self.max_addr > (self.input_hex_data.maxaddr() + 1)):
-            logging.error(
+            logger.error(
                 "check end address 0x%08x out of user data range 0x%08x - 0x%08x",
-                self.min_addr,
+                self.max_addr,
                 self.input_hex_data.minaddr(),
                 self.input_hex_data.maxaddr()
             )
             result =  RETVAL.INVALID_PARAMETER.value
 
         if self.max_addr < self.min_addr:
-            logging.error(
+            logger.error(
                 "invalid check data range 0x%08x - 0x%08x",
                 self.min_addr,
                 self.max_addr
@@ -237,7 +269,7 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
         #validate start address
         if (self.stad_addr < self.input_hex_data.minaddr()) or (self.stad_addr > (self.input_hex_data.maxaddr())):
-            logging.error(
+            logger.error(
                 "user code start address 0x%08x out of user data range 0x%08x - 0x%08x",
                 self.stad_addr,
                 self.input_hex_data.minaddr(),
@@ -246,23 +278,23 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
             result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.stad_addr & 0x3):
-            logging.error("user code start address 0x%08x must be WORD aligned", self.stad_addr)
+            logger.error("user code start address 0x%08x must be WORD aligned", self.stad_addr)
             result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.min_addr & 0x3):
-            logging.error("check start address 0x%08x must be WORD aligned", self.stad_addr)
+            logger.error("check start address 0x%08x must be WORD aligned", self.min_addr)
             result =  RETVAL.INVALID_PARAMETER.value
 
         if 0 != (self.max_addr & 0x3):
-            logging.error("check end address 0x%08x must be WORD aligned", self.stad_addr)
+            logger.error("check end address 0x%08x must be WORD aligned", self.max_addr)
             result =  RETVAL.INVALID_PARAMETER.value
 
         return result
 
-    def _calc_user_data_crc(self):
+    def _calc_user_data_crc(self) -> None:
         """Build CRC value over user data."""
 
-        logging.info("Calculating CRC from 0x%0x-0x%0x", self.min_addr, self.max_addr)
+        logger.info("Calculating CRC from 0x%0x-0x%0x", self.min_addr, self.max_addr)
 
         user_data = bytearray()
 
@@ -277,10 +309,14 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
         self.user_crc = crc_calculator.checksum(crc_calculator.prepare(user_data))
 
     def _generate_xml(self) -> str:
-        """Generate Pargen definition XML"""
+        """Generate the Pargen definition XML.
+
+        Returns:
+            The pretty-printed Pargen XML document as a string.
+        """
 
         dest = self.output if self.output != sys.stdout else "<stdout>"
-        logging.info("Writing Pargen XML definition into %s", dest)
+        logger.info("Writing Pargen XML definition into %s", dest)
         xml_dom = ET.fromstring(
             self._get_xml(),
             ET.XMLParser(remove_blank_text=True, encoding='utf-8')
@@ -290,8 +326,12 @@ class Tc3xxAbmhd(Tc3xxCmdBase):
 
         return '<?xml version="1.0" encoding="utf-8"?>\n'+ ET.tounicode(etree, pretty_print=True)
 
-    def _get_xml(self) -> str:
-        """Get resulting XML record as string"""
+    def _get_xml(self) -> bytes:
+        """Get the resulting XML record as bytes.
+
+        Returns:
+            UTF-8 encoded Pargen XML document.
+        """
 
         return textwrap.dedent(f'''\
             <?xml version="1.0" encoding="utf-8"?>

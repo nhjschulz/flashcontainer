@@ -8,7 +8,7 @@ following chapters assume the steps are executed from within it.
 It is expected that the necessary plug-ins for python development
 are already installed into Visual Studio Code.
 
-The project requires Python 3.8 or later.
+The project requires Python 3.10 or later.
 
 ## Loading the Project into Visual Studio Code
 
@@ -45,11 +45,12 @@ Choose the one in the .venv folder
 ## Create a Development Editable Install
 
 An editable install is needed for running the unit tests and development of the package itself.
-The following commands installs the project dependencies and the project  as an editable install
-into the virtual environment:
+All dependencies are declared in `pyproject.toml`, split into the runtime dependencies and the
+optional `test` and `dev` groups (test tooling and lint/format/tox tooling respectively).
+The following command installs the project as an editable install together with both optional
+groups into the virtual environment:
 
-    python -m pip install -r requirements.txt
-    python -m pip install -e .
+    python -m pip install -e ".[test,dev]"
 
 The parameter generator tool can then by called on command line in several ways
 
@@ -95,9 +96,8 @@ The wheel file will be generated in the dist folder:
 
 ## Running the Unit tests
 
-The unit test rely on pytest, so pytest needs to be installed.
-
-    pip install pytest
+The unit tests rely on pytest, which is installed as part of the `test` optional
+dependency group (see above).
 
 The test can be run either from the IDE's Testing view or from the console with:
 

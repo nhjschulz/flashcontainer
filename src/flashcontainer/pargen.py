@@ -3,7 +3,7 @@
 
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,22 +33,24 @@
 
 import datetime
 import logging
-import uuid
-import sys
 import os
+import sys
+import uuid
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List, Optional, Type
 
-from flashcontainer.hexwriter import HexWriter
-from flashcontainer.xmlparser import XmlParser
-from flashcontainer.cfilewriter import CFileWriter
-from flashcontainer.gnuldwriter import GnuLdWriter
-from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
-from flashcontainer.a2lwriter import A2lWriter
-from flashcontainer.packageinfo import __version__, __email__, __repository__
-from flashcontainer.fileargparse import FileArgumentParser
 import flashcontainer.datamodel as DM
+from flashcontainer.a2lwriter import A2lWriter
+from flashcontainer.cfilewriter import CFileWriter
+from flashcontainer.fileargparse import FileArgumentParser
+from flashcontainer.gnuldwriter import GnuLdWriter
+from flashcontainer.hexwriter import HexWriter
+from flashcontainer.packageinfo import __version__
+from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
+from flashcontainer.xmlparser import XmlParser
+
+logger = logging.getLogger(__name__)
 
 # List of output writers
 _WRITER = [
@@ -80,9 +82,15 @@ _WRITER = [
 ]
 
 def pargen_cli() -> int:
-    """ cmd line interface for pagen"""
+    """Command line interface for pargen.
 
-    logging.basicConfig(encoding='utf-8', level=logging.WARN)
+    Parses sys.argv, then delegates to pargen().
+
+    Returns:
+        Process exit code, see Error.
+    """
+
+    logging.basicConfig(level=logging.WARNING)
 
     name = "pargen"
     about = f"{name} {__version__}: A tool for generating flashable parameter container."
@@ -125,18 +133,18 @@ def pargen_cli() -> int:
     for modval_str in (args.modify or []):
         seperator = modval_str[0].find('=')
         if -1 == seperator:
-            logging.error("invalid modify option  %s. Expect <name>=<val>.", modval_str[0])
-            return Error.ERROR_INVALID_OPTION
+            logger.error("invalid modify option  %s. Expect <name>=<val>.", modval_str[0])
+            return Error.ERROR_INVALID_OPTION.value
 
         modify_values[modval_str[0][:seperator]] = modval_str[0][seperator+1:]
 
-    writers = []
+    writers: List[Type[DM.Walker]] = []
 
     for writer in _WRITER:
         if getattr(args, writer["key"]):
             writers.append(writer["class"])
 
-    base_name = None
+    base_name: Optional[str] = None
     if args.filename is not None:
         base_name = args.filename[0]
 
@@ -149,7 +157,7 @@ def pargen_cli() -> int:
         modifier=modify_values)
 
 class Error(Enum):
-    """Pargen error codes """
+    """Pargen error codes."""
 
     ERROR_OK = 0
     ERROR_FILE_NOT_FOUND = 1
@@ -160,12 +168,24 @@ class Error(Enum):
 
 def pargen(
         cfgfile: str,
-        filename: str,
+        filename: Optional[str],
         outdir: Path,
         static: bool,
-        writers: List[DM.Walker],
-        modifier: Dict[str, str] = None) -> int:
-    """ Parameter generator tool entry point"""
+        writers: List[Type[DM.Walker]],
+        modifier: Optional[Dict[str, str]] = None) -> int:
+    """Parameter generator tool entry point.
+
+    Args:
+        cfgfile: Path to the XML parameter definition file, or "-" for stdin.
+        filename: Optional basename override for generated output files.
+        outdir: Output directory for generated files.
+        static: If True, omit dynamic elements like date and time from output.
+        writers: Writer classes to run against the parsed model.
+        modifier: Optional map of parameter name to override value.
+
+    Returns:
+        Process exit code, see Error.
+    """
 
     # Create output directory (if necessary)
     destdir = Path.resolve(outdir)
@@ -181,7 +201,7 @@ def pargen(
         print(f"Processing definitions from {cfgfile}\n")
         model = XmlParser.from_file(cfgfile, modifier)
     else:
-        logging.error("file not found: %s", cfgfile)
+        logger.error("file not found: %s", cfgfile)
         return Error.ERROR_FILE_NOT_FOUND.value
 
     if model is None:
@@ -202,10 +222,11 @@ def pargen(
         }
 
     if model.validate(param) is False:
+        print()
         return Error.ERROR_VALIDATION_FAIL.value
 
     if 0 == len(writers):
-        logging.warning("no writers defined, generating nothing.")
+        logger.warning("no writers defined, generating nothing.")
         return 0
 
     for writer in writers:
@@ -218,6 +239,6 @@ def pargen(
 if __name__ == "__main__":
     try:
         sys.exit(pargen_cli())
-    except Exception as exc:  # pylint: disable=broad-except
-        logging.exception(exc)
+    except Exception:  # pylint: disable=broad-except
+        logger.exception("Unexpected error occurred")
         sys.exit(Error.ERROR_EXCEPTION.value)

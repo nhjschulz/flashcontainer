@@ -2,7 +2,7 @@
 """
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,20 +31,28 @@
 #
 
 
-from typing import Dict
 from pathlib import Path
+from typing import Any, Dict, List, Optional, TextIO
 
 import flashcontainer.datamodel as DM
 
 
 class GnuLdWriter(DM.Walker):
-    """GNU Linker script include file writer"""
+    """GNU linker script include file writer."""
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
+        """Construct the writer.
+
+        Args:
+            model: Data model to write.
+            options: Writer context options (destination dir, basename, etc.).
+        """
         super().__init__(model, options)
-        self.ldfile = None
+        self.ldfile: Optional[TextIO] = None
 
     def pre_run(self) -> None:
+        """Open the output file and write the linker script header."""
+
         filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".ld")
@@ -72,22 +80,41 @@ class GnuLdWriter(DM.Walker):
         )
 
     def begin_container(self, container: DM.Container) -> None:
+        """Write the flash container begin comment.
+
+        Args:
+            container: Container being entered.
+        """
         self.ldfile.write(f"/* Begin flash container {container} */")
 
     def end_container(self, container: DM.Container) -> None:
+        """Write the flash container end comment.
+
+        Args:
+            container: Container being left.
+        """
         self.ldfile.write(f"/* End flash container {container} */\n")
 
     def begin_block(self, block: DM.Block) -> None:
+        """Write the block header symbol, if the block has a header.
+
+        Args:
+            block: Block being entered.
+        """
         self.ldfile.write("\n")
         if block.header is not None:
             header_param = f"{block.name}_blkhdr"
             self.ldfile.write(f"{header_param: <40} = {hex(block.addr)};\n")
 
     def begin_parameter(self, param: DM.Parameter) -> None:
-        """Add parameter name and address mapping"""
+        """Add a parameter name and address mapping.
+
+        Args:
+            param: Parameter being visited.
+        """
 
         # write multiline comment before definition
-        comment_lines = None
+        comment_lines: Optional[List[str]] = None
         if param.comment is not None:
             comment_lines = param.comment.splitlines()
             if len(comment_lines) > 1:
@@ -104,7 +131,7 @@ class GnuLdWriter(DM.Walker):
 
         self.ldfile.write("\n")
 
-    def post_run(self):
-        """Close output file"""
+    def post_run(self) -> None:
+        """Close the output file."""
 
         self.ldfile.close()

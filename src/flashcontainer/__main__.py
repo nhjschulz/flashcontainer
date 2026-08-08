@@ -1,7 +1,7 @@
 """The main module with the program entry point."""
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -34,9 +34,8 @@ import sys
 from flashcontainer.pargen import pargen_cli
 
 
-def main():
-    """Entry point if called as "python -m flashcontainer ..."
-    """
+def main() -> None:
+    """Entry point when called as "python -m flashcontainer ..."."""
     sys.exit(pargen_cli())
 
 

@@ -2,7 +2,7 @@
 """
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,17 +30,23 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from typing import Dict
 from pathlib import Path
+from typing import Any, Dict, TextIO
 
 import flashcontainer.datamodel as DM
 from flashcontainer.byteconv import ByteConvert
 
-class CFileWriter(DM.Walker):
-    """C-Language source and header writer
-    """
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+class CFileWriter(DM.Walker):
+    """C language source and header file writer."""
+
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
+        """Construct the writer and open the .c/.h output files.
+
+        Args:
+            model: Data model to write.
+            options: Writer context options (destination dir, basename, etc.).
+        """
         super().__init__(model, options)
 
         cfilename = Path.joinpath(
@@ -50,16 +56,22 @@ class CFileWriter(DM.Walker):
         hfilename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".h")
-        self.cfile = cfilename.open(mode="w")
-        self.hfile = hfilename.open(mode="w")
+        self.cfile: TextIO = cfilename.open(mode="w")
+        self.hfile: TextIO = hfilename.open(mode="w")
 
     def _write_both(self, txt: str) -> None:
-        """ Write same into h and c file"""
+        """Write the same text into both the header and source file.
+
+        Args:
+            txt: Text to write.
+        """
 
         self.hfile.write(txt)
         self.cfile.write(txt)
 
-    def pre_run(self):
+    def pre_run(self) -> None:
+        """Write the file headers, include guard and common header type."""
+
         print(
             f"Generating C-files "
             f'{Path.joinpath(self.options.get("DESTDIR"), self.options.get("BASENAME"))}.[ch].')
@@ -84,7 +96,7 @@ class CFileWriter(DM.Walker):
             "extern \"C\" {\n"
             "#endif\n\n"
             "#include <stdint.h>\n"
-            "typedef struct sruct_pargen_header_type\n"
+            "typedef struct struct_pargen_header_type\n"
             "{\n"
             "    uint16_t id;\n"
             "    uint16_t major;\n"
@@ -97,7 +109,9 @@ class CFileWriter(DM.Walker):
 
         self.cfile.write(f'#include "{self.options.get("BASENAME")+".h"}"\n\n')
 
-    def post_run(self):
+    def post_run(self) -> None:
+        """Write the closing include guard and close both output files."""
+
         self.hfile.write(
             "#ifdef __cplusplus\n"
             "}\n"
@@ -107,7 +121,11 @@ class CFileWriter(DM.Walker):
         self.hfile.close()
 
     def begin_block(self, block: DM.Block) -> None:
-        """Write block comment and header """
+        """Write the block comment and, if present, the header definition.
+
+        Args:
+            block: Block being entered.
+        """
 
         self._write_both(
             f"/* BEGIN Block {self.ctx_block.name} in container "
@@ -137,10 +155,19 @@ class CFileWriter(DM.Walker):
             self._write_both(";\n\n")
 
     def end_block(self, block: DM.Block) -> None:
+        """Write the block end comment.
+
+        Args:
+            block: Block being left.
+        """
         self._write_both(f"/* END Block {self.ctx_block.name}\n */\n\n")
 
     def begin_parameter(self, param: DM.Parameter) -> None:
-        """Patch parameter bytes into intelhex object"""
+        """Write a parameter declaration and definition.
+
+        Args:
+            param: Parameter being visited.
+        """
 
         self._write_both(f"/* Parameter {param.name} @ {hex(param.offset)}\n")
 

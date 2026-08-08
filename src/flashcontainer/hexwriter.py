@@ -2,7 +2,7 @@
 
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,22 +31,29 @@
 #
 
 
-from typing import Dict
 from pathlib import Path
+from typing import Any, Dict
 
 from intelhex import IntelHex
 
 import flashcontainer.datamodel as DM
 from flashcontainer.checksum import Crc, CrcConfig
 
-class HexWriter(DM.Walker):
-    """ Intel hex data file writer"""
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+class HexWriter(DM.Walker):
+    """Intel hex data file writer."""
+
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
+        """Construct the writer.
+
+        Args:
+            model: Data model to write.
+            options: Writer context options (destination dir, basename, etc.).
+        """
         super().__init__(model, options)
 
-        self.hexbytes = bytearray()
-        self.ihex = IntelHex()
+        self.hexbytes: bytearray = bytearray()
+        self.ihex: IntelHex = IntelHex()
         self.filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".hex")
@@ -55,9 +62,16 @@ class HexWriter(DM.Walker):
             self.options.get("BASENAME") + ".crc")
 
     def pre_run(self) -> None:
+        """Print a status message before generating the hex file."""
+
         print(f"Generating intelhex file {self.filename}.")
 
     def begin_block(self, block: DM.Block) -> None:
+        """Patch the block header bytes into the intelhex object.
+
+        Args:
+            block: Block being entered.
+        """
         addr = block.addr
         if block.header is not None:
             data = block.get_header_bytes()
@@ -66,13 +80,21 @@ class HexWriter(DM.Walker):
                 self.ihex[addr] = byte
                 addr += 1
 
-    def begin_gap(self, param: DM.Parameter):
-        """Gaps are same as parameter as far as hex dumping is concerned."""
+    def begin_gap(self, param: DM.Parameter) -> None:
+        """Handle a gap the same way as a regular parameter.
+
+        Args:
+            param: Gap parameter being visited.
+        """
 
         self.begin_parameter(param)
 
-    def begin_parameter(self, param: DM.Parameter):
-        """Patch parameter bytes into intelhex object"""
+    def begin_parameter(self, param: DM.Parameter) -> None:
+        """Patch parameter bytes into the intelhex object.
+
+        Args:
+            param: Parameter being visited.
+        """
 
         self.hexbytes.extend(param.value)
         addr = param.offset
@@ -80,8 +102,8 @@ class HexWriter(DM.Walker):
             self.ihex[addr] = byte
             addr += 1
 
-    def post_run(self):
-        """ Save into intelhex file"""
+    def post_run(self) -> None:
+        """Save the hex data and a matching CRC32 checksum file."""
 
         self.ihex.tofile(str(self.filename), format='hex')
 
@@ -90,13 +112,17 @@ class HexWriter(DM.Walker):
             crc_file.write(f"0x{self._get_crc32():X}\n")
 
     def _get_crc32(self) -> int:
-        """Calculate CRC32 over produced hex bytes"""
+        """Calculate the CRC32 over the produced hex bytes.
+
+        Returns:
+            The CRC32 checksum.
+        """
 
         crc_cfg = CrcConfig(
                 width=32,
                 poly=0x04C11DB7,
                 init=0xFFFFFFFF,
-                xor=0xFFFFFFFF,
+                xor=True,
                 revin=True,
                 revout=True,
                 access=1,

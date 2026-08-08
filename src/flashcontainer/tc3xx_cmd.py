@@ -31,23 +31,38 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-class Singleton(type):
-    """Python Singleton Metaclass"""
+import argparse
+from typing import Any
 
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
+
+class Singleton(type):
+    """Python singleton metaclass."""
+
+    _instances: dict = {}
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 class Tc3xxCmdBase(metaclass=Singleton):
-    "Base Class used to implement sub commands for TC3XX CLI"
+    """Base class used to implement sub commands for the TC3XX CLI."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def register(self, sub_parsers):
-        """Register this class with the argument parser for sub commands."""
+    def register(self, sub_parsers: argparse._SubParsersAction) -> None:
+        """Register this class with the argument parser for sub commands.
 
-    def run(self, args) -> int:
-        """Execute the command"""
+        Args:
+            sub_parsers: Sub parsers action to add this command's parser to.
+        """
+
+    def run(self, args: argparse.Namespace) -> int:
+        """Execute the command.
+
+        Args:
+            args: Parsed command line arguments.
+
+        Returns:
+            Process exit code.
+        """

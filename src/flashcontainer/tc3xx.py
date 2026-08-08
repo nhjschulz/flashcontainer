@@ -33,19 +33,30 @@
 
 import logging
 import sys
+from typing import List, Optional
 
-from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
-from flashcontainer.packageinfo import __version__, __email__, __repository__
 from flashcontainer.fileargparse import FileArgumentParser
+from flashcontainer.packageinfo import __version__
+from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
+
+logger = logging.getLogger(__name__)
 
 # list of tc3xx subcommand classes
 _TC3XX_CMDS = [ Tc3xxAbmhd() ]
 
 
-def tc3xx(argv) -> int:
-    """ cmd line interface for tc3xx"""
+def tc3xx(argv: Optional[List[str]] = None) -> int:
+    """Command line interface for tc3xx.
 
-    logging.basicConfig(encoding='utf-8', level=logging.WARNING)
+    Args:
+        argv: Command line arguments to parse, defaults to sys.argv[1:].
+
+    Returns:
+        Process exit code from the selected sub command, or -1 if no sub
+        command was given.
+    """
+
+    logging.basicConfig(level=logging.WARNING)
 
     name = "tc3xx"
     about = f"{name} {__version__}: Build Pargen definitions for TC3xx data structures."
@@ -73,13 +84,17 @@ def tc3xx(argv) -> int:
     return args.func(args)
 
 def tc3xx_cli() -> int:
-    """CLI wrapper for tc3xx """
+    """CLI wrapper for tc3xx, using sys.argv as input.
+
+    Returns:
+        Process exit code, see tc3xx().
+    """
 
     return tc3xx(sys.argv[1:])
 
 if __name__ == "__main__":
     try:
         sys.exit(tc3xx_cli())
-    except Exception as exc:  # pylint: disable=broad-except
-        logging.exception(exc)
+    except Exception:  # pylint: disable=broad-except
+        logger.exception("Unexpected error occurred")
         sys.exit(-1)
