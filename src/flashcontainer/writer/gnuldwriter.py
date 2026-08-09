@@ -34,7 +34,7 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TextIO
 
-import flashcontainer.datamodel as DM
+from ..model import datamodel as DM
 
 
 class GnuLdWriter(DM.Walker):

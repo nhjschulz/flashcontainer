@@ -43,9 +43,9 @@ from pathlib import Path
 import lxml.etree as ET
 from intelhex import IntelHex
 
-from flashcontainer.checksum import Crc, CrcConfig
-from flashcontainer.packageinfo import __version__
-from flashcontainer.tc3xx_cmd import Tc3xxCmdBase
+from ..model.checksum import Crc, CrcConfig
+from ..packageinfo import __version__
+from .tc3xx_cmd import Tc3xxCmdBase
 
 logger = logging.getLogger(__name__)
 

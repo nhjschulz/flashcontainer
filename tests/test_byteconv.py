@@ -1,5 +1,5 @@
-from flashcontainer import datamodel as DM
-from flashcontainer.byteconv import ByteConvert
+from flashcontainer.model import datamodel as DM
+from flashcontainer.model.byteconv import ByteConvert
 
 
 def test_convert_valstr_to_byte():

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "flashcontainer"
 version = "0.6.0"
 requires-python = ">=3.10"
-description = "A tooling for flashable parameter data container generation"
+description = "Tools for Flash/ROM parameter data generation"
 readme = "README.md"
 license = {text = "BSD License"}
 authors = [
@@ -49,7 +49,7 @@ repository = "https://github.com/nhjschulz/flashcontainer"
 
 [project.scripts]
 pargen = "flashcontainer.pargen:pargen_cli"
-tc3xx = "flashcontainer.tc3xx:tc3xx_cli"
+tc3xx = "flashcontainer.tc3xx.tc3xx:tc3xx_cli"
 
 
 [tool.pytest.ini_options]

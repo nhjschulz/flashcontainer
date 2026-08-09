@@ -3,8 +3,8 @@ import pathlib
 
 import lxml.etree as ET
 
-from flashcontainer import tc3xx
-from flashcontainer import tc3xx_abmhd
+from flashcontainer.tc3xx import tc3xx
+from flashcontainer.tc3xx import tc3xx_abmhd
 
 def test_tc3xx_abmhd_output(tmp_path):
     """Run pargen with enabled writers"""
@@ -12,15 +12,15 @@ def test_tc3xx_abmhd_output(tmp_path):
     sandbox_dir = pathlib.Path(__file__).resolve().parents[1]
     test_collateral = pathlib.Path.joinpath(
         sandbox_dir,
-        "tests", 
+        "tests",
         "collateral")
 
     abmhd_data = str(pathlib.Path.joinpath(test_collateral, "abmhd_ref.hex"))
     abmhd_ref = str(pathlib.Path.joinpath(test_collateral, "abmhd_ref.xml"))
     abmhd_new = str(pathlib.Path.joinpath(tmp_path, "abmhd_test.xml"))
 
-    arguments = [ 
-        'abmhd', 
+    arguments = [
+        'abmhd',
         '--stad', '0x81000000',
         '--from', '0x81000000',
         '--to', '0x81000400',

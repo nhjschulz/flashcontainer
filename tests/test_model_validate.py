@@ -1,8 +1,8 @@
 import pytest
 import pathlib
 
-from flashcontainer import datamodel as DM
-from flashcontainer import xmlparser as XP
+from flashcontainer.model import datamodel as DM
+from flashcontainer.model import xmlparser as XP
 
 @pytest.fixture
 def example_model():

@@ -36,8 +36,8 @@ from typing import Any, Dict
 
 from intelhex import IntelHex
 
-import flashcontainer.datamodel as DM
-from flashcontainer.checksum import Crc, CrcConfig
+from ..model import datamodel as DM
+from ..model.checksum import Crc, CrcConfig
 
 
 class HexWriter(DM.Walker):

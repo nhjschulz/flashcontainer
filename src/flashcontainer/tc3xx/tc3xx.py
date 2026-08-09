@@ -35,9 +35,9 @@ import logging
 import sys
 from typing import List, Optional
 
-from flashcontainer.fileargparse import FileArgumentParser
-from flashcontainer.packageinfo import __version__
-from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
+from ..fileargparse import FileArgumentParser
+from ..packageinfo import __version__
+from .tc3xx_abmhd import Tc3xxAbmhd
 
 logger = logging.getLogger(__name__)
 

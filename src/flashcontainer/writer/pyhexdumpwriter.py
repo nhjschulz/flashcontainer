@@ -34,8 +34,8 @@ from typing import Any, Dict, List, Optional, TextIO
 
 import json5
 
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
+from ..model import datamodel as DM
+from ..model.byteconv import ByteConvert
 
 # Header data types
 _HEADER_STRUCTURES = [

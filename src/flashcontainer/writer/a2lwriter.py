@@ -34,8 +34,8 @@
 from pathlib import Path
 from typing import Any, Dict, Optional, TextIO
 
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
+from ..model import datamodel as DM
+from ..model.byteconv import ByteConvert
 
 
 class A2lWriter(DM.Walker):

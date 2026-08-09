@@ -1,4 +1,4 @@
-from flashcontainer import datamodel as DM
+from flashcontainer.model import datamodel as DM
 
 
 def test_parameter_as_gap():
