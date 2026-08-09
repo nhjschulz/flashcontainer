@@ -34,7 +34,7 @@ import struct
 
 import json5
 
-import flashcontainer.datamodel as DM
+from .import datamodel as DM
 
 
 class ByteConvert:

@@ -1,4 +1,4 @@
-from flashcontainer.checksum import Crc, CrcConfig
+from flashcontainer.model.checksum import Crc, CrcConfig
 
 
 def test_swap():

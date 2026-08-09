@@ -40,7 +40,7 @@ from enum import Enum
 from operator import attrgetter
 from typing import Any, Dict, List, NamedTuple, Optional, TextIO, Union
 
-from flashcontainer.checksum import Crc, CrcConfig
+from .checksum import Crc, CrcConfig
 
 logger = logging.getLogger(__name__)
 

@@ -36,9 +36,9 @@ from typing import Any, Dict, Optional, TextIO, Union
 
 import lxml.etree as ET
 
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
-from flashcontainer.checksum import CrcConfig
+from . import datamodel as DM
+from .byteconv import ByteConvert
+from .checksum import CrcConfig
 
 schema_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "pargen_1.0.xsd")
 NS = 'http://nhjschulz.github.io/1.0/pargen'

@@ -40,15 +40,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Type
 
-import flashcontainer.datamodel as DM
-from flashcontainer.a2lwriter import A2lWriter
-from flashcontainer.cfilewriter import CFileWriter
-from flashcontainer.fileargparse import FileArgumentParser
-from flashcontainer.gnuldwriter import GnuLdWriter
-from flashcontainer.hexwriter import HexWriter
-from flashcontainer.packageinfo import __version__
-from flashcontainer.pyhexdumpwriter import PyHexDumpWriter
-from flashcontainer.xmlparser import XmlParser
+from .model import datamodel as DM
+from .writer.a2lwriter import A2lWriter
+from .writer.cfilewriter import CFileWriter
+from .fileargparse import FileArgumentParser
+from .writer.gnuldwriter import GnuLdWriter
+from .writer.hexwriter import HexWriter
+from .packageinfo import __version__
+from .writer.pyhexdumpwriter import PyHexDumpWriter
+from .model.xmlparser import XmlParser
 
 logger = logging.getLogger(__name__)
 

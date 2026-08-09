@@ -33,7 +33,7 @@
 import argparse
 from typing import Any, List
 
-from flashcontainer.packageinfo import __email__, __repository__
+from .packageinfo import __email__, __repository__
 
 
 class FileArgumentParser(argparse.ArgumentParser):

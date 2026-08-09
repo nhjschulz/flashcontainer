@@ -33,8 +33,8 @@
 from pathlib import Path
 from typing import Any, Dict, TextIO
 
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
+from ..model import datamodel as DM
+from ..model.byteconv import ByteConvert
 
 
 class CFileWriter(DM.Walker):
