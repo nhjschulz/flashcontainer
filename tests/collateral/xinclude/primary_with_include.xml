@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<pargen xmlns="http://nhjschulz.github.io/1.0/pargen"
+        xmlns:xi="http://www.w3.org/2001/XInclude">
+    <container name="Primary" at="0x80000000">
+        <blocks>
+            <block name="primary" offset="0x0" length="0x8">
+                <data>
+                    <param name="primary_param" offset="0x0" type="uint32">
+                        <value>0x9</value>
+                    </param>
+                </data>
+            </block>
+        </blocks>
+    </container>
+    <xi:include href="external_sibling.xml" parse="xml"/>
+</pargen>

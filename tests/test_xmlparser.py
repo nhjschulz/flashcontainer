@@ -104,4 +104,34 @@ def test_modify_value():
     print(model.container[0].blocks[0].parameter[0].value)
     assert model.container[0].blocks[0].parameter[0].value == b'\x00\x00\x00\x00\x00\x00\x80?\x00\x00@@\x00\x00\x80@\x00\x00\xa0@\x00\x00\xc0@\x00\x00\xe0@\x00\x00\x00A\x00\x00\x10A\x00\x00 A'
 
-    
+
+def test_xinclude_resolves_inline_include():
+    sandbox_dir = pathlib.Path(__file__).resolve().parent
+    xinclude_xml = pathlib.Path.joinpath(sandbox_dir, "collateral", "xinclude", "base_root.xml")
+
+    model = XP.XmlParser.from_file(xinclude_xml, include_dirs=[str(sandbox_dir.joinpath("collateral", "xinclude"))])
+
+    assert model is not None
+    assert model.validate(None) is True
+    containers = model.container
+    assert containers is not None
+    assert len(containers) == 2
+    assert containers[0].name == "Base"
+    assert containers[1].name == "Included"
+
+
+def test_xinclude_resolves_include_dir():
+    sandbox_dir = pathlib.Path(__file__).resolve().parent
+    xinclude_xml = pathlib.Path.joinpath(sandbox_dir, "collateral", "xinclude", "primary_with_external_include.xml")
+    include_dir = str(sandbox_dir.joinpath("collateral", "xinclude", "external_dir"))
+
+    model = XP.XmlParser.from_file(xinclude_xml, include_dirs=[include_dir])
+
+    assert model is not None
+    assert model.validate(None) is True
+    containers = model.container
+    assert containers is not None
+    assert len(containers) == 2
+    assert containers[0].name == "PrimaryExternal"
+    assert containers[1].name == "ExternalDir"
+

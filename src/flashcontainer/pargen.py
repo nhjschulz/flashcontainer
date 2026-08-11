@@ -123,6 +123,10 @@ def pargen_cli() -> int:
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
     parser.add_argument(
+        '--include-dir', '-I', action='append', metavar='directory',
+        help='add directory to search for XInclude files', default=[])
+
+    parser.add_argument(
        'file',
         nargs=1, help='name of the XML parameter definition file (or - for stdin)')
 
@@ -154,7 +158,8 @@ def pargen_cli() -> int:
         outdir=Path(args.destdir[0]),
         static=args.static,
         writers=writers,
-        modifier=modify_values)
+        modifier=modify_values,
+        include_dirs=args.include_dir)
 
 class Error(Enum):
     """Pargen error codes."""
@@ -172,7 +177,8 @@ def pargen(
         outdir: Path,
         static: bool,
         writers: List[Type[DM.Walker]],
-        modifier: Optional[Dict[str, str]] = None) -> int:
+        modifier: Optional[Dict[str, str]] = None,
+        include_dirs: Optional[List[str]] = None) -> int:
     """Parameter generator tool entry point.
 
     Args:
@@ -196,10 +202,10 @@ def pargen(
         base_name = Path(filename).stem
     if "-" == cfgfile:
         print("Processing definitions from <stdin>\n")
-        model = XmlParser.from_file(sys.stdin, modifier)
+        model = XmlParser.from_file(sys.stdin, modifier, include_dirs=[]) if not include_dirs else XmlParser.from_file(sys.stdin, modifier, include_dirs=include_dirs)
     elif Path(cfgfile).is_file():
         print(f"Processing definitions from {cfgfile}\n")
-        model = XmlParser.from_file(cfgfile, modifier)
+        model = XmlParser.from_file(cfgfile, modifier, include_dirs=include_dirs)
     else:
         logger.error("file not found: %s", cfgfile)
         return Error.ERROR_FILE_NOT_FOUND.value

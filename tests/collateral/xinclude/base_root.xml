@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<pargen xmlns="http://nhjschulz.github.io/1.0/pargen"
+        xmlns:xi="http://www.w3.org/2001/XInclude">
+    <container name="Base" at="0x80000000">
+        <blocks>
+            <block name="base" offset="0x0" length="0x8">
+                <data>
+                    <param name="base_param" offset="0x0" type="uint32">
+                        <value>0x1</value>
+                    </param>
+                </data>
+            </block>
+        </blocks>
+    </container>
+    <xi:include href="included.xml" parse="xml"/>
+</pargen>

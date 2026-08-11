@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<pargen xmlns="http://nhjschulz.github.io/1.0/pargen">
+    <container name="External" at="0x8000000C">
+        <blocks>
+            <block name="external" offset="0x0" length="0x4">
+                <data>
+                    <param name="external_param" offset="0x0" type="uint32">
+                        <value>0x3</value>
+                    </param>
+                </data>
+            </block>
+        </blocks>
+    </container>
+</pargen>

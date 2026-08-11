@@ -32,7 +32,7 @@
 import logging
 import os
 import pathlib
-from typing import Any, Dict, Optional, TextIO, Union
+from typing import Any, Dict, List, Optional, TextIO, Union
 
 import lxml.etree as ET
 
@@ -46,12 +46,35 @@ NS = 'http://nhjschulz.github.io/1.0/pargen'
 logger = logging.getLogger(__name__)
 
 
+class IncludeResolver(ET.Resolver):
+    """Custom XML resolver for XInclude that searches additional include dirs."""
+
+    def __init__(self, include_dirs: Optional[List[str]] = None):
+        super().__init__()
+        self.include_dirs = include_dirs or []
+
+    def resolve(self, system_url: str, public_id: str, context) -> Any:
+        candidate_names = [system_url]
+        if os.path.isabs(system_url):
+            candidate_names.append(os.path.basename(system_url))
+        else:
+            candidate_names.append(os.path.basename(system_url))
+
+        for include_dir in self.include_dirs:
+            for name in candidate_names:
+                candidate = os.path.join(include_dir, name)
+                if os.path.exists(candidate):
+                    return self.resolve_filename(candidate, context)
+        return None
+
+
 class XmlParser:
     """XML parser to generate a data model from an XML file."""
 
     @classmethod
     def from_file(
-        cls, file: Union[str, TextIO], values: Optional[Dict[str, str]] = None
+        cls, file: Union[str, TextIO], values: Optional[Dict[str, str]] = None,
+        include_dirs: Optional[List[str]] = None
     ) -> Optional[DM.Model]:
         """Parser entry point returning a model instance.
 
@@ -62,10 +85,11 @@ class XmlParser:
         Returns:
             The parsed data model, or None if parsing failed.
         """
-        return cls.parse(file, values)
+        return cls.parse(file, values, include_dirs)
 
     @staticmethod
-    def parse(file: Union[str, TextIO], values: Optional[Dict[str, str]]) -> Optional[DM.Model]:
+    def parse(file: Union[str, TextIO], values: Optional[Dict[str, str]],
+              include_dirs: Optional[List[str]] = None) -> Optional[DM.Model]:
         """Parse the given XML file into a data model.
 
         Args:
@@ -79,17 +103,41 @@ class XmlParser:
         try:
             logger.info("Loading parameter definitions from %s.", file)
             schema = ET.XMLSchema(ET.parse(schema_file))
-            xml_doc = ET.parse(file, ET.XMLParser(remove_comments=True))
+
+            parser = ET.XMLParser(remove_comments=True)
+            if include_dirs:
+                parser.resolvers.add(IncludeResolver(include_dirs))
+
+            xml_doc = ET.parse(file, parser)
+            xml_doc.xinclude()
+
+            XmlParser._flatten_included_pargen(xml_doc.getroot())
             schema.assertValid(xml_doc)
             XmlParser._update_values(xml_doc.getroot(), values)
             model = XmlParser._build_model(xml_doc.getroot(), file)
 
+        except ET.XIncludeError as err:
+            logger.critical("xml XInclude failed: %s", err)
+            return None
         except ET.DocumentInvalid as err:
             logger.critical("xml validation failed:\n%s", str(err.error_log)) # pylint: disable=no-member
             return None
 
 
         return model
+
+    @staticmethod
+    def _flatten_included_pargen(root: ET.Element) -> None:
+        """Flatten included <pargen> root elements inserted by XInclude."""
+        for child in list(root):
+            if child.tag == f"{{{NS}}}pargen":
+                insertion_index = root.index(child)
+                for grandchild in list(child):
+                    root.insert(insertion_index, grandchild)
+                    insertion_index += 1
+                root.remove(child)
+            else:
+                XmlParser._flatten_included_pargen(child)
 
     @staticmethod
     def _update_values(root: ET.Element, values: Optional[Dict[str, str]]) -> None:
