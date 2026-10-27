@@ -41,7 +41,15 @@ dev = [
   "black",
   "isort",
   "pylint",
-  "tox"
+  "tox",
+  # TRLC and documentation toolchain (tools/make_html.sh)
+  "flashcontainer[test]",
+  "trlc == 2.0.*",
+  "bmw-lobster == 1.0.*",
+  "pyTRLCConverter >= 2.0.0",
+  "Sphinx >= 8.1.3",
+  "myst-parser >= 4.0.0",
+  "sphinxcontrib-plantuml >= 0.30"
 ]
 
 [project.urls]

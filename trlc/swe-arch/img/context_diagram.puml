@@ -1,0 +1,41 @@
+@startuml context_diagram
+skinparam componentStyle uml2
+left to right direction
+
+actor "Developer or\nBuild System" as dev
+
+
+package "flashcontainer" {
+    [tc3xx] as tc3xx <<component>>
+    [pargen] as pargen <<component>>
+}
+
+file "Intel HEX" as hex
+file "C Source / Header" as csrc
+file "GNU LD include" as gld
+file "A2L" as a2l
+file "pyHexDump config" as pyhd
+
+actor "Flash Programmer" as programmer
+actor "Linker" as linker
+actor "Application / Test Env" as app
+actor "Calibration Tool" as calib
+actor "pyHexDump" as hexdump
+
+dev --> pargen : calls
+dev --> tc3xx : calls
+
+tc3xx -l-> pargen : provide tailored XML
+
+pargen --> hex
+pargen --> csrc
+pargen --> gld
+pargen --> a2l
+pargen --> pyhd
+
+hex --> programmer
+gld --> linker
+csrc --> app
+a2l --> calib
+pyhd --> hexdump
+@enduml

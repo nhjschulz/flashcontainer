@@ -1,0 +1,39 @@
+@startuml comp_writer
+
+class "Walker" as walker <<module>>
+
+package "Writers" {
+    class "HexWriter" as hex <<module>>
+    class "CFileWriter" as cfile <<module>>
+    class "GnuLdWriter" as gld <<module>>
+    class "A2lWriter" as a2l <<module>>
+    class "PyHexDumpWriter" as pyhd <<module>>
+}
+
+package "Python Packages" {
+    class "IntelHex" as intelhex
+    class "json5" as json5 <<module>>
+}
+
+class "ByteConvert" as byteconv <<module>>
+class "Crc" as crc <<module>>
+
+hex -up-|> walker
+cfile -up-|> walker
+gld -up-|> walker
+a2l -up-|> walker
+pyhd -up-|> walker
+
+hex ..> intelhex : <<use>>
+pyhd ..> json5 : <<use>>
+hex ..> crc : <<use>>
+cfile ..> byteconv : <<use>>
+a2l ..> byteconv : <<use>>
+pyhd ..> byteconv : <<use>>
+
+note bottom of hex : <basename>.hex / .crc
+note bottom of cfile : <basename>.c / .h
+note bottom of gld : <basename>.ld
+note bottom of a2l : <basename>.a2l
+note bottom of pyhd : <basename>.pyhexdump
+@enduml

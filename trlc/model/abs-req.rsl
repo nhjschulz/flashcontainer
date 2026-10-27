@@ -1,0 +1,16 @@
+package AbstractRequirements
+
+// The validation state.
+enum VALID_STATUS {
+    valid
+    rejected
+    approved
+}
+
+// Abstract requirement which contains the generic attributes for all types.
+abstract type Requirement {
+    description             String
+    valid_status            VALID_STATUS
+    note        optional    String
+    derived     optional    Requirement [0 .. *]
+}

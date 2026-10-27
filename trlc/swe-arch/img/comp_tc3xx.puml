@@ -1,0 +1,37 @@
+@startuml comp_tc3xx
+
+package "TC3xx Frontend" {
+    class "tc3xx" as tc3xx <<module>> {
+        + tc3xx(argv): int
+        + tc3xx_cli(): int
+    }
+
+    abstract class "Tc3xxCmdBase" as cmdbase <<module>> {
+        + register(sub_parsers): void
+        + run(args): int
+    }
+
+    class "Tc3xxAbmhd" as abmhd <<module>> {
+        + register(sub_parsers): void
+        + run(args): int
+    }
+
+    enum "RETVAL" as retval
+}
+
+class "FileArgumentParser" as argparser <<module>>
+class "Crc" as crc <<module>>
+
+package "Python Packages" <<SOUP>> {
+    class "IntelHex" as intelhex
+    class "lxml.etree" as etree
+}
+
+tc3xx --> argparser
+tc3xx --> cmdbase : sub commands
+abmhd -up-|> cmdbase
+abmhd --> retval
+abmhd ..> crc : <<use>>
+abmhd ..> intelhex : <<use>>
+abmhd ..> etree : <<use>>
+@enduml
