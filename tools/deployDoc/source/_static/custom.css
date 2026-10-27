@@ -1,0 +1,26 @@
+@import 'haiku.css';
+
+body {
+    max-width: 75% !important;
+}
+
+table.align-default {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+div.admonition {
+    background-color: #f7f2f3;
+}
+
+p.admonition-title {
+    background-color: #93bdff;
+}
+
+.red {
+    color: red;
+}
+
+.green {
+    color: green;
+}

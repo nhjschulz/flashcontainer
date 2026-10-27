@@ -1,0 +1,10 @@
+inputs:
+    - ./../../trlc/model/
+    - ./../../trlc/swe-req/
+
+conversion-rules:
+    - package: SwRequirements
+      record-type: SwConstraint
+      namespace: req
+      description-fields:
+        - description

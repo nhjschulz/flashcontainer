@@ -1,0 +1,13 @@
+inputs:
+    - ./../../trlc/model/
+    - ./../../trlc/swe-test/
+    - ./../../trlc/swe-req/
+
+conversion-rules:
+    - package: SwTests
+      record-type: SwTestCase
+      namespace: req
+      description-fields:
+        - description
+      tags:
+        - verifies

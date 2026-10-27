@@ -1,0 +1,31 @@
+{
+    "SwReq": {
+        "description": "Description",
+        "valid_status": "Valid Status",
+        "note": "Note",
+        "verification_criteria": "Verification Criteria",
+        "derived": "Derived"
+    },
+    "SwReqNonFunc": {
+        "description": "Description",
+        "valid_status": "Valid Status",
+        "note": "Note",
+        "derived": "Derived"
+    },
+    "SwConstraint": {
+        "description": "Description",
+        "valid_status": "Valid Status",
+        "note": "Note",
+        "derived": "Derived"
+    },
+    "SwTestCase": {
+        "description": "Description",
+        "verifies": "Verifies"
+    },
+    "SwArchSpec":{
+        "description": "Description",
+        "note": "Note",
+        "satisfies": "Satisfies",
+        "verification_criteria": "Verification Criteria"
+    }
+}

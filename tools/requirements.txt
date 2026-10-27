@@ -1,0 +1,18 @@
+trlc==2.0.*
+bmw-lobster==1.0.*
+pyTRLCConverter>=2.0.0
+
+Sphinx>=8.1.3
+myst-parser>=4.0.0
+sphinxcontrib-plantuml>=0.30
+
+pytest>=8.3.3
+pytest-cov>=6.0.0
+
+# flashcontainer runtime dependencies for the unit tests,
+# keep in sync with pyproject.toml.
+crc>=3.0
+intelhex>=2.3.0
+json5>=0.9.10
+lxml>=4.9.2
+toml>=0.10.2

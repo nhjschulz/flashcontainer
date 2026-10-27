@@ -1,0 +1,13 @@
+inputs:
+    - ./../../trlc/model/
+    - ./../../trlc/swe-arch/
+    - ./../../trlc/swe-req/
+
+conversion-rules:
+    - package: SwArch
+      record-type: SwArchSpec
+      namespace: req
+      description-fields:
+        - description
+      tags:
+        - satisfies

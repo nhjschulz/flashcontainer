@@ -1,0 +1,14 @@
+inputs:
+    - ./../../trlc/model/
+    - ./../../trlc/swe-test/
+    - ./../../trlc/swe-req/
+    - ./../testReport/out/
+
+conversion-rules:
+    - package: SwTests
+      record-type: SwTestCaseResult
+      namespace: req
+      description-fields:
+        - name
+      tags:
+        - relates
