@@ -1,0 +1,121 @@
+# yaml-language-server: $schema=tools/trlc-doc/trlcdoc/schema/trlcdoc.schema.json
+#
+# trlcdoc configuration of flashcontainer: builds requirements, architecture,
+# tests, test results, tracing report and the HTML site.
+#
+#   git submodule update --init
+#   pip install -e tools/trlc-doc
+#   trlcdoc            # all steps, HTML site in build/trlcdoc/html
+
+project:
+  name: flashcontainer
+  author: Haju Schulz
+  copyright: "2022-2026, Haju Schulz"
+  repository: https://github.com/nhjschulz/flashcontainer.git
+
+paths:
+  trlc_model: trlc/model
+  output: build/trlcdoc
+
+documents:
+  - id: sw_requirements
+    title: SW-Requirements
+    type: trlc
+    source: trlc/swe-req
+    pytrlcconverter:
+      converter:
+        rst: builtin:req2rst.py
+        markdown: builtin:req2markdown.py
+      translation: builtin:translation.json
+
+  - id: sw_architecture
+    title: SW-Architecture
+    type: trlc
+    source: trlc/swe-arch
+    include: [sw_requirements]
+    pytrlcconverter:
+      converter:
+        rst: builtin:req2rst.py
+        markdown: builtin:req2markdown.py
+      translation: builtin:translation.json
+
+  - id: sw_test
+    title: SW-Tests
+    type: trlc
+    source: trlc/swe-test
+    include: [sw_requirements]
+    pytrlcconverter:
+      converter:
+        rst: builtin:tc2rst.py
+        markdown: builtin:tc2markdown.py
+      translation: builtin:translation.json
+
+  - id: sw_test_results
+    title: SW-Test Results
+    type: test_results
+    include: [sw_test]
+    pytrlcconverter:
+      converter:
+        rst: builtin:create_test_report_in_rst.py
+        markdown: builtin:create_test_report_in_markdown.py
+
+  - id: sw_tracing_report
+    title: Software Tracing Report
+    type: trace_report
+
+  - id: coverage_report
+    title: Coverage Report
+    type: html
+    source: tests:coverage
+
+  - id: license
+    title: License information
+    type: text
+    source: LICENSE
+
+tests:
+  runner: pytest
+  args: [tests, -v, --cov=src]
+  link:
+    property: lobster-trace
+    from: "test_{name}"
+    to: "SwTests.tc_{name}"
+
+trace:
+  namespace: req
+  levels:
+    - name: SW Requirement
+      document: sw_requirements
+      record_type: SwRequirements.SwReq
+      requires: [SW Test Case, SW Architecture]
+
+    - name: SW Constraint
+      document: sw_requirements
+      record_type: SwRequirements.SwConstraint
+      requires: [SW Architecture]
+
+    - name: SW Architecture
+      document: sw_architecture
+      record_type: SwArch.SwArchSpec
+      tags: [satisfies]
+      trace_to: [SW Requirement, SW Constraint]
+
+    - name: SW Test Case
+      document: sw_test
+      record_type: SwTests.SwTestCase
+      tags: [verifies]
+      trace_to: [SW Requirement]
+      requires: [SW Test Result]
+
+    - name: SW Test Result
+      document: sw_test_results
+      record_type: SwTests.SwTestCaseResult
+      tags: [relates]
+      description_fields: [name]
+      trace_to: [SW Test Case]
+
+plantuml:
+  version: 1.2024.8
+
+html:
+  theme: haiku

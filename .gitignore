@@ -133,9 +133,3 @@ dmypy.json
 examples/safety/gen/
 tests/example/gen/
 
-# TRLC documentation toolchain, generated files
-tools/plantUML/plantuml.jar
-tools/trlc2other/out/
-tools/traceReport/out/
-tools/testReport/out/
-tools/deployDoc/build/
