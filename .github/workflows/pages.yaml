@@ -1,0 +1,80 @@
+name: Pages
+
+# Builds the trlcdoc documentation site (requirements, architecture, tests, test results,
+# tracing and coverage report) and deploys it to GitHub Pages on every push to master.
+# A manual run is possible with "Run workflow" (workflow_dispatch).
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Only one deployment at a time. A running deployment is not cancelled, so a started
+# publish completes before the next one begins.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      # PlantUML runs as Java jar, downloaded by the trlcdoc plantuml step.
+      - name: Set up Java for PlantUML
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      # Graphviz (dot) is used by PlantUML and the LOBSTER tracing report.
+      - name: Set up Graphviz
+        uses: ts-graphviz/setup-graphviz@v2
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,dev]"
+      # trlcdoc exit codes: 0 success, 1 content findings (failed tests, missing trace
+      # links), 2 build error. Findings are published with a warning, build errors fail.
+      # --online links the tracing report to the files in the GitHub repository at the
+      # built commit instead of local file paths, so the links work on the published site.
+      - name: Build documentation with trlcdoc
+        shell: bash
+        run: |
+          set +e
+          trlcdoc --online
+          rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::warning title=trlcdoc::Documentation built with findings (failed tests or missing trace links)."
+            rc=0
+          fi
+          exit "$rc"
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload documentation site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/trlcdoc/html
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
