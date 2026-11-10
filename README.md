@@ -1,7 +1,9 @@
 # Tools for Creating Flash/ROM Parameter Container
 
 ![License](https://img.shields.io/badge/License-BSD%203--Clause-green)
-[![Python package](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml)
+[![Tests](https://github.com/nhjschulz/flashcontainer/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/test.yaml)
+[![PyPI](https://img.shields.io/pypi/v/flashcontainer)](https://pypi.org/project/flashcontainer/)
+[![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 ## Pargen - Parameter File Generator
 

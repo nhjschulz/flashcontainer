@@ -1,0 +1,73 @@
+name: Tests
+
+# Pull requests to Development and master show the test results as checks. Pushes run
+# only on Development and master (after a merge, and for the README badge), so a push to
+# a branch with an open pull request does not run the tests twice. Other branches can
+# be tested manually with "Run workflow" (workflow_dispatch).
+on:
+  push:
+    branches: [Development, master]
+  pull_request:
+    branches: [Development, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # The documentation is built with the latest Python version of the matrix only.
+  DOC_PYTHON: "3.14"
+
+jobs:
+  test:
+    name: test (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      # PlantUML runs as Java jar, downloaded by the trlcdoc plantuml step.
+      - name: Set up Java for PlantUML
+        if: matrix.python-version == env.DOC_PYTHON
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      # Graphviz (dot) is used by PlantUML and the LOBSTER tracing report.
+      - name: Set up Graphviz
+        if: matrix.python-version == env.DOC_PYTHON
+        uses: ts-graphviz/setup-graphviz@v2
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,dev]"
+      - name: Lint with pylint
+        run: |
+          pylint --verbose src/flashcontainer
+      - name: Test with pytest
+        run: |
+          pytest --verbose
+      # trlcdoc exit codes: 0 success, 1 content findings (failed tests, missing trace
+      # links), 2 build error. Findings are reported as warning, only build errors fail.
+      - name: Build documentation with trlcdoc
+        if: matrix.python-version == env.DOC_PYTHON
+        shell: bash
+        run: |
+          set +e
+          trlcdoc
+          rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::warning title=trlcdoc::Documentation built with findings (failed tests or missing trace links)."
+            rc=0
+          fi
+          exit "$rc"
