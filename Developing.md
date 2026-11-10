@@ -122,6 +122,14 @@ The test can be run either from the IDE's Testing view or from the console with:
 
     ================================================= 11 passed in 0.14s ==================================================
 
+## Generating Project Documentation
+
+Use the `trlcdoc`tool (re)generate the project documentation. The resulting website will be generated in `build/trlcdoc/html`.
+
+```bash
+    trlcdoc --config trlcdoc.yaml
+```
+
 ## Issues, Ideas And Bugs
 
 If you have further ideas or you found some bugs, great! Create an [issue](https://github.com/issues) or if you are able and willing to fix it by yourself, clone the repository and create a pull request.

@@ -394,17 +394,19 @@ The project uses the following non standard python libraries:
 
 ## TRLC Toolchain Usage
 
-The project uses [trlc](https://github.com/bmw-software-engineering/trlc/) for maintaining
-requirements and architecture. The TRLC toolchain inside the tools folder is provided using the
-following licenses. Note that these are just development tools and don't affect the
-flashcontainer tools licensing:
+The project uses [TRLC](https://github.com/bmw-software-engineering/trlc/) for maintaining
+requirements, architecture and project documentation generation.
 
 |Library  |Purpose |License |
 |---------|--------|--------|
+|[trlcdoc](https://github.com/nhjschulz/trlc-doc)|Configurable documentation tooling for TRLC based projects|GPL-3|
 |[trlc](https://github.com/bmw-software-engineering/trlc/)|TRLC DSL tooling|GPL-3|
 |[lobster](https://github.com/bmw-software-engineering/lobster)| Lightweight Open BMW Software Traceability Evidence Report|GPL-3|
 |[pyTRLCConverter](https://github.com/NewTec-GmbH/pyTRLCConverter)|TRLC Format converter|GPL-3|
 |[sphinx](https://github.com/sphinx-doc/sphinx)|The Sphinx documentation generator|BSD|
+
+See [Developping.md](./Developing.md#generating-project-documentation) for documentation 
+build instructions. 
 
 ## Contribution
 
