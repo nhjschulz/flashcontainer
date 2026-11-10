@@ -1,0 +1,35 @@
+@startuml comp_data_conversion
+
+package "Data Conversion" {
+    class "ByteConvert" as byteconv <<module>> {
+        + {static} get_type_size(ptype): int
+        + {static} json_to_bytes(ptype, endianess, value_str): bytearray
+        + {static} bytes_to_c_init(ptype, endianess, data): str
+    }
+
+    class "CrcConfig" as crccfg <<module>> {
+        + poly
+        + width
+        + init
+        + revin
+        + revout
+        + xor
+        + access
+        + swap
+    }
+
+    class "Crc" as crc <<module>> {
+        + checksum(data): int
+        + prepare(data): bytearray
+    }
+}
+
+package "Python Packages" {
+    class "json5" as json5 <<module>>
+    class "crc.Calculator" as crclib
+}
+
+crc --> crccfg
+byteconv .d..> json5 : <<use>>
+crc .d.> crclib : <<use>>
+@enduml

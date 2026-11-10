@@ -1,0 +1,42 @@
+@startuml comp_pargen_cli
+
+package "pargen CLI" {
+    class "pargen" as pargen <<module>> {
+        + pargen_cli(): int
+        + pargen(cfgfile, filename, outdir, static, writers, modifier): int
+    }
+
+    enum "Error" as error {
+        ERROR_OK
+        ERROR_FILE_NOT_FOUND
+        ERROR_INVALID_FORMAT
+        ERROR_VALIDATION_FAIL
+        ERROR_EXCEPTION
+        ERROR_INVALID_OPTION
+    }
+
+    class "FileArgumentParser" as argparser <<module>> {
+        + convert_arg_line_to_args(arg_line): List[str]
+    }
+
+    class "packageinfo" as pkginfo <<module>> {
+        + __version__
+        + __email__
+        + __repository__
+    }
+}
+
+class "argparse.ArgumentParser" as stdparser
+
+class "XmlParser" as parser <<module>>
+class "Model" as model <<module>>
+class "Walker" as walker <<module>>
+
+argparser -|> stdparser
+pargen -r-> argparser
+pargen --> error
+pargen ..> pkginfo : <<use>>
+pargen ..> parser : from_file()
+pargen ..> model : validate()
+pargen ..> walker : run() per selected writer
+@enduml

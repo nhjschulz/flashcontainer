@@ -1,0 +1,21 @@
+package SwTests
+import SwRequirements
+
+// The software test case explains the steps to test a software requirement.
+type SwTestCase {
+    description	String
+    verifies    SwRequirements.SwReq [0 .. *]
+}
+
+// Enumeration of the possible results of a test case.
+enum SwTestResult {
+    FAILED
+    PASSED
+}
+
+// The software test case result contains the result of a test case test.
+type SwTestCaseResult {
+    name    String
+    result  SwTestResult
+    relates SwTestCase
+}

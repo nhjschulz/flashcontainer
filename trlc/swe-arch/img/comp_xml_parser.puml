@@ -1,0 +1,26 @@
+@startuml comp_xml_parser
+
+package "XML Parser" {
+    class "XmlParser" as parser <<module>> {
+        + {static} from_file(file, values): Optional[Model]
+        + {static} parse(file, values): Optional[Model]
+        + {static} calc_addr(base_addr, running_addr, offset_str, alignment): int
+    }
+
+    class "pargen_1.0.xsd" as xsd <<XML schema>>
+}
+
+package "lxml" {
+    class "etree.XMLSchema" as schema
+}
+
+class "Model" as model <<module>>
+class "CrcConfig" as crccfg <<module>>
+class "ByteConvert" as byteconv <<module>>
+
+parser .r.> xsd : loads
+parser ..> schema : <<use>>
+parser ..> model : builds
+parser ..> crccfg : creates
+parser ..> byteconv : <<use>>
+@enduml

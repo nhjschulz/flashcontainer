@@ -1,0 +1,38 @@
+@startuml pargen_sequence
+autoactivate on
+
+actor "User" as user
+participant "pargen CLI" as cli <<component>>
+participant "XML Parser" as parser <<component>>
+participant "Data Model" as model <<component>>
+participant "Writers" as writer <<component>>
+
+user -> cli : pargen [options] file
+    cli -> parser : XmlParser.from_file(file, modifier)
+        parser -> parser : validate XML against XSD
+        return
+        alt schema valid
+            parser -> model : build Model, fill gaps, update CRCs
+            return
+        end
+    return model or None
+
+    alt model is None
+        cli --> user : exit ERROR_INVALID_FORMAT
+    else model available
+        cli -> model : validate(options)
+        return result
+
+        alt validation failed
+            cli --> user : exit ERROR_VALIDATION_FAIL
+        else valid
+            loop for each selected writer
+                cli -> writer : Writer(model, options).run()
+                    writer -> model : walk containers, blocks, parameters
+                    return
+                return output file(s)
+            end
+            cli --> user : exit ERROR_OK
+        end
+    end
+@enduml

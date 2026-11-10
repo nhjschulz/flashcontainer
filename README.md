@@ -374,9 +374,17 @@ If you have further ideas or you found some bugs, great! Create an
 or if you are able and willing to fix it by yourself, clone
 the repository and create a pull request.
 
+
+## License
+
+The flashcontainer source code is published under the
+[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause/).
+Consider also the different licenses of used third party libraries too!
+
 ## Used Non Standard Python Libraries
 
 The project uses the following non standard python libraries:
+
 |Library  |Purpose |License |
 |---------|--------|--------|
 |[lxml](https://pypi.org/project/lxml/)| XML parsing and validation|BSD-3-Clause|
@@ -384,11 +392,21 @@ The project uses the following non standard python libraries:
 |[json5](https://pypi.org/project/json5/)|JSON read and write (with hexadecimal number support)|Apache|
 |[toml](https://pypi.org/project/toml/)|Accessing toml file content|MIT|
 
-## License
+## TRLC Toolchain Usage
 
-The whole source code is published under the
-[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause/).
-Consider also the different licenses of used third party libraries too!
+The project uses [TRLC](https://github.com/bmw-software-engineering/trlc/) for maintaining
+requirements, architecture and project documentation generation.
+
+|Library  |Purpose |License |
+|---------|--------|--------|
+|[trlcdoc](https://github.com/nhjschulz/trlc-doc)|Configurable documentation tooling for TRLC based projects|GPL-3|
+|[trlc](https://github.com/bmw-software-engineering/trlc/)|TRLC DSL tooling|GPL-3|
+|[lobster](https://github.com/bmw-software-engineering/lobster)| Lightweight Open BMW Software Traceability Evidence Report|GPL-3|
+|[pyTRLCConverter](https://github.com/NewTec-GmbH/pyTRLCConverter)|TRLC Format converter|GPL-3|
+|[sphinx](https://github.com/sphinx-doc/sphinx)|The Sphinx documentation generator|BSD|
+
+See [Developping.md](./Developing.md#generating-project-documentation) for documentation 
+build instructions. 
 
 ## Contribution
 

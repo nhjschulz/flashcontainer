@@ -41,7 +41,11 @@ dev = [
   "black",
   "isort",
   "pylint",
-  "tox"
+  "tox",
+  # TRLC documentation toolchain (trlcdoc.yaml), brings pyTRLCConverter,
+  # trlc, LOBSTER and Sphinx. The tests step runs pytest with coverage.
+  "flashcontainer[test]",
+  "trlcdoc == 0.3.*"
 ]
 
 [project.urls]
