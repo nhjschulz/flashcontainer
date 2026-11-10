@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/badge/License-BSD%203--Clause-green)
 [![Tests](https://github.com/nhjschulz/flashcontainer/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/test.yaml)
 [![PyPI](https://img.shields.io/pypi/v/flashcontainer)](https://pypi.org/project/flashcontainer/)
+[![Docs](https://github.com/nhjschulz/flashcontainer/actions/workflows/pages.yaml/badge.svg?branch=master)](https://nhjschulz.github.io/flashcontainer/)
 [![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 ## Pargen - Parameter File Generator
@@ -399,6 +400,11 @@ The project uses the following non standard python libraries:
 The project uses [TRLC](https://github.com/bmw-software-engineering/trlc/) for maintaining
 requirements, architecture and project documentation generation.
 
+The generated documentation (requirements, architecture, tests, test results, tracing
+and coverage report) is published online at
+[nhjschulz.github.io/flashcontainer](https://nhjschulz.github.io/flashcontainer/).
+It is rebuilt on every push to the master branch.
+
 |Library  |Purpose |License |
 |---------|--------|--------|
 |[trlcdoc](https://github.com/nhjschulz/trlc-doc)|Configurable documentation tooling for TRLC based projects|GPL-3|
@@ -407,8 +413,8 @@ requirements, architecture and project documentation generation.
 |[pyTRLCConverter](https://github.com/NewTec-GmbH/pyTRLCConverter)|TRLC Format converter|GPL-3|
 |[sphinx](https://github.com/sphinx-doc/sphinx)|The Sphinx documentation generator|BSD|
 
-See [Developping.md](./Developing.md#generating-project-documentation) for documentation 
-build instructions. 
+See [Developping.md](./Developing.md#generating-project-documentation) for documentation
+build instructions.
 
 ## Contribution
 
