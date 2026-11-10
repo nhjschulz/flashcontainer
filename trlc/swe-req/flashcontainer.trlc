@@ -30,6 +30,12 @@ section "Flashcontainer" {
                 valid_status = AbstractRequirements.VALID_STATUS.valid
             }
 
+            SwReq sw_req_diagnostics {
+                description = "The software shall describe the processed model elements (container, block, parameter, CRC configuration and version) in its log output by a readable text with name, address and value."
+                verification_criteria = "Check the text representation of each model element."
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
             SwReq sw_req_exit_code {
                 description = "The software shall terminate with exit code 0 on success and with a non-zero exit code if an error occurred."
                 verification_criteria = "Call the tools with valid and invalid input and check the process exit code."
@@ -116,7 +122,7 @@ section "Flashcontainer" {
 
             SwReq sw_req_output_pyhexdump {
                 description = "The software shall generate a pyHexDump configuration file for printing the parameter values from a binary or hex file."
-                verification_criteria = "Generate the pyHexDump configuration and use it with pyHexDump on the generated Intel HEX file."
+                verification_criteria = "Generate the pyHexDump configuration and check that it lists every block header and parameter with its address, pyHexDump data type and element count."
                 valid_status = AbstractRequirements.VALID_STATUS.valid
             }
 

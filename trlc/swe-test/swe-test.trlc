@@ -65,8 +65,8 @@ section "SW-Tests" {
         }
 
         SwTestCase tc_model_str {
-            description = "This test case checks the text representation of the data model elements used in log and error messages (tests/test_datamodel.py). It covers diagnostics only and verifies no software requirement."
-            verifies = []
+            description = "This test case checks the text representation of the data model elements used in the log output (tests/test_datamodel.py)."
+            verifies = [SwRequirements.sw_req_diagnostics]
         }
     }
 
@@ -141,6 +141,19 @@ section "SW-Tests" {
         }
     }
 
+    section "Command Line Interface" {
+
+        SwTestCase tc_cli_help {
+            description = "This test case calls pargen, tc3xx and the tc3xx sub command abmhd with '-h' and '--help' and checks that the usage help is shown and the tool exits with code 0 (tests/test_cli.py)."
+            verifies = [SwRequirements.sw_req_cli, SwRequirements.sw_req_cli_help]
+        }
+
+        SwTestCase tc_cli_argument_file {
+            description = "This test case calls pargen with an '@' argument file containing output options, base name, output directory and input file, several and single options per line, and checks that exactly the selected files are generated (tests/test_cli.py)."
+            verifies = [SwRequirements.sw_req_cli, SwRequirements.sw_req_cli_argument_file]
+        }
+    }
+
     section "pargen" {
 
         SwTestCase tc_pargen_errors {
@@ -151,6 +164,31 @@ section "SW-Tests" {
         SwTestCase tc_pargen_output {
             description = "This test case runs pargen with all writers on the Arduino example and compares the generated Intel HEX data and its CRC32 file with reference values (tests/test_pargen.py)."
             verifies = [SwRequirements.sw_req_output_ihex]
+        }
+
+        SwTestCase tc_output_selection {
+            description = "This test case calls pargen with different output options, '--destdir' and '--filename', and checks that exactly the selected files are created in the selected directory with the selected base name. Without '--filename', the base name is the name of the definition file (tests/test_pargen.py)."
+            verifies = [SwRequirements.sw_req_cli, SwRequirements.sw_req_output_selection]
+        }
+
+        SwTestCase tc_output_gld {
+            description = "This test case generates the GNU linker include file of the example definition and checks that every block header and parameter symbol is assigned its absolute address from the data model (tests/test_pargen.py)."
+            verifies = [SwRequirements.sw_req_output_gld]
+        }
+
+        SwTestCase tc_output_a2l {
+            description = "This test case generates the A2L file of the example definition and checks that every parameter is described with its data type, limits, array size and address, that a negative float value is within the limits of its parameter, and that the block headers are described as structure instances (tests/test_pargen.py)."
+            verifies = [SwRequirements.sw_req_output_a2l]
+        }
+
+        SwTestCase tc_output_pyhexdump {
+            description = "This test case generates the pyHexDump configuration of the example definition and checks that every block header and parameter is listed with its address, pyHexDump data type and element count, and that the block header structure is defined (tests/test_pargen.py)."
+            verifies = [SwRequirements.sw_req_output_pyhexdump]
+        }
+
+        SwTestCase tc_output_static {
+            description = "This test case generates all outputs of the example definition twice with static output and checks that the files are identical, and that without static output the date and build key differ (tests/test_pargen.py)."
+            verifies = [SwRequirements.sw_req_output_static]
         }
     }
 
