@@ -67,9 +67,9 @@ section "Flashcontainer SW Architecture" {
             section "Data Model" {
 
                 SwArchSpec sw_arch_comp_datamodel {
-                    description = "The Data Model component (model/datamodel.py) holds the parsed definition as hierarchy Model -> Container -> Block -> Parameter. Blocks provide their memory image including header, gap filling and CRC update. The Walker base class iterates the hierarchy and calls begin/end hooks per element; all writers and the Validator are walkers. The Validator detects duplicate names, overlapping parameters, blocks and block headers, and parameters exceeding their block, and reports them as errors."
+                    description = "The Data Model component (model/datamodel.py) holds the parsed definition as hierarchy Model -> Container -> Block -> Parameter. Blocks provide their memory image including header, gap filling and CRC update. The Walker base class iterates the hierarchy and calls begin/end hooks per element; all writers and the Validator are walkers. The Validator detects duplicate names, overlapping parameters, blocks and block headers, and parameters exceeding their block, and reports them as errors. All model elements provide a readable text representation for the log output."
                     verification_criteria = "Unit test the model with overlapping and non-overlapping definitions and check the block memory images."
-                    satisfies = [SwRequirements.sw_req_memory_layout, SwRequirements.sw_req_model_validation]
+                    satisfies = [SwRequirements.sw_req_memory_layout, SwRequirements.sw_req_model_validation, SwRequirements.sw_req_diagnostics]
                 }
 
                 Generic.PlantUML sw_arch_comp_datamodel_diagram {
