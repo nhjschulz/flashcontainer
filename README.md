@@ -1,7 +1,9 @@
-# Tools for Creating Flashable Parameter Container
+# Tools for Creating Flash/ROM Parameter Container
 
 ![License](https://img.shields.io/badge/License-BSD%203--Clause-green)
-[![Python package](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/push.yaml)
+[![Tests](https://github.com/nhjschulz/flashcontainer/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/nhjschulz/flashcontainer/actions/workflows/test.yaml)
+[![PyPI](https://img.shields.io/pypi/v/flashcontainer)](https://pypi.org/project/flashcontainer/)
+[![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 ## Pargen - Parameter File Generator
 
@@ -29,18 +31,18 @@ The package is available on Pypi and can be installed using
 
     pip install flashcontainer
 
-A python 3.8 or higher version is required.
+A python 3.10 or higher version is required.
 
 The parameter generator tool can then by called on cmdline using
 
     $ pargen -h
     usage: pargen [-h] [--ihex] [--csrc] [--gld] [--a2l] [--pyhexdump] [--destdir directory] [--filename basename] [--static] [--modify name=value] [--version] file
-    
+
     pargen 0.4.0: A tool for generating flashable parameter container.
-    
+
     positional arguments:
       file                  name of the XML parameter definition file
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --ihex                generate intelhex file
@@ -56,10 +58,10 @@ The parameter generator tool can then by called on cmdline using
       --modify name=value, -m name=value
                             modify parameter value using name=value notation
       --version             show program's version number and exit
-    
-    Copyright (c) 2022-2023 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
 
- The flashcontainer 
+    Copyright (c) 2022-2026 Haju Schulz <haju.schulz@online.de>. Visit https://github.com/nhjschulz/flashcontainer for full documentation and examples.
+
+ The flashcontainer
 [Developing](https://github.com/nhjschulz/flashcontainer/blob/master/Developing.md/)
 page on Github explains how to use unreleased development builds
 or how to setup a development environment.
@@ -79,11 +81,11 @@ understand Pargen's XML capabilities in depth, read on.
 
 ### XML Configuration File Anatomy
 
-The XML follows an XSD-schema defined in 
+The XML follows an XSD-schema defined in
 [pargen_1.0.xsd](https://github.com/nhjschulz/flashcontainer/blob/master/src/flashcontainer/pargen_1.0.xsd).
 It is highly recommended to use an XML editor with schema validation
 support to avoid or detect validations already while editing.
-Visual Studio Code is a perfect choice, given the 
+Visual Studio Code is a perfect choice, given the
 "XML Language Support" extension from Red Hat is installed.
 This extensions brings validation and "IntelliSense" to editing XML files.
 
@@ -172,7 +174,7 @@ Pargen blocks may contain a header at the beginning of the
 block memory area. This optional header contains block identification,
 version and length information. The header supports parameter validation
 to verify correctness and compatibility with the using application during
-runtime. The 
+runtime. The
 [safety example](https://github.com/nhjschulz/flashcontainer/tree/master/examples/safety/)
 in the examples folder shows how to use the header in combination with a
 CRC for this purpose.
@@ -180,7 +182,7 @@ CRC for this purpose.
 The header data is a 16 byte long data structure with the following
 layout:
 
-    struct sruct_pargen_header_type
+    struct struct_pargen_header_type
     {
         uint16_t id;        /* from id header attribute */
         uint16_t major;     /* from major header attribute */
@@ -319,7 +321,7 @@ but derived from the type attribute of the crc element.
 
 The tc3xx tool is used to generate Pargen definition XML files for boot mode header
 structures. A Boot mode header structure is a data block in flash memory, which is
-defined by Infineon TC3xx processors. It gets processed by startup software to 
+defined by Infineon TC3xx processors. It gets processed by startup software to
 select which image to boot into.
 
 General usage of the tc3xx command:
@@ -329,22 +331,22 @@ General usage of the tc3xx command:
 
 ### TC3xx ABMHD - Alternate Boot Mode Header Generator
 
-Tc3xx supports the *abmhd* tool to a generate an alternate boot mode header structure for firmware hex files. 
-The *tc3xx abmhd* tool is controlled by options and produces a Pargen definition file. The definitions file is 
+Tc3xx supports the *abmhd* tool to a generate an alternate boot mode header structure for firmware hex files.
+The *tc3xx abmhd* tool is controlled by options and produces a Pargen definition file. The definitions file is
 written to stdout id no output file option is given. This allows to "pipe" the definitions directly into Pargen.
 
 *tc3xx abmhd* usage:
 
-    usage: tc3xx abmhd [-h] [--stad STADABM] [--from CHKSTART] [--to CHKEND] [--abmhdid ABMHDID] [--output filename] ADDRESS HEXFILE    
+    usage: tc3xx abmhd [-h] [--stad STADABM] [--from CHKSTART] [--to CHKEND] [--abmhdid ABMHDID] [--output filename] ADDRESS HEXFILE
 
-    Generate TC3XX alternate boot mode header Pargen definition file.   
+    Generate TC3XX alternate boot mode header Pargen definition file.
 
     Example:
-        tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | pargen --ihex -f abmhd -   
+        tc3xx abmhd --stad 0x80028000 --from 0x8002000 --to 0x8004000  0x80000100 fw.hex | pargen --ihex -f abmhd -
 
     positional arguments:
       ADDRESS               flash address of alternate boot mode header.
-      HEXFILE               name of hexfile with user data content    
+      HEXFILE               name of hexfile with user data content
 
     options:
       -h, --help            show this help message and exit
@@ -359,6 +361,14 @@ written to stdout id no output file option is given. This allows to "pipe" the d
       --output filename, -o filename
                             file name of generated Pargen xml file (default: <stdout>)
 
+## PyInstaller
+
+Using the PyInstaller package, it is possible to pack `flashcontainer` into an executable tha includes all its dependencies. This makes the tool portable (between Windows machines), and removes the requirement of having Python and the dependencies installed in every machine.
+
+To create the executable, PyInstaller must be installed via pip: `pip install pyinstaller`
+Then, you can call the generation script: `.\tools\create_executable.bat`
+The resulting executable will be found in `.\dist\pargen.exe`
+
 ## Issues, Ideas And Bugs
 
 If you have further ideas or you found some bugs, great! Create an
@@ -366,21 +376,39 @@ If you have further ideas or you found some bugs, great! Create an
 or if you are able and willing to fix it by yourself, clone
 the repository and create a pull request.
 
+
+## License
+
+The flashcontainer source code is published under the
+[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause/).
+Consider also the different licenses of used third party libraries too!
+
 ## Used Non Standard Python Libraries
 
 The project uses the following non standard python libraries:
-|Library  |Purpose |License |                   
+
+|Library  |Purpose |License |
 |---------|--------|--------|
 |[lxml](https://pypi.org/project/lxml/)| XML parsing and validation|BSD-3-Clause|
 |[intelhex](https://pypi.org/project/intelhex/)|intel hex file generation|BSD|
 |[json5](https://pypi.org/project/json5/)|JSON read and write (with hexadecimal number support)|Apache|
 |[toml](https://pypi.org/project/toml/)|Accessing toml file content|MIT|
 
-## License
+## TRLC Toolchain Usage
 
-The whole source code is published under the
-[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause/).
-Consider also the different licenses of used third party libraries too!
+The project uses [TRLC](https://github.com/bmw-software-engineering/trlc/) for maintaining
+requirements, architecture and project documentation generation.
+
+|Library  |Purpose |License |
+|---------|--------|--------|
+|[trlcdoc](https://github.com/nhjschulz/trlc-doc)|Configurable documentation tooling for TRLC based projects|GPL-3|
+|[trlc](https://github.com/bmw-software-engineering/trlc/)|TRLC DSL tooling|GPL-3|
+|[lobster](https://github.com/bmw-software-engineering/lobster)| Lightweight Open BMW Software Traceability Evidence Report|GPL-3|
+|[pyTRLCConverter](https://github.com/NewTec-GmbH/pyTRLCConverter)|TRLC Format converter|GPL-3|
+|[sphinx](https://github.com/sphinx-doc/sphinx)|The Sphinx documentation generator|BSD|
+
+See [Developping.md](./Developing.md#generating-project-documentation) for documentation 
+build instructions. 
 
 ## Contribution
 

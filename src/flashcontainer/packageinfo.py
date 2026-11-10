@@ -2,7 +2,7 @@
 
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,10 @@
 #
 
 import importlib.metadata as meta
-import pathlib
+import os
+import sys
+from email.utils import parseaddr
+from typing import Tuple
 
 import toml
 
@@ -41,30 +44,59 @@ __email__ = "???"
 __repository__ = "???"
 __license__ = "???"
 
-def init_from_metadata() -> None:
-    """Initialize dunders from importlib.metadata
+def resource_path(relative_path: str) -> str:
+    """Get the absolute path to a resource, for both dev and PyInstaller builds.
 
-    Requires that the pacakge was installed.
+    Args:
+        relative_path: Path relative to the resource base directory.
+
+    Returns:
+        The absolute path to the resource.
+    """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        # pylint: disable=protected-access
+        # pylint: disable=no-member
+        base_path = sys._MEIPASS
+    except Exception:  # pylint: disable=broad-except
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def init_from_metadata() -> Tuple[str, str, str, str, str]:
+    """Read package metadata via importlib.metadata.
+
+    Note:
+        Requires that the package was installed.
+
+    Returns:
+        Tuple of (version, author, email, repository, license).
     """
 
     my_metadata = meta.metadata('flashcontainer')
+    author_email = my_metadata['Author-email']
+    author_name, _ = parseaddr(author_email)
+
     return \
         my_metadata['Version'],\
-        my_metadata['Author'],\
-        my_metadata['Author-email'],\
+        author_name,\
+        author_email,\
         my_metadata['Project-URL'].replace("repository, ", ""),\
         my_metadata['License']
 
 
 
-def init_from_toml() -> None:
-    """Initialize dunders from pypackage.toml file
+def init_from_toml() -> Tuple[str, str, str, str, str]:
+    """Read package metadata from pyproject.toml.
 
-    Tried if package wasn't installed
+    Note:
+        Used as a fallback when the package wasn't installed.
+
+    Returns:
+        Tuple of (version, author, email, repository, license).
     """
 
-    dist_dir = pathlib.Path(__file__).resolve().parents[2]
-    toml_file = pathlib.Path.joinpath(dist_dir, "pyproject.toml")
+    toml_file = resource_path("pyproject.toml")
     data = toml.load(toml_file)
 
     return \

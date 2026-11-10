@@ -1,0 +1,340 @@
+package SwArch
+
+import Generic
+import SwRequirements
+
+section "Flashcontainer SW Architecture" {
+
+    Generic.Info sw_arch_info_about {
+        description =
+            """
+            This file contains the high level software architecture for the flashcontainer tools.
+            """
+    }
+
+    section "Context" {
+
+        SwArchSpec sw_arch_flashcontainer_tool {
+            description =
+                """
+                Flashcontainer is a Python 3 package providing the console applications `pargen` and `tc3xx`.
+
+                `pargen` reads a schema validated XML parameter definition and generates flashable data and
+                integration files from it:
+
+                - Intel HEX for the flash programmer
+                - C source/header for the application and test environments
+                - a GNU linker include file for the linker
+                - an A2L file for calibration tools
+                - a pyHexDump configuration
+
+                The `tc3xx` tool creates `pargen` XML definitions for Infineon AURIX TC3xx data structures.
+                """
+            verification_criteria =
+                """
+                Call the tools using the `pargen` and `tc3xx` frontends. Check the generated files and the
+                console output.
+                """
+            satisfies = [
+                SwRequirements.sw_req_cli,
+                SwRequirements.sw_constraint_python,
+                SwRequirements.sw_constraint_os_win,
+                SwRequirements.sw_constraint_os_linux
+            ]
+        }
+
+        Generic.PlantUML sw_arch_context_diagram {
+            caption = "Context Diagram"
+            file_path = "img/context_diagram.puml"
+        }
+    }
+
+    section "Static View" {
+
+        Generic.Info sw_arch_info_static_view {
+            description =
+                """
+                The software consists of six components:
+
+                - The **pargen CLI** drives the pipeline **XML Parser** → **Data Model** → **Writers**.
+                - The **Data Conversion** component provides byte level conversions and CRC calculations.
+                - The **TC3xx Frontend** is a separate CLI that produces XML input for `pargen`.
+                """
+        }
+
+        Generic.PlantUML sw_arch_component_diagram {
+            caption = "Component Overview"
+            file_path = "img/component_overview.puml"
+        }
+
+        section "Components" {
+
+            section "pargen CLI" {
+
+                SwArchSpec sw_arch_comp_pargen_cli {
+                    description =
+                        """
+                        The pargen CLI component (`pargen.py`) is the application entry point of `pargen`. It
+
+                        - parses the arguments with argparse, including `@` argument files (`fileargparse.py`)
+                        - selects the input source (file or stdin)
+                        - collects the value modifications and the selected writers
+                        - triggers parsing and validation
+                        - runs the selected writers
+                        - maps the result to the process exit code
+
+                        Package metadata like the version is provided by `packageinfo.py`.
+                        """
+                    verification_criteria =
+                        """
+                        Call `pargen` with valid, invalid and missing arguments. Check the generated files,
+                        the console output and the exit code.
+                        """
+                    satisfies = [
+                        SwRequirements.sw_req_cli,
+                        SwRequirements.sw_req_cli_help,
+                        SwRequirements.sw_req_cli_argument_file,
+                        SwRequirements.sw_req_exit_code,
+                        SwRequirements.sw_req_output_selection,
+                        SwRequirements.sw_req_output_static,
+                        SwRequirements.sw_req_modify_value
+                    ]
+                }
+
+                Generic.PlantUML sw_arch_comp_pargen_cli_diagram {
+                    caption = "pargen CLI Component"
+                    file_path = "img/comp_pargen_cli.puml"
+                }
+            }
+
+            section "XML Parser" {
+
+                SwArchSpec sw_arch_comp_xml_parser {
+                    description =
+                        """
+                        The XML Parser component (`model/xmlparser.py`)
+
+                        - loads the XML definition from a file or stream
+                        - validates it against the XSD schema `pargen_1.0.xsd` using the lxml library
+                        - applies the command line value modifications
+                        - builds the data model from the containers, blocks, parameters and CRC definitions
+                        - resolves offsets and alignments to absolute addresses
+
+                        It returns no model if the schema validation fails.
+                        """
+                    verification_criteria =
+                        """
+                        Unit test the parser with valid, schema violating and malformed XML definitions.
+                        """
+                    satisfies = [
+                        SwRequirements.sw_req_xml_input,
+                        SwRequirements.sw_req_xml_schema_validation,
+                        SwRequirements.sw_req_memory_layout,
+                        SwRequirements.sw_req_modify_value
+                    ]
+                }
+
+                Generic.PlantUML sw_arch_comp_xml_parser_diagram {
+                    caption = "XML Parser Component"
+                    file_path = "img/comp_xml_parser.puml"
+                }
+            }
+
+            section "Data Model" {
+
+                SwArchSpec sw_arch_comp_datamodel {
+                    description =
+                        """
+                        The Data Model component (`model/datamodel.py`) holds the parsed definition as
+                        hierarchy `Model` → `Container` → `Block` → `Parameter`. Blocks provide their memory
+                        image including header, gap filling and CRC update. All model elements provide a
+                        readable text representation for the log output.
+
+                        The `Walker` base class iterates the hierarchy and calls begin/end hooks per element;
+                        all writers and the `Validator` are walkers.
+
+                        The `Validator` detects duplicate names, overlapping parameters, blocks and block
+                        headers, and parameters exceeding their block, and reports them as errors.
+                        """
+                    verification_criteria =
+                        """
+                        Unit test the model with overlapping and non-overlapping definitions and check the
+                        block memory images.
+                        """
+                    satisfies = [
+                        SwRequirements.sw_req_memory_layout,
+                        SwRequirements.sw_req_model_validation,
+                        SwRequirements.sw_req_diagnostics
+                    ]
+                }
+
+                Generic.PlantUML sw_arch_comp_datamodel_diagram {
+                    caption = "Data Model Component"
+                    file_path = "img/comp_datamodel.puml"
+                }
+            }
+
+            section "Data Conversion" {
+
+                SwArchSpec sw_arch_comp_data_conversion {
+                    description =
+                        """
+                        The Data Conversion component provides the byte level services for the other
+                        components.
+
+                        `ByteConvert` (`model/byteconv.py`) converts JSON5 encoded parameter values into their
+                        byte representation for the given data type and endianness, and bytes into C
+                        initializer text.
+
+                        `Crc` (`model/checksum.py`) calculates configurable CRC checksums using the crc
+                        library, including byte swapping by access size.
+                        """
+                    verification_criteria =
+                        """
+                        Unit test the conversions for every data type and endianness, and the CRC calculation
+                        against reference values.
+                        """
+                    satisfies = [
+                        SwRequirements.sw_req_data_types,
+                        SwRequirements.sw_req_crc
+                    ]
+                }
+
+                Generic.PlantUML sw_arch_comp_data_conversion_diagram {
+                    caption = "Data Conversion Component"
+                    file_path = "img/comp_data_conversion.puml"
+                }
+            }
+
+            section "Writers" {
+
+                SwArchSpec sw_arch_comp_writer {
+                    description =
+                        """
+                        The Writers component (`writer/*.py`) generates the output files. Each writer is a
+                        `Walker` of the data model and writes one output format into the destination
+                        directory using the base file name:
+
+                        - `HexWriter`: Intel HEX using the intelhex library, plus a CRC32 checksum file
+                        - `CFileWriter`: C source and header
+                        - `GnuLdWriter`: GNU linker include file
+                        - `A2lWriter`: A2L description
+                        - `PyHexDumpWriter`: pyHexDump configuration, using json5
+
+                        The writers of text formats omit date and time from their output if static output is
+                        requested.
+                        """
+                    verification_criteria =
+                        """
+                        Generate every output format from a reference definition and compare the files with
+                        reference output.
+                        """
+                    satisfies = [
+                        SwRequirements.sw_req_output_ihex,
+                        SwRequirements.sw_req_output_csrc,
+                        SwRequirements.sw_req_output_gld,
+                        SwRequirements.sw_req_output_a2l,
+                        SwRequirements.sw_req_output_pyhexdump,
+                        SwRequirements.sw_req_output_static
+                    ]
+                }
+
+                Generic.PlantUML sw_arch_comp_writer_diagram {
+                    caption = "Writers Component"
+                    file_path = "img/comp_writer.puml"
+                }
+            }
+
+            section "TC3xx Frontend" {
+
+                SwArchSpec sw_arch_comp_tc3xx {
+                    description =
+                        """
+                        The TC3xx Frontend component (`tc3xx/*.py`) is the application entry point of the
+                        `tc3xx` tool. It dispatches to sub commands registered as `Tc3xxCmdBase` singletons.
+
+                        The `abmhd` sub command (`Tc3xxAbmhd`)
+
+                        - reads the user code from an Intel HEX file
+                        - validates the address arguments
+                        - calculates the CRC of the checked range using the Data Conversion component
+                        - writes the alternate boot mode header as `pargen` XML definition to a file or stdout
+
+                        The output can be piped into `pargen`.
+                        """
+                    verification_criteria =
+                        """
+                        Call `tc3xx abmhd` with a reference HEX file and compare the generated XML with a
+                        reference. Call it with invalid addresses and check the error exit code.
+                        """
+                    satisfies = [
+                        SwRequirements.sw_req_tc3xx_abmhd,
+                        SwRequirements.sw_req_cli,
+                        SwRequirements.sw_req_cli_help,
+                        SwRequirements.sw_req_cli_argument_file,
+                        SwRequirements.sw_req_exit_code
+                    ]
+                }
+
+                Generic.PlantUML sw_arch_comp_tc3xx_diagram {
+                    caption = "TC3xx Frontend Component"
+                    file_path = "img/comp_tc3xx.puml"
+                }
+            }
+        }
+    }
+
+    section "Dynamic View" {
+
+        SwArchSpec sw_arch_pargen_flow {
+            description =
+                """
+                A `pargen` run
+
+                1. parses and validates the XML definition
+                2. builds and validates the data model
+                3. runs each selected writer over the model
+
+                Processing stops with an error exit code without generating output if parsing or validation
+                fails.
+                """
+            verification_criteria =
+                """
+                Call `pargen` with valid and invalid definitions. Check that output is generated only for
+                valid definitions.
+                """
+            satisfies = [
+                SwRequirements.sw_req_xml_schema_validation,
+                SwRequirements.sw_req_model_validation,
+                SwRequirements.sw_req_output_selection,
+                SwRequirements.sw_req_exit_code
+            ]
+        }
+
+        Generic.PlantUML sw_arch_pargen_sequence_diagram {
+            caption = "pargen Processing Sequence"
+            file_path = "img/pargen_sequence.puml"
+        }
+
+        SwArchSpec sw_arch_tc3xx_flow {
+            description =
+                """
+                A `tc3xx abmhd` run generates a `pargen` XML definition, which is passed to `pargen`
+                (typically via a pipe and stdin) to produce the final output files.
+                """
+            verification_criteria =
+                """
+                Run `tc3xx abmhd ... | pargen --ihex -` and compare the generated HEX file with a reference.
+                """
+            satisfies = [
+                SwRequirements.sw_req_tc3xx_abmhd,
+                SwRequirements.sw_req_xml_input
+            ]
+        }
+
+        Generic.PlantUML sw_arch_tc3xx_sequence_diagram {
+            caption = "tc3xx abmhd Processing Sequence"
+            file_path = "img/tc3xx_sequence.puml"
+        }
+    }
+}

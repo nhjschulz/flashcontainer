@@ -2,7 +2,7 @@
 """
 # BSD 3-Clause License
 #
-# Copyright (c) 2022-2023, Haju Schulz (haju.schulz@online.de)
+# Copyright (c) 2022-2026, Haju Schulz (haju.schulz@online.de)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,14 +31,15 @@
 #
 
 
-from typing import Dict
 from pathlib import Path
+from typing import Any, Dict, Optional, TextIO
 
-import flashcontainer.datamodel as DM
-from flashcontainer.byteconv import ByteConvert
+from ..model import datamodel as DM
+from ..model.byteconv import ByteConvert
+
 
 class A2lWriter(DM.Walker):
-    """A2l file writer"""
+    """A2L file writer."""
 
     _TYPE_MAPPING = {
         DM.ParamType.UINT8: ("UBYTE", 0, 0xFF),
@@ -49,8 +50,8 @@ class A2lWriter(DM.Walker):
         DM.ParamType.INT16: ("SWORD", -32768, +32767),
         DM.ParamType.INT32: ("SLONG", -2147483648, +2147483647),
         DM.ParamType.INT64: ("_A_INT64", -9223372036854775808, +9223372036854775807),
-        DM.ParamType.FLOAT32: ("FLOAT32_IEEE", 1.175494351E-38, 3.402823466E+38),
-        DM.ParamType.FLOAT64: ("FLOAT64_IEEE", 2.2250738585072014E-308, 1.7976931348623158E+308),
+        DM.ParamType.FLOAT32: ("FLOAT32_IEEE", -3.402823466E+38, 3.402823466E+38),
+        DM.ParamType.FLOAT64: ("FLOAT64_IEEE", -1.7976931348623158E+308, 1.7976931348623158E+308),
         DM.ParamType.UTF8: ("UBYTE", 0, 0xFF)
     }
 
@@ -59,11 +60,13 @@ class A2lWriter(DM.Walker):
         DM.Endianness.BE: "MSB_FIRST"
     }
 
-    def __init__(self, model: DM.Model, options: Dict[str, any]):
+    def __init__(self, model: DM.Model, options: Dict[str, Any]) -> None:
         super().__init__(model, options)
-        self.a2l_file = None
+        self.a2l_file: Optional[TextIO] = None
 
     def pre_run(self) -> None:
+        """Open the output file and write the A2L file header."""
+
         filename = Path.joinpath(
             self.options.get("DESTDIR"),
             self.options.get("BASENAME") + ".a2l")
@@ -91,12 +94,27 @@ class A2lWriter(DM.Walker):
         self.a2l_file.write("  /end HEADER \n\n")
 
     def begin_container(self, container: DM.Container) -> None:
+        """Write the MODULE begin marker.
+
+        Args:
+            container: Container being entered.
+        """
         self.a2l_file.write(f"  /begin MODULE {container.name} \"\"\n")
 
     def end_container(self, container: DM.Container) -> None:
+        """Write the MODULE end marker.
+
+        Args:
+            container: Container being left.
+        """
         self.a2l_file.write("\n  /end MODULE\n")
 
     def begin_block(self, block: DM.Block) -> None:
+        """Write header type definitions if the block has a header.
+
+        Args:
+            block: Block being entered.
+        """
         if block.header is not None:
             self.a2l_file.write(
                 "\n"
@@ -161,7 +179,11 @@ class A2lWriter(DM.Walker):
 
 
     def begin_parameter(self, param: DM.Parameter) -> None:
-        """Write parameter as measurement"""
+        """Write a parameter as an A2L MEASUREMENT.
+
+        Args:
+            param: Parameter being visited.
+        """
 
         self.a2l_file.write(f"\n    /begin MEASUREMENT {param.name}\n")
 
@@ -196,8 +218,8 @@ class A2lWriter(DM.Walker):
 
         self.a2l_file.write("    /end MEASUREMENT\n")
 
-    def post_run(self):
-        """Close output file"""
+    def post_run(self) -> None:
+        """Write the file footer and close the output file."""
 
         self.a2l_file.write("\n/end PROJECT\n")
         self.a2l_file.close()

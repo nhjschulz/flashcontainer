@@ -1,0 +1,11 @@
+package SwArch
+
+import AbstractRequirements
+import AbstractSwArch
+
+// SW Arch Specification
+type SwArchSpec extends AbstractSwArch.SwArchItem {
+    satisfies              AbstractRequirements.Requirement [0 .. *]
+    verification_criteria  String
+}
+

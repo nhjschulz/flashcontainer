@@ -1,8 +1,8 @@
 import pytest
 import pathlib
 
-from flashcontainer import xmlparser as XP
-from flashcontainer import datamodel
+from flashcontainer.model import xmlparser as XP
+from flashcontainer.model import datamodel
 
 def test_parse_int():
     assert XP.XmlParser._parse_int("0") == 0

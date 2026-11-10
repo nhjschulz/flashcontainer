@@ -1,0 +1,38 @@
+@startuml component_overview
+skinparam componentStyle uml2
+
+package "flashcontainer" {
+    [pargen CLI] as cli <<component>>
+    [XML Parser] as parser <<component>>
+    [Data Model] as model <<component>>
+    [Data Conversion] as conv <<component>>
+    [Writers] as writer <<component>>
+    [TC3xx Frontend] as tc3xx <<component>>
+}
+
+package "Pip Python Packages"  {
+    [lxml] as lxml
+    [intelhex] as intelhex
+    [crc] as crc
+    [json5] as json5
+    [toml] as toml
+}
+
+cli --> parser
+cli --> model
+cli --> writer
+parser --> model
+parser --> conv
+writer --> model
+writer --> conv
+tc3xx --> conv
+
+cli .[hidden].> toml : <<use>>
+parser .[hidden].> lxml : <<use>>
+tc3xx .[hidden].> lxml : <<use>>
+tc3xx .[hidden].> intelhex : <<use>>
+writer .[hidden].> intelhex : <<use>>
+writer .[hidden].> json5 : <<use>>
+conv .[hidden].> json5 : <<use>>
+conv .[hidden].> crc : <<use>>
+@enduml

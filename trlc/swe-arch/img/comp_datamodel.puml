@@ -1,0 +1,49 @@
+@startuml comp_datamodel
+
+package "Data Model" {
+    class "Model" as model <<module>> {
+        + add_container(container): void
+        + validate(options): bool
+    }
+
+    class "Container" as container <<module>> {
+        + name
+        + addr
+        + add_block(block): void
+    }
+
+    class "Block" as block <<module>> {
+        + set_header(header): void
+        + add_parameter(parameter): void
+        + get_header_bytes(): bytes
+        + fill_gaps(): void
+        + get_bytes(): bytearray
+        + update_crcs(): void
+    }
+
+    class "BlockHeader" as header <<module>>
+
+    class "Parameter" as param <<module>> {
+        + {static} as_gap(address, length, pattern): Parameter
+    }
+
+    class "Walker" as walker <<module>> {
+        + run(): void
+        + pre_run() / post_run()
+        + begin/end_container(container)
+        + begin/end_block(block)
+        + begin/end_parameter(param)
+        + begin/end_gap(param)
+    }
+
+    class "Validator" as validator <<module>>
+}
+
+model "1" *-- "*" container
+container "1" *-- "*" block
+block "1" *-- "0..1" header
+block "1" *-- "*" param
+validator -u-|> walker
+walker --r-> model : walks
+'model ..> validator : validate()
+@enduml

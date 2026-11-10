@@ -1,0 +1,15 @@
+package SwRequirements
+import AbstractRequirements
+
+// Functional Software Requirement
+type SwReq extends AbstractRequirements.Requirement {
+    verification_criteria   String
+}
+
+// Non-Functional Software Requirement
+type SwReqNonFunc extends AbstractRequirements.Requirement {
+}
+
+// Software Constraint
+type SwConstraint extends AbstractRequirements.Requirement {
+}

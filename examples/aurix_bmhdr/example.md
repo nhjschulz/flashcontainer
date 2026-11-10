@@ -32,7 +32,13 @@ of 32-Bit values and byte swap each of them before processing.
 
 The resulting hex file can be printed/validated using
 [pyHexDump](https://github.com/BlueAndi/pyHexDump), a highly
-configurable binary data dumper. The template file bmhdr.mao
+configurable binary data dumper. pyHexDump is not published on PyPI (the
+`pyhexdump` name there belongs to an unrelated project), so install it
+directly from its git repository:
+
+    pip install git+https://github.com/BlueAndi/pyHexDump
+
+The template file bmhdr.mao
 uses the generated hex file and pyhexdump configuration to
 pretty print and verify the hex data into markdown format.
 

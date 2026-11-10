@@ -1,0 +1,24 @@
+@startuml tc3xx_sequence
+autoactivate on
+
+actor "User" as user
+participant "TC3xx Frontend" as tc3xx <<component>>
+participant "Data Conversion" as conv <<component>>
+participant "pargen CLI" as cli <<component>>
+
+user -> tc3xx : tc3xx abmhd [options] ADDRESS HEXFILE
+    tc3xx -> tc3xx : read HEXFILE, evaluate and validate arguments
+    return
+    alt arguments valid
+        tc3xx -> conv : Crc(config).checksum(user data)
+        return user code CRC
+        tc3xx -> tc3xx : generate pargen XML definition
+        return
+    end
+return XML on stdout (or file), exit code
+
+user -> cli : pargen --ihex -f abmhd -  (XML on stdin)
+    cli -> cli : see pargen processing sequence
+    return
+return abmhd.hex, exit code
+@enduml

@@ -1,4 +1,4 @@
-""" Flash container generation tailored for TC3XX processors
+""" Base classes to implementing tc3xx cli commands.
 """
 
 # BSD 3-Clause License
@@ -31,55 +31,38 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import logging
-import sys
-
-from flashcontainer.tc3xx_abmhd import Tc3xxAbmhd
-from flashcontainer.packageinfo import __version__, __email__, __repository__
-from flashcontainer.fileargparse import FileArgumentParser
-
-# list of tc3xx subcommand classes
-_TC3XX_CMDS = [ Tc3xxAbmhd() ]
+import argparse
+from typing import Any
 
 
-def tc3xx(argv) -> int:
-    """ cmd line interface for tc3xx"""
+class Singleton(type):
+    """Python singleton metaclass."""
 
-    logging.basicConfig(encoding='utf-8', level=logging.WARNING)
+    _instances: dict = {}
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-    name = "tc3xx"
-    about = f"{name} {__version__}: Build Pargen definitions for TC3xx data structures."
+class Tc3xxCmdBase(metaclass=Singleton):
+    """Base class used to implement sub commands for the TC3XX CLI."""
 
-    parser = FileArgumentParser(
-        prog=name,
-        description=about,
-    )
+    def __init__(self) -> None:
+        pass
 
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
-    sub_parsers = parser.add_subparsers(
-        title="supported sub commands",
-        help='additional command specific help')
+    def register(self, sub_parsers: argparse._SubParsersAction) -> None:
+        """Register this class with the argument parser for sub commands.
 
-    # register all sub commands with the arg parser
-    for sub_cmd in _TC3XX_CMDS:
-        sub_cmd.register(sub_parsers)
+        Args:
+            sub_parsers: Sub parsers action to add this command's parser to.
+        """
 
-    args = parser.parse_args(argv)
+    def run(self, args: argparse.Namespace) -> int:
+        """Execute the command.
 
-    if 'func' not in vars(args):
-        parser.print_help()
-        return -1
+        Args:
+            args: Parsed command line arguments.
 
-    return args.func(args)
-
-def tc3xx_cli() -> int:
-    """CLI wrapper for tc3xx """
-
-    return tc3xx(sys.argv[1:])
-
-if __name__ == "__main__":
-    try:
-        sys.exit(tc3xx_cli())
-    except Exception as exc:  # pylint: disable=broad-except
-        logging.exception(exc)
-        sys.exit(-1)
+        Returns:
+            Process exit code.
+        """

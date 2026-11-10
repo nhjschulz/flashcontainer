@@ -1,0 +1,2 @@
+rem Please run this script from the root path. ".\tools\create_executable.bat"
+pyinstaller --noconfirm --onefile --console --name "pargen" --add-data "./pyproject.toml;."  "./src/flashcontainer/__main__.py"

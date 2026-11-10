@@ -1,0 +1,358 @@
+package SwRequirements
+import AbstractRequirements
+import Generic
+
+section "Flashcontainer" {
+
+    Generic.Info sw_req_info_about_sw_req {
+        description =
+            """
+            This file contains the software requirements for the flashcontainer tools.
+            """
+    }
+
+    section "Software Requirements" {
+
+        section "General" {
+
+            SwReq sw_req_cli {
+                description =
+                    """
+                    The software shall provide its functionality as command-line interface (CLI) tools.
+                    """
+                verification_criteria =
+                    """
+                    Every feature shall be accessible via the command line. Therefore it is verified by CLI
+                    tests.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_cli_help {
+                description =
+                    """
+                    The software shall show usage help information when called with the command line argument
+                    `-h` or `--help`.
+                    """
+                verification_criteria =
+                    """
+                    Call each tool with `-h` and `--help` and check that the usage help is shown.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_cli_argument_file {
+                description =
+                    """
+                    The software shall accept command line arguments from argument files referenced with the
+                    `@` prefix.
+                    """
+                verification_criteria =
+                    """
+                    Call a tool with an `@file` argument containing options and check that the options are
+                    applied.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_diagnostics {
+                description =
+                    """
+                    The software shall describe the processed model elements in its log output by a readable
+                    text with name, address and value:
+
+                    - container
+                    - block
+                    - parameter
+                    - CRC configuration
+                    - version
+                    """
+                verification_criteria =
+                    """
+                    Check the text representation of each model element.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_exit_code {
+                description =
+                    """
+                    The software shall terminate with exit code 0 on success and with a non-zero exit code if
+                    an error occurred.
+                    """
+                verification_criteria =
+                    """
+                    Call the tools with valid and invalid input and check the process exit code.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+        }
+
+        section "Parameter Definition Input" {
+
+            SwReq sw_req_xml_input {
+                description =
+                    """
+                    The software shall read parameter container definitions from an XML file, or from standard
+                    input if `-` is given as file name.
+                    """
+                verification_criteria =
+                    """
+                    Call `pargen` with an XML definition file and with the definition piped to stdin. Check
+                    that both produce the same output.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_xml_schema_validation {
+                description =
+                    """
+                    The software shall validate the XML definition against an XML schema and reject an invalid
+                    definition with an error message.
+                    """
+                verification_criteria =
+                    """
+                    Call `pargen` with a schema violating XML file and check for the error message and a
+                    non-zero exit code.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_memory_layout {
+                description =
+                    """
+                    The software shall support the definition of
+
+                    - containers at absolute addresses, which contain
+                    - parameter blocks, which hold
+                    - parameters at offsets.
+
+                    Gaps between parameters shall be filled with a configurable fill byte.
+                    """
+                verification_criteria =
+                    """
+                    Generate an Intel HEX file from a definition with containers, blocks, headers and gaps.
+                    Check the data at the expected addresses.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_data_types {
+                description =
+                    """
+                    The software shall support these parameter data types, including arrays, with configurable
+                    endianness and alignment:
+
+                    - signed and unsigned integer (8 to 64 bit)
+                    - floating point (32 and 64 bit)
+                    - UTF-8 string
+                    """
+                verification_criteria =
+                    """
+                    Generate output for a definition using every data type in both endianness. Check the
+                    resulting byte representation.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_crc {
+                description =
+                    """
+                    The software shall calculate CRC checksum parameters over a configurable memory range,
+                    with configurable
+
+                    - CRC polynomial
+                    - init value
+                    - input/output reflection
+                    - final XOR
+                    - access size and byte swapping
+                    """
+                verification_criteria =
+                    """
+                    Generate output for a definition with CRC parameters. Compare the CRC values with
+                    reference values.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_modify_value {
+                description =
+                    """
+                    The software shall allow overriding the value of a named parameter on the command line.
+                    """
+                verification_criteria =
+                    """
+                    Call `pargen` with a `--modify` option and check that the generated output contains the
+                    modified value.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_model_validation {
+                description =
+                    """
+                    The software shall detect these errors in the definition, report them as error and
+                    generate no output in this case:
+
+                    - duplicate block or parameter names
+                    - overlapping blocks
+                    - overlapping parameters
+                    - parameters overlapping a block header
+                    - parameters exceeding their block
+                    """
+                verification_criteria =
+                    """
+                    Call `pargen` with definitions containing each of these errors. Check for the error
+                    message, a non-zero exit code and no output files.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+        }
+
+        section "Output Generation" {
+
+            SwReq sw_req_output_selection {
+                description =
+                    """
+                    The software shall generate only the output formats selected on the command line, into a
+                    selectable output directory using a selectable base file name.
+                    """
+                verification_criteria =
+                    """
+                    Call `pargen` with different output options, `--destdir` and `--filename`. Check that
+                    exactly the selected files are created at the expected location.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_output_ihex {
+                description =
+                    """
+                    The software shall generate an Intel HEX file with the parameter container data for flash
+                    programming, and a file with the CRC32 checksum of the HEX data.
+                    """
+                verification_criteria =
+                    """
+                    Generate the Intel HEX and CRC files and compare them with reference files.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_output_csrc {
+                description =
+                    """
+                    The software shall generate C/C++ source and header files declaring and defining the
+                    parameters for use in application and test environments.
+                    """
+                verification_criteria =
+                    """
+                    Generate the C files and check that they compile and contain all parameters with their
+                    values.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_output_gld {
+                description =
+                    """
+                    The software shall generate a GNU linker script include file that maps the parameter
+                    symbols to their absolute addresses.
+                    """
+                verification_criteria =
+                    """
+                    Generate the linker include file and check the symbol addresses.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_output_a2l {
+                description =
+                    """
+                    The software shall generate an A2L parameter description file for measurement and
+                    calibration tools.
+                    """
+                verification_criteria =
+                    """
+                    Generate the A2L file and check that it describes all parameters with type, address and
+                    limits.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_output_pyhexdump {
+                description =
+                    """
+                    The software shall generate a pyHexDump configuration file for printing the parameter
+                    values from a binary or hex file.
+                    """
+                verification_criteria =
+                    """
+                    Generate the pyHexDump configuration and check that it lists every block header and
+                    parameter with its address, pyHexDump data type and element count.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwReq sw_req_output_static {
+                description =
+                    """
+                    The software shall support output files without dynamic content like date and time, so
+                    that generated files are reproducible.
+                    """
+                verification_criteria =
+                    """
+                    Generate output twice with `--static` and check that the files are identical.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+        }
+
+        section "TC3xx Support" {
+
+            SwReq sw_req_tc3xx_abmhd {
+                description =
+                    """
+                    The software shall generate a `pargen` XML definition for an Infineon AURIX TC3xx
+                    alternate boot mode header from an Intel HEX file with the user code, including
+
+                    - the header identifier
+                    - the user code start address
+                    - the checked memory range and its CRC
+                    """
+                verification_criteria =
+                    """
+                    Generate the alternate boot mode header definition for a reference HEX file, process it
+                    with `pargen` and compare the result with a reference.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+        }
+
+        section "Software Constraints" {
+
+            SwConstraint sw_constraint_python {
+                description =
+                    """
+                    The software shall be implemented in Python and run with Python 3.10 or higher.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwConstraint sw_constraint_os_win {
+                description =
+                    """
+                    The software shall support the Windows operating system.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+
+            SwConstraint sw_constraint_os_linux {
+                description =
+                    """
+                    The software shall support the Linux operating system.
+                    """
+                valid_status = AbstractRequirements.VALID_STATUS.valid
+            }
+        }
+    }
+}
