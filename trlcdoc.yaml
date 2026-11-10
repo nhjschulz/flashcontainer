@@ -1,10 +1,9 @@
-# yaml-language-server: $schema=tools/trlc-doc/trlcdoc/schema/trlcdoc.schema.json
+# yaml-language-server: $schema=https://nhjschulz.github.io/trlc-doc/schema/V0.3.0/trlcdoc.schema.json
 #
 # trlcdoc configuration of flashcontainer: builds requirements, architecture,
 # tests, test results, tracing report and the HTML site.
 #
-#   git submodule update --init
-#   pip install -e tools/trlc-doc
+#   pip install -e .[dev]
 #   trlcdoc            # all steps, HTML site in build/trlcdoc/html
 
 project:
