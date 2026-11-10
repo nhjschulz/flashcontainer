@@ -6,197 +6,443 @@ import SwRequirements
 section "SW-Tests" {
 
     Generic.Info sw_test_info_about_sw_test {
-        description = "This file contains the software test cases for the flashcontainer tools. There is one test case per pytest test function in the 'tests' folder: the test function test_<name> implements the test case tc_<name>. The test result report relates the pytest results to the test cases by this naming rule."
+        description =
+            """
+            This file contains the software test cases for the flashcontainer tools. There is one test case
+            per pytest test function in the `tests` folder: the test function `test_<name>` implements the
+            test case `tc_<name>`. The test result report relates the pytest results to the test cases by this
+            naming rule.
+            """
     }
 
     section "Data Conversion" {
 
         SwTestCase tc_convert_valstr_to_byte {
-            description = "This test case checks the conversion of integer and floating point parameter values into their byte representation in little and big endian byte order (tests/test_byteconv.py)."
-            verifies = [SwRequirements.sw_req_data_types]
+            description =
+                """
+                This test case checks the conversion of integer and floating point parameter values into their
+                byte representation in little and big endian byte order (`tests/test_byteconv.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_data_types
+            ]
         }
 
         SwTestCase tc_bytes_to_c_init {
-            description = "This test case checks the conversion of integer, floating point and UTF-8 values and arrays into C initializer text in both byte orders (tests/test_byteconv.py)."
-            verifies = [SwRequirements.sw_req_data_types, SwRequirements.sw_req_output_csrc]
+            description =
+                """
+                This test case checks the conversion of integer, floating point and UTF-8 values and arrays
+                into C initializer text in both byte orders (`tests/test_byteconv.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_data_types,
+                SwRequirements.sw_req_output_csrc
+            ]
         }
 
         SwTestCase tc_swap {
-            description = "This test case checks the byte swapping of the CRC input data for the access sizes 8, 16, 32 and 64 bit (tests/test_checksum.py)."
-            verifies = [SwRequirements.sw_req_crc]
+            description =
+                """
+                This test case checks the byte swapping of the CRC input data for the access sizes 8, 16, 32
+                and 64 bit (`tests/test_checksum.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_crc
+            ]
         }
 
         SwTestCase tc_str {
-            description = "This test case checks the default CRC configuration and its text representation (tests/test_checksum.py)."
-            verifies = [SwRequirements.sw_req_crc]
+            description =
+                """
+                This test case checks the default CRC configuration and its text representation
+                (`tests/test_checksum.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_crc
+            ]
         }
     }
 
     section "Data Model" {
 
         SwTestCase tc_parameter_as_gap {
-            description = "This test case checks the creation of gap fill parameters with the requested offset, length and fill pattern (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_memory_layout]
+            description =
+                """
+                This test case checks the creation of gap fill parameters with the requested offset, length
+                and fill pattern (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_memory_layout
+            ]
         }
 
         SwTestCase tc_header_bytes {
-            description = "This test case checks the byte representation of a block header in little and big endian byte order (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_memory_layout]
+            description =
+                """
+                This test case checks the byte representation of a block header in little and big endian byte
+                order (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_memory_layout
+            ]
         }
 
         SwTestCase tc_block_crc {
-            description = "This test case checks the CRC calculation of a block parameter over a memory range against the CRC-32 check value in both byte orders (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_crc]
+            description =
+                """
+                This test case checks the CRC calculation of a block parameter over a memory range against the
+                CRC-32 check value in both byte orders (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_crc
+            ]
         }
 
         SwTestCase tc_get_bytes_empty {
-            description = "This test case checks that an empty block without header produces no data (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_memory_layout]
+            description =
+                """
+                This test case checks that an empty block without header produces no data
+                (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_memory_layout
+            ]
         }
 
         SwTestCase tc_get_bytes {
-            description = "This test case checks the memory image of a block with header and parameters (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_memory_layout]
+            description =
+                """
+                This test case checks the memory image of a block with header and parameters
+                (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_memory_layout
+            ]
         }
 
         SwTestCase tc_get_bytes_with_gaps {
-            description = "This test case checks that gaps between parameters are filled with the block fill byte (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_memory_layout]
+            description =
+                """
+                This test case checks that gaps between parameters are filled with the block fill byte
+                (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_memory_layout
+            ]
         }
 
         SwTestCase tc_model_str {
-            description = "This test case checks the text representation of the data model elements used in the log output (tests/test_datamodel.py)."
-            verifies = [SwRequirements.sw_req_diagnostics]
+            description =
+                """
+                This test case checks the text representation of the data model elements used in the log
+                output (`tests/test_datamodel.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_diagnostics
+            ]
         }
     }
 
     section "Model Validation" {
 
         SwTestCase tc_load_example {
-            description = "This test case checks that a valid example definition passes the model validation (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that a valid example definition passes the model validation
+                (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_dublicate_block_name {
-            description = "This test case checks that duplicate block names are detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that duplicate block names are detected as validation error
+                (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_overlapping_block {
-            description = "This test case checks that overlapping blocks are detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that overlapping blocks are detected as validation error
+                (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_dublicate_parameter_name {
-            description = "This test case checks that duplicate parameter names are detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that duplicate parameter names are detected as validation error
+                (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_overlapping_parameter {
-            description = "This test case checks that overlapping parameters are detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that overlapping parameters are detected as validation error
+                (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_parameter_exceed_range {
-            description = "This test case checks that a parameter exceeding the end of its block is detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that a parameter exceeding the end of its block is detected as
+                validation error (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_parameter_outofrange {
-            description = "This test case checks that a parameter located outside of its block is detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that a parameter located outside of its block is detected as validation
+                error (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_parameter_header_overlap {
-            description = "This test case checks that a parameter overlapping the block header is detected as validation error (tests/test_model_validate.py)."
-            verifies = [SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks that a parameter overlapping the block header is detected as validation
+                error (`tests/test_model_validate.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_model_validation
+            ]
         }
     }
 
     section "XML Parser" {
 
         SwTestCase tc_parse_int {
-            description = "This test case checks the parsing of decimal and hexadecimal numbers from the XML definition, and the rejection of invalid numbers (tests/test_xmlparser.py)."
-            verifies = [SwRequirements.sw_req_xml_input]
+            description =
+                """
+                This test case checks the parsing of decimal and hexadecimal numbers from the XML definition,
+                and the rejection of invalid numbers (`tests/test_xmlparser.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_xml_input
+            ]
         }
 
         SwTestCase tc_calc_addr {
-            description = "This test case checks the calculation of absolute addresses from numeric and relative ('.') offsets with alignment (tests/test_xmlparser.py)."
-            verifies = [SwRequirements.sw_req_memory_layout]
+            description =
+                """
+                This test case checks the calculation of absolute addresses from numeric and relative (`.`)
+                offsets with alignment (`tests/test_xmlparser.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_memory_layout
+            ]
         }
 
         SwTestCase tc_parse_invalid_xml {
-            description = "This test case checks that a schema violating XML definition is rejected (tests/test_xmlparser.py)."
-            verifies = [SwRequirements.sw_req_xml_schema_validation]
+            description =
+                """
+                This test case checks that a schema violating XML definition is rejected
+                (`tests/test_xmlparser.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_xml_schema_validation
+            ]
         }
 
         SwTestCase tc_parse_safety_example {
-            description = "This test case checks that the safety example definition is parsed into the expected data model: container, block with header and fill byte, float array parameter, gap and CRC parameter (tests/test_xmlparser.py)."
-            verifies = [SwRequirements.sw_req_xml_input, SwRequirements.sw_req_memory_layout, SwRequirements.sw_req_data_types, SwRequirements.sw_req_crc]
+            description =
+                """
+                This test case checks that the safety example definition is parsed into the expected data
+                model (`tests/test_xmlparser.py`):
+
+                - container
+                - block with header and fill byte
+                - float array parameter
+                - gap
+                - CRC parameter
+                """
+            verifies = [
+                SwRequirements.sw_req_xml_input,
+                SwRequirements.sw_req_memory_layout,
+                SwRequirements.sw_req_data_types,
+                SwRequirements.sw_req_crc
+            ]
         }
 
         SwTestCase tc_modify_value {
-            description = "This test case checks that a parameter value is replaced by a modification value given by parameter name (tests/test_xmlparser.py)."
-            verifies = [SwRequirements.sw_req_modify_value]
+            description =
+                """
+                This test case checks that a parameter value is replaced by a modification value given by
+                parameter name (`tests/test_xmlparser.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_modify_value
+            ]
         }
     }
 
     section "Command Line Interface" {
 
         SwTestCase tc_cli_help {
-            description = "This test case calls pargen, tc3xx and the tc3xx sub command abmhd with '-h' and '--help' and checks that the usage help is shown and the tool exits with code 0 (tests/test_cli.py)."
-            verifies = [SwRequirements.sw_req_cli, SwRequirements.sw_req_cli_help]
+            description =
+                """
+                This test case calls `pargen`, `tc3xx` and the `tc3xx` sub command `abmhd` with `-h` and
+                `--help` and checks that the usage help is shown and the tool exits with code 0
+                (`tests/test_cli.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_cli,
+                SwRequirements.sw_req_cli_help
+            ]
         }
 
         SwTestCase tc_cli_argument_file {
-            description = "This test case calls pargen with an '@' argument file containing output options, base name, output directory and input file, several and single options per line, and checks that exactly the selected files are generated (tests/test_cli.py)."
-            verifies = [SwRequirements.sw_req_cli, SwRequirements.sw_req_cli_argument_file]
+            description =
+                """
+                This test case calls `pargen` with an `@` argument file and checks that exactly the selected
+                files are generated (`tests/test_cli.py`). The argument file contains
+
+                - output options, base name, output directory and input file
+                - several options per line and single options per line
+                """
+            verifies = [
+                SwRequirements.sw_req_cli,
+                SwRequirements.sw_req_cli_argument_file
+            ]
         }
     }
 
     section "pargen" {
 
         SwTestCase tc_pargen_errors {
-            description = "This test case checks the pargen result codes for a valid definition, a schema violating definition, a missing file and a definition failing the model validation (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_exit_code, SwRequirements.sw_req_xml_schema_validation, SwRequirements.sw_req_model_validation]
+            description =
+                """
+                This test case checks the `pargen` result codes for (`tests/test_pargen.py`)
+
+                - a valid definition
+                - a schema violating definition
+                - a missing file
+                - a definition failing the model validation
+                """
+            verifies = [
+                SwRequirements.sw_req_exit_code,
+                SwRequirements.sw_req_xml_schema_validation,
+                SwRequirements.sw_req_model_validation
+            ]
         }
 
         SwTestCase tc_pargen_output {
-            description = "This test case runs pargen with all writers on the Arduino example and compares the generated Intel HEX data and its CRC32 file with reference values (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_output_ihex]
+            description =
+                """
+                This test case runs `pargen` with all writers on the Arduino example and compares the
+                generated Intel HEX data and its CRC32 file with reference values (`tests/test_pargen.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_output_ihex
+            ]
         }
 
         SwTestCase tc_output_selection {
-            description = "This test case calls pargen with different output options, '--destdir' and '--filename', and checks that exactly the selected files are created in the selected directory with the selected base name. Without '--filename', the base name is the name of the definition file (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_cli, SwRequirements.sw_req_output_selection]
+            description =
+                """
+                This test case calls `pargen` with different output options, `--destdir` and `--filename`, and
+                checks that exactly the selected files are created in the selected directory with the selected
+                base name. Without `--filename`, the base name is the name of the definition file
+                (`tests/test_pargen.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_cli,
+                SwRequirements.sw_req_output_selection
+            ]
         }
 
         SwTestCase tc_output_gld {
-            description = "This test case generates the GNU linker include file of the example definition and checks that every block header and parameter symbol is assigned its absolute address from the data model (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_output_gld]
+            description =
+                """
+                This test case generates the GNU linker include file of the example definition and checks that
+                every block header and parameter symbol is assigned its absolute address from the data model
+                (`tests/test_pargen.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_output_gld
+            ]
         }
 
         SwTestCase tc_output_a2l {
-            description = "This test case generates the A2L file of the example definition and checks that every parameter is described with its data type, limits, array size and address, that a negative float value is within the limits of its parameter, and that the block headers are described as structure instances (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_output_a2l]
+            description =
+                """
+                This test case generates the A2L file of the example definition and checks that
+                (`tests/test_pargen.py`)
+
+                - every parameter is described with its data type, limits, array size and address
+                - a negative float value is within the limits of its parameter
+                - the block headers are described as structure instances
+                """
+            verifies = [
+                SwRequirements.sw_req_output_a2l
+            ]
         }
 
         SwTestCase tc_output_pyhexdump {
-            description = "This test case generates the pyHexDump configuration of the example definition and checks that every block header and parameter is listed with its address, pyHexDump data type and element count, and that the block header structure is defined (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_output_pyhexdump]
+            description =
+                """
+                This test case generates the pyHexDump configuration of the example definition and checks that
+                (`tests/test_pargen.py`)
+
+                - every block header and parameter is listed with address, data type and element count
+                - the block header structure is defined
+                """
+            verifies = [
+                SwRequirements.sw_req_output_pyhexdump
+            ]
         }
 
         SwTestCase tc_output_static {
-            description = "This test case generates all outputs of the example definition twice with static output and checks that the files are identical, and that without static output the date and build key differ (tests/test_pargen.py)."
-            verifies = [SwRequirements.sw_req_output_static]
+            description =
+                """
+                This test case generates all outputs of the example definition twice and checks that
+                (`tests/test_pargen.py`)
+
+                - with static output, the files are identical
+                - without static output, the date and build key differ
+                """
+            verifies = [
+                SwRequirements.sw_req_output_static
+            ]
         }
     }
 
     section "tc3xx" {
 
         SwTestCase tc_tc3xx_abmhd_output {
-            description = "This test case runs 'tc3xx abmhd' on a reference HEX file and compares the generated pargen XML definition with a reference (tests/test_tc3xx_abmhd.py)."
-            verifies = [SwRequirements.sw_req_tc3xx_abmhd]
+            description =
+                """
+                This test case runs `tc3xx abmhd` on a reference HEX file and compares the generated `pargen`
+                XML definition with a reference (`tests/test_tc3xx_abmhd.py`).
+                """
+            verifies = [
+                SwRequirements.sw_req_tc3xx_abmhd
+            ]
         }
     }
 }

@@ -26,6 +26,7 @@ documents:
         rst: builtin:req2rst.py
         markdown: builtin:req2markdown.py
       translation: builtin:translation.json
+      render_cfg: builtin:renderCfg.json
 
   - id: sw_architecture
     title: SW-Architecture
@@ -37,6 +38,7 @@ documents:
         rst: builtin:req2rst.py
         markdown: builtin:req2markdown.py
       translation: builtin:translation.json
+      render_cfg: builtin:renderCfg.json
 
   - id: sw_test
     title: SW-Tests
@@ -48,6 +50,7 @@ documents:
         rst: builtin:tc2rst.py
         markdown: builtin:tc2markdown.py
       translation: builtin:translation.json
+      render_cfg: builtin:renderCfg.json
 
   - id: sw_test_results
     title: SW-Test Results
